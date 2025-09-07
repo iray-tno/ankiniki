@@ -1,0 +1,76 @@
+{
+  "project": {
+    "name": "Ankiniki",
+    "description": "Anki companion tool for engineers with AI-powered flashcard generation",
+    "type": "monorepo",
+    "version": "0.1.0",
+    "repository": "https://github.com/iray-tno/ankiniki"
+  },
+  "architecture": {
+    "type": "monorepo",
+    "structure": "npm-workspaces",
+    "packages": [
+      {
+        "name": "@ankiniki/shared",
+        "path": "packages/shared",
+        "type": "library",
+        "description": "Shared types, utilities, and constants"
+      },
+      {
+        "name": "@ankiniki/backend",
+        "path": "packages/backend", 
+        "type": "api-server",
+        "description": "Express.js backend with AnkiConnect integration"
+      },
+      {
+        "name": "@ankiniki/desktop",
+        "path": "apps/desktop",
+        "type": "electron-app",
+        "description": "Electron desktop application with React frontend"
+      },
+      {
+        "name": "@ankiniki/cli",
+        "path": "apps/cli",
+        "type": "cli-tool",
+        "description": "Command-line interface for flashcard management"
+      }
+    ]
+  },
+  "tech_stack": {
+    "languages": ["TypeScript", "JavaScript"],
+    "frameworks": ["React", "Express.js", "Electron"],
+    "tools": ["Node.js", "npm", "ESLint", "Prettier", "Husky"],
+    "databases": ["AnkiConnect API"],
+    "deployment": ["GitHub", "Electron Builder"]
+  },
+  "development": {
+    "node_version": "18+",
+    "package_manager": "npm",
+    "setup_command": "npm run setup",
+    "dev_command": "npm run dev",
+    "build_command": "npm run build",
+    "test_command": "npm run test",
+    "lint_command": "npm run lint",
+    "format_command": "npm run format"
+  },
+  "quality": {
+    "linting": "eslint",
+    "formatting": "prettier",
+    "type_checking": "typescript",
+    "git_hooks": "husky",
+    "pre_commit": "lint-staged"
+  },
+  "ai_context": {
+    "domain": "Educational Technology",
+    "focus": "Spaced Repetition Learning",
+    "target_users": "Software Engineers and Developers",
+    "key_concepts": [
+      "AnkiConnect API integration",
+      "Flashcard creation and management",
+      "Cross-platform desktop applications", 
+      "Command-line interfaces",
+      "Educational content processing",
+      "Spaced repetition algorithms"
+    ]
+  }
+}

@@ -21,7 +21,8 @@
     "precommit": "lint-staged",
     "setup": "./scripts/setup.sh",
     "check": "./scripts/quality-check.sh",
-    "ci": "npm run check && npm run test"
+    "ci": "npm run check && npm run test",
+    "serena:validate": "node scripts/validate-serena.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.0.0",

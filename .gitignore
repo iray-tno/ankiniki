@@ -43,3 +43,7 @@ apps/vscode-extension/out/
 # Temporary files
 *.tmp
 *.temp
+
+# AI Assistant local overrides (keep base config in repo)
+.serena/local.json
+.serena/*.local.md
