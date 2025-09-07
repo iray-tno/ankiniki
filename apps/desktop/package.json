@@ -16,7 +16,7 @@
     "dist": "electron-builder"
   },
   "dependencies": {
-    "@ankiniki/shared": "workspace:*",
+    "@ankiniki/shared": "*",
     "electron-store": "^8.1.0"
   },
   "devDependencies": {

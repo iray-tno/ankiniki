@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Check commit message format (optional)
+# Uncomment to enforce conventional commits
+# npx --no-install commitlint --edit "$1"

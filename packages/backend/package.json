@@ -11,7 +11,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@ankiniki/shared": "workspace:*",
+    "@ankiniki/shared": "*",
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "helmet": "^7.0.0",

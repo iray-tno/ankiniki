@@ -1,0 +1,46 @@
+# Build outputs
+dist/
+build/
+out/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/settings.json
+.idea/
+
+# Package files
+*.tgz
+*.tar.gz
+
+# Generated files
+*.d.ts
+
+# Electron build outputs
+apps/desktop/dist/
+apps/desktop/build/
+
+# VS Code extension build
+apps/vscode-extension/*.vsix
+apps/vscode-extension/out/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lock files (formatted differently)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
