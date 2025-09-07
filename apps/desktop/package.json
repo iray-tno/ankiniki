@@ -1,0 +1,56 @@
+{
+  "name": "@ankiniki/desktop",
+  "version": "0.1.0",
+  "description": "Ankiniki desktop application built with Electron and React",
+  "main": "dist/main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run build:watch\" \"wait-on dist/main.js && electron .\"",
+    "build": "tsc && npm run build:renderer",
+    "build:watch": "tsc --watch",
+    "build:renderer": "vite build",
+    "dev:renderer": "vite",
+    "clean": "rm -rf dist build",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "@ankiniki/shared": "workspace:*",
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "@types/react": "^18.2.20",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.4",
+    "concurrently": "^8.2.0",
+    "electron": "^25.6.0",
+    "electron-builder": "^24.6.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.1.6",
+    "vite": "^4.4.9",
+    "wait-on": "^7.0.1"
+  },
+  "build": {
+    "appId": "com.ankiniki.desktop",
+    "productName": "Ankiniki",
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.education"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "noEmit": false,
+    "composite": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/main/**/*"],
+  "exclude": ["dist", "node_modules", "src/renderer"],
+  "references": [
+    {
+      "path": "../../packages/shared"
+    }
+  ]
+}
