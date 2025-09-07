@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+
+import { Command } from 'commander';
+import chalk from 'chalk';
+import { createAddCommand } from './commands/add';
+import { createListCommand } from './commands/list';
+import { createConfigCommand } from './commands/config';
+import { createStudyCommand } from './commands/study';
+import { APP_CONFIG } from '@ankiniki/shared';
+
+const program = new Command();
+
+program
+  .name('ankiniki')
+  .description(APP_CONFIG.DESCRIPTION)
+  .version(APP_CONFIG.VERSION);
+
+// Add subcommands
+program.addCommand(createAddCommand());
+program.addCommand(createListCommand());
+program.addCommand(createStudyCommand());
+program.addCommand(createConfigCommand());
+
+// Global error handling
+process.on('unhandledRejection', (error) => {
+  console.error(chalk.red('Unhandled error:'), error);
+  process.exit(1);
+});
+
+// Show help if no command provided
+if (process.argv.length <= 2) {
+  console.log(chalk.bold.blue(`🚀 ${APP_CONFIG.NAME} CLI v${APP_CONFIG.VERSION}`));
+  console.log(chalk.gray('Anki companion tool for engineers\n'));
+  program.outputHelp();
+  process.exit(0);
+}
+
+// Parse command line arguments
+program.parse();
+
+export default program;

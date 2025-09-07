@@ -1,0 +1,35 @@
+{
+  "name": "@ankiniki/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for Ankiniki",
+  "bin": {
+    "ankiniki": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@ankiniki/shared": "workspace:*",
+    "commander": "^11.0.0",
+    "inquirer": "^9.2.8",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "axios": "^1.5.0",
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.3",
+    "@types/fs-extra": "^11.0.1",
+    "@types/node": "^20.5.0",
+    "jest": "^29.6.2",
+    "tsx": "^3.12.7",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
