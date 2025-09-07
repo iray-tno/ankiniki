@@ -1,0 +1,84 @@
+import { Router, Response } from 'express';
+import { z } from 'zod';
+import { ApiResponse, ValidationError } from '@ankiniki/shared';
+import { ankiConnect } from '../services/ankiConnect';
+import { logger } from '../utils/logger';
+
+const router = Router();
+
+// Get all decks
+router.get('/', async (req, res: Response<ApiResponse<string[]>>) => {
+  try {
+    const deckNames = await ankiConnect.getDeckNames();
+    res.json({
+      success: true,
+      data: deckNames,
+    });
+  } catch (error) {
+    logger.error('Failed to get decks', error);
+    throw error;
+  }
+});
+
+// Create deck
+const CreateDeckSchema = z.object({
+  name: z.string().min(1).max(100),
+});
+
+router.post('/', async (req, res: Response<ApiResponse<{ id: number }>>) => {
+  try {
+    const { name } = CreateDeckSchema.parse(req.body);
+
+    // Check if deck already exists
+    const existingDecks = await ankiConnect.getDeckNames();
+    if (existingDecks.includes(name)) {
+      throw new ValidationError(`Deck '${name}' already exists`);
+    }
+
+    const deckId = await ankiConnect.createDeck(name);
+
+    res.status(201).json({
+      success: true,
+      data: { id: deckId },
+      message: `Deck '${name}' created successfully`,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('Invalid deck data: ' + error.message);
+    }
+    throw error;
+  }
+});
+
+// Delete deck
+const DeleteDeckSchema = z.object({
+  name: z.string().min(1),
+  deleteCards: z.boolean().default(false),
+});
+
+router.delete('/:name', async (req, res: Response<ApiResponse>) => {
+  try {
+    const { name } = req.params;
+    const { deleteCards } = DeleteDeckSchema.parse(req.body);
+
+    // Check if deck exists
+    const existingDecks = await ankiConnect.getDeckNames();
+    if (!existingDecks.includes(name)) {
+      throw new ValidationError(`Deck '${name}' does not exist`);
+    }
+
+    await ankiConnect.deleteDeck(name, deleteCards);
+
+    res.json({
+      success: true,
+      message: `Deck '${name}' deleted successfully`,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('Invalid delete request: ' + error.message);
+    }
+    throw error;
+  }
+});
+
+export default router;
