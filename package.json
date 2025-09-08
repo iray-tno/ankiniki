@@ -24,7 +24,11 @@
     "ci": "npm run check && npm run test",
     "serena:validate": "node scripts/validate-serena.js",
     "serena:setup": "./scripts/setup-serena.sh",
-    "serena:test": "node scripts/test-serena.js"
+    "serena:test": "node scripts/test-serena.js",
+    "ml-service:dev": "cd services/ml-service && uvicorn main:app --reload --port 8000",
+    "ml-service:install": "cd services/ml-service && pip install -r requirements.txt",
+    "ml-service:docker": "cd services/ml-service && docker build -t ankiniki-ml-service .",
+    "ml-service:docker-run": "docker run -p 8000:8000 ankiniki-ml-service"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.21.0",
