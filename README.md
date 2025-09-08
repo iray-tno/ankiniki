@@ -14,30 +14,37 @@ Eliminate Anki's biggest barrier - the manual effort of card creation - allowing
 
 ## ✨ Key Features
 
-### 🤖 AI-Powered Card Generation
-- Automatic flashcard generation from technical articles, code snippets, and PDFs
-- Efficient knowledge extraction through incremental reading
-- Support for multiple input formats (Markdown, code, PDF, etc.)
+### 🔧 Workflow Integration ✅
 
-### 💻 Developer-Focused Content Management
-- **Code Blocks**: Native syntax highlighting
-- **Diagrams**: Built-in Mermaid diagram support
-- **LaTeX**: Mathematical formula rendering
-- **Markdown**: Rich markdown editor with live preview
-
-### 🔧 Workflow Integration
-- **VS Code Extension**: Card creation and review within your IDE
-- **CLI**: Quick card addition from terminal
+- **VS Code Extension**: Create flashcards directly from your IDE with smart code understanding
+- **CLI Tool**: Quick card addition from terminal with interactive prompts
+- **Desktop App**: Modern Electron GUI with card editor and study interface
 - **Keyboard Shortcuts**: Instantly convert selected code to flashcards
 
-### 🌐 Cross-Platform
-- Desktop (Electron)
-- Web (React)
-- Mobile (React Native)
+### 💻 Developer-Focused Content Management ✅
+
+- **Code Blocks**: Native syntax highlighting for all programming languages
+- **Smart Context**: Automatic question generation based on code type
+- **File Tracking**: Include source file paths and line numbers
+- **Markdown Support**: Rich formatting for technical content
+
+### 🤖 AI-Powered Card Generation 🚧
+
+- Automatic flashcard generation from technical articles, code snippets, and PDFs _(Coming Soon)_
+- Efficient knowledge extraction through incremental reading _(Planned)_
+- Support for multiple input formats (Markdown, code, PDF, etc.) _(Planned)_
+
+### 🌐 Cross-Platform ✅
+
+- **Desktop**: Electron app (Windows, Mac, Linux)
+- **CLI**: Command-line tool (cross-platform)
+- **VS Code**: Extension for all platforms
+- **Mobile**: React Native _(Future)_
 
 ## 🏗️ Architecture
 
 ### Technology Stack
+
 - **Frontend**: React, TypeScript
 - **Desktop**: Electron
 - **Mobile**: React Native
@@ -46,24 +53,28 @@ Eliminate Anki's biggest barrier - the manual effort of card creation - allowing
 - **Data**: AnkiConnect API (integrates with existing Anki)
 
 ### Companion Tool Strategy
+
 Ankiniki is not a replacement for Anki but a companion tool with full compatibility with existing Anki databases. All data is managed within Anki through the AnkiConnect API.
 
 ## 📈 Development Roadmap
 
 ### Phase 1: MVP (Minimum Viable Product) ✅
+
 - [x] **Backend API**: Express.js server with AnkiConnect integration
 - [x] **Electron Desktop App**: React-based GUI with card editor and study interface
 - [x] **CLI Tool**: Command-line interface for quick card creation
 - [x] **Shared Types**: TypeScript definitions and utilities
 - [x] **Monorepo Setup**: Workspace-based project structure
 
-### Phase 2: AI Integration (Planned)
+### Phase 2: AI Integration & IDE Integration 🚧
+
+- [x] **VS Code Extension**: Create flashcards directly from your IDE ✅
 - [ ] Python ML microservice
 - [ ] Automatic card generation
 - [ ] Content ingestion pipeline
-- [ ] VS Code extension
 
 ### Phase 3: Full Feature Set (Future)
+
 - [ ] React Native mobile app
 - [ ] Mermaid diagram support
 - [ ] Advanced customization features
@@ -71,6 +82,7 @@ Ankiniki is not a replacement for Anki but a companion tool with full compatibil
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Node.js** 18+ and npm 9+
 - **Anki** desktop application
 - **AnkiConnect** addon installed in Anki
@@ -78,6 +90,7 @@ Ankiniki is not a replacement for Anki but a companion tool with full compatibil
 ### Installation
 
 1. **Clone and setup the project**:
+
 ```bash
 git clone https://github.com/iray-tno/ankiniki.git
 cd ankiniki
@@ -90,6 +103,7 @@ npm install
    - Restart Anki
 
 3. **Build all packages**:
+
 ```bash
 npm run build
 ```
@@ -97,6 +111,7 @@ npm run build
 ## 🛠️ Development
 
 ### Project Structure
+
 ```
 ankiniki/
 ├── packages/
@@ -104,7 +119,8 @@ ankiniki/
 │   └── backend/         # Express.js API server
 ├── apps/
 │   ├── desktop/         # Electron desktop app
-│   └── cli/             # Command-line tool
+│   ├── cli/             # Command-line tool
+│   └── vscode-extension/# VS Code extension
 ├── docs/                # Documentation
 └── tools/               # Build and development tools
 ```
@@ -112,6 +128,7 @@ ankiniki/
 ### Available Scripts
 
 #### Root Level
+
 ```bash
 npm run build          # Build all packages and apps
 npm run dev            # Start all development servers
@@ -121,6 +138,7 @@ npm run clean          # Clean all build artifacts
 ```
 
 #### Backend Server (`packages/backend`)
+
 ```bash
 cd packages/backend
 npm run dev            # Start development server with hot reload
@@ -129,6 +147,7 @@ npm run start          # Start production server
 ```
 
 #### Desktop App (`apps/desktop`)
+
 ```bash
 cd apps/desktop
 npm run dev            # Start Electron in development mode
@@ -137,6 +156,7 @@ npm run dist           # Create distributable packages
 ```
 
 #### CLI Tool (`apps/cli`)
+
 ```bash
 cd apps/cli
 npm run build          # Build CLI executable
@@ -144,21 +164,34 @@ npm link               # Link globally for development
 ankiniki --help        # Test CLI commands
 ```
 
+#### VS Code Extension (`apps/vscode-extension`)
+
+```bash
+cd apps/vscode-extension
+npm run compile        # Compile TypeScript
+npm run watch          # Watch mode for development
+npm run package        # Create .vsix package
+# Press F5 in VS Code to launch Extension Development Host
+```
+
 ### Development Workflow
 
 1. **Start the backend server**:
+
 ```bash
 cd packages/backend
 npm run dev
 ```
 
 2. **Start the desktop app** (in another terminal):
+
 ```bash
 cd apps/desktop
 npm run dev
 ```
 
 3. **Test the CLI** (after building):
+
 ```bash
 cd apps/cli
 npm run build
@@ -169,6 +202,7 @@ ankiniki config --show
 ## 🎯 Usage Examples
 
 ### CLI Quick Start
+
 ```bash
 # Configure AnkiConnect connection
 ankiniki config --edit
@@ -186,7 +220,25 @@ ankiniki study "JavaScript Fundamentals" --count 5
 ankiniki list
 ```
 
+### VS Code Extension Quick Start
+
+```bash
+# Install the extension (when published)
+# Or press F5 for development
+
+# Keyboard shortcuts:
+# Ctrl+Shift+A - Add selected text as flashcard
+# Ctrl+Shift+C - Add code block as flashcard
+# Ctrl+Shift+Q - Quick add flashcard
+
+# Available via Command Palette (Ctrl+Shift+P):
+# "Ankiniki: Add Selected Text as Flashcard"
+# "Ankiniki: Add Code Block as Flashcard"
+# "Ankiniki: Quick Add Flashcard"
+```
+
 ### Desktop App
+
 1. Launch the desktop app
 2. Configure AnkiConnect URL in Settings
 3. Create or select a deck
@@ -194,6 +246,7 @@ ankiniki list
 5. Study cards with the built-in review interface
 
 ### API Server
+
 ```bash
 # Start the backend server
 cd packages/backend
@@ -207,6 +260,7 @@ curl http://localhost:3001/api/decks
 ## 🔧 Configuration
 
 ### AnkiConnect Setup
+
 Ensure AnkiConnect is properly configured in Anki:
 
 1. **Install the addon** (code: 2055492159)
@@ -215,7 +269,9 @@ Ensure AnkiConnect is properly configured in Anki:
    - Add your domain to webCorsOriginList
 
 ### Environment Variables
+
 Create a `.env` file in `packages/backend/`:
+
 ```env
 PORT=3001
 ANKI_CONNECT_URL=http://localhost:8765
@@ -252,7 +308,9 @@ cd packages/shared && npm test
    - Ensure you're using Node.js 18+
 
 ### Debug Mode
+
 Enable debug logging:
+
 ```bash
 # CLI
 ankiniki config --set debugMode=true
