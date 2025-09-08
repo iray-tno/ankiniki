@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { ApiResponse, ValidationError } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
-import { logger } from '../utils/logger';
+// import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -14,36 +14,46 @@ const AddNoteSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
-router.post('/', async (req, res: Response<ApiResponse<{ noteId: number }>>) => {
-  try {
-    const { deckName, modelName, fields, tags } = AddNoteSchema.parse(req.body);
+router.post(
+  '/',
+  async (req, res: Response<ApiResponse<{ noteId: number }>>) => {
+    try {
+      const { deckName, modelName, fields, tags } = AddNoteSchema.parse(
+        req.body
+      );
 
-    // Validate deck exists
-    const existingDecks = await ankiConnect.getDeckNames();
-    if (!existingDecks.includes(deckName)) {
-      throw new ValidationError(`Deck '${deckName}' does not exist`);
+      // Validate deck exists
+      const existingDecks = await ankiConnect.getDeckNames();
+      if (!existingDecks.includes(deckName)) {
+        throw new ValidationError(`Deck '${deckName}' does not exist`);
+      }
+
+      // Validate model exists
+      const existingModels = await ankiConnect.modelNames();
+      if (!existingModels.includes(modelName)) {
+        throw new ValidationError(`Model '${modelName}' does not exist`);
+      }
+
+      const noteId = await ankiConnect.addNote(
+        deckName,
+        modelName,
+        fields,
+        tags
+      );
+
+      res.status(201).json({
+        success: true,
+        data: { noteId },
+        message: 'Card created successfully',
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new ValidationError(`Invalid card data: ${error.message}`);
+      }
+      throw error;
     }
-
-    // Validate model exists
-    const existingModels = await ankiConnect.modelNames();
-    if (!existingModels.includes(modelName)) {
-      throw new ValidationError(`Model '${modelName}' does not exist`);
-    }
-
-    const noteId = await ankiConnect.addNote(deckName, modelName, fields, tags);
-
-    res.status(201).json({
-      success: true,
-      data: { noteId },
-      message: 'Card created successfully',
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError('Invalid card data: ' + error.message);
-    }
-    throw error;
   }
-});
+);
 
 // Update note fields
 const UpdateNoteSchema = z.object({
@@ -63,7 +73,7 @@ router.put('/', async (req, res: Response<ApiResponse>) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError('Invalid update data: ' + error.message);
+      throw new ValidationError(`Invalid update data: ${error.message}`);
     }
     throw error;
   }
@@ -86,7 +96,7 @@ router.delete('/', async (req, res: Response<ApiResponse>) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError('Invalid delete data: ' + error.message);
+      throw new ValidationError(`Invalid delete data: ${error.message}`);
     }
     throw error;
   }

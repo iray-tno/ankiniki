@@ -22,14 +22,16 @@ program.addCommand(createStudyCommand());
 program.addCommand(createConfigCommand());
 
 // Global error handling
-process.on('unhandledRejection', (error) => {
+process.on('unhandledRejection', error => {
   console.error(chalk.red('Unhandled error:'), error);
   process.exit(1);
 });
 
 // Show help if no command provided
 if (process.argv.length <= 2) {
-  console.log(chalk.bold.blue(`🚀 ${APP_CONFIG.NAME} CLI v${APP_CONFIG.VERSION}`));
+  console.log(
+    chalk.bold.blue(`🚀 ${APP_CONFIG.NAME} CLI v${APP_CONFIG.VERSION}`)
+  );
   console.log(chalk.gray('Anki companion tool for engineers\n'));
   program.outputHelp();
   process.exit(0);

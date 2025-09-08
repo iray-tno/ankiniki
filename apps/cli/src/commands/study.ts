@@ -6,7 +6,7 @@ import { AnkiClient } from '../anki-client';
 
 export function createStudyCommand(): Command {
   const command = new Command('study');
-  
+
   command
     .description('Quick study session in the terminal')
     .argument('[deck]', 'Deck name to study')
@@ -18,7 +18,7 @@ export function createStudyCommand(): Command {
       try {
         const spinner = ora('Connecting to Anki...').start();
         const isConnected = await client.ping();
-        
+
         if (!isConnected) {
           spinner.fail('Cannot connect to Anki');
           return;
@@ -42,7 +42,7 @@ export function createStudyCommand(): Command {
 
         // Get cards from deck
         const noteIds = await client.findNotes(`deck:"${selectedDeck}"`);
-        
+
         if (noteIds.length === 0) {
           console.log(chalk.yellow(`No cards found in deck "${selectedDeck}"`));
           return;
@@ -55,7 +55,7 @@ export function createStudyCommand(): Command {
         }
 
         const notesInfo = await client.notesInfo(studyIds);
-        
+
         console.log(chalk.bold(`\n🎯 Starting study session: ${selectedDeck}`));
         console.log(chalk.gray(`${studyIds.length} cards to study\n`));
 
@@ -64,11 +64,13 @@ export function createStudyCommand(): Command {
 
         for (const [index, note] of notesInfo.entries()) {
           total++;
-          console.log(chalk.cyan(`\n--- Card ${index + 1}/${notesInfo.length} ---`));
-          
+          console.log(
+            chalk.cyan(`\n--- Card ${index + 1}/${notesInfo.length} ---`)
+          );
+
           const fields = note.fields;
           const fieldNames = Object.keys(fields);
-          
+
           // Show front (question)
           if (fieldNames[0] && fields[fieldNames[0]].value) {
             const front = cleanHtml(fields[fieldNames[0]].value);
@@ -99,7 +101,7 @@ export function createStudyCommand(): Command {
               name: 'rating',
               message: 'How well did you know this?',
               choices: [
-                { name: '❌ Again (didn\'t know)', value: 'again' },
+                { name: "❌ Again (didn't know)", value: 'again' },
                 { name: '🔶 Hard (difficult)', value: 'hard' },
                 { name: '✅ Good (knew it)', value: 'good' },
                 { name: '🚀 Easy (too easy)', value: 'easy' },
@@ -120,8 +122,10 @@ export function createStudyCommand(): Command {
         // Session summary
         const percentage = Math.round((correct / total) * 100);
         console.log(chalk.bold('\n🎉 Study Session Complete!'));
-        console.log(`   Correct: ${chalk.green(correct)}/${total} (${percentage}%)`);
-        
+        console.log(
+          `   Correct: ${chalk.green(correct)}/${total} (${percentage}%)`
+        );
+
         if (percentage >= 80) {
           console.log(chalk.green('   Excellent work! 🌟'));
         } else if (percentage >= 60) {
@@ -129,7 +133,6 @@ export function createStudyCommand(): Command {
         } else {
           console.log(chalk.red('   Keep practicing! 💪'));
         }
-        
       } catch (error: any) {
         console.error(chalk.red(`Error: ${error.message}`));
         process.exit(1);
@@ -143,7 +146,7 @@ function cleanHtml(html: string): string {
   return html
     .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
-    .replace(/&lt;/g, '<')   // Replace HTML entities
+    .replace(/&lt;/g, '<') // Replace HTML entities
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
     .trim();

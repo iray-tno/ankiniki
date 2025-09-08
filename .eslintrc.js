@@ -4,12 +4,13 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier'],
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended',
     'prettier',
   ],
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
+    project: './tsconfig.json',
     ecmaFeatures: {
       jsx: true,
     },
@@ -22,22 +23,23 @@ module.exports = {
   rules: {
     // Prettier integration
     'prettier/prettier': 'error',
-    
+
     // TypeScript specific rules
     '@typescript-eslint/no-unused-vars': [
-      'error', 
-      { 
+      'error',
+      {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
         ignoreRestSiblings: true,
-      }
+      },
     ],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-    '@typescript-eslint/prefer-nullish-coalescing': 'error',
-    '@typescript-eslint/prefer-optional-chain': 'error',
-    
+    // Type-aware rules disabled to avoid parser service issues
+    // '@typescript-eslint/prefer-nullish-coalescing': 'error',
+    // '@typescript-eslint/prefer-optional-chain': 'error',
+
     // General code quality
     'prefer-const': 'error',
     'no-var': 'error',
@@ -45,15 +47,15 @@ module.exports = {
     'no-debugger': 'error',
     'no-duplicate-imports': 'error',
     'no-unused-expressions': 'error',
-    
+
     // Code style consistency
     'object-shorthand': 'error',
     'prefer-arrow-callback': 'error',
     'prefer-template': 'error',
-    
+
     // Best practices
-    'eqeqeq': ['error', 'always'],
-    'curly': ['error', 'all'],
+    eqeqeq: ['error', 'always'],
+    curly: ['error', 'all'],
     'no-throw-literal': 'error',
     'prefer-promise-reject-errors': 'error',
   },

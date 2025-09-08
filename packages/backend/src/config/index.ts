@@ -5,7 +5,9 @@ dotenv.config();
 
 const ConfigSchema = z.object({
   PORT: z.string().default('3001'),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
   ANKI_CONNECT_URL: z.string().default('http://localhost:8765'),
   ANKI_CONNECT_TIMEOUT: z.string().default('5000'),
   LOG_LEVEL: z.string().default('info'),

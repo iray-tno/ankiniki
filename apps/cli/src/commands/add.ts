@@ -7,7 +7,7 @@ import { loadConfig } from '../config';
 
 export function createAddCommand(): Command {
   const command = new Command('add');
-  
+
   command
     .description('Add a new flashcard')
     .argument('[deck]', 'Deck name')
@@ -24,9 +24,11 @@ export function createAddCommand(): Command {
         // Check connection first
         const spinner = ora('Connecting to Anki...').start();
         const isConnected = await client.ping();
-        
+
         if (!isConnected) {
-          spinner.fail('Cannot connect to Anki. Make sure Anki is running with AnkiConnect.');
+          spinner.fail(
+            'Cannot connect to Anki. Make sure Anki is running with AnkiConnect.'
+          );
           return;
         }
         spinner.succeed('Connected to Anki');
@@ -35,7 +37,9 @@ export function createAddCommand(): Command {
           deck: deck || config.defaultDeck,
           front: front || '',
           back: back || '',
-          tags: options.tags ? options.tags.split(',').map((t: string) => t.trim()) : [],
+          tags: options.tags
+            ? options.tags.split(',').map((t: string) => t.trim())
+            : [],
           model: options.model || config.defaultModel,
         };
 
@@ -80,7 +84,11 @@ export function createAddCommand(): Command {
               name: 'tags',
               message: 'Tags (comma-separated):',
               default: cardData.tags.join(', '),
-              filter: (input: string) => input.split(',').map(t => t.trim()).filter(t => t),
+              filter: (input: string) =>
+                input
+                  .split(',')
+                  .map(t => t.trim())
+                  .filter(t => t),
             },
           ]);
 
@@ -89,13 +97,15 @@ export function createAddCommand(): Command {
 
         // Validate required fields
         if (!cardData.front.trim() || !cardData.back.trim()) {
-          console.error(chalk.red('Error: Both front and back sides are required'));
+          console.error(
+            chalk.red('Error: Both front and back sides are required')
+          );
           return;
         }
 
         // Get field names for the model
         const fieldNames = await client.modelFieldNames(cardData.model);
-        
+
         // Map to AnkiConnect fields format
         const fields: Record<string, string> = {};
         if (fieldNames.length >= 2) {
@@ -108,15 +118,21 @@ export function createAddCommand(): Command {
 
         // Add the note
         const addSpinner = ora('Adding card...').start();
-        const noteId = await client.addNote(cardData.deck, cardData.model, fields, cardData.tags);
-        
+        const noteId = await client.addNote(
+          cardData.deck,
+          cardData.model,
+          fields,
+          cardData.tags
+        );
+
         addSpinner.succeed(`Card added successfully! (ID: ${noteId})`);
-        
+
         console.log(chalk.green('\n✓ Card Details:'));
         console.log(`  Deck: ${chalk.cyan(cardData.deck)}`);
         console.log(`  Model: ${chalk.cyan(cardData.model)}`);
-        console.log(`  Tags: ${cardData.tags.length ? chalk.cyan(cardData.tags.join(', ')) : chalk.gray('None')}`);
-        
+        console.log(
+          `  Tags: ${cardData.tags.length ? chalk.cyan(cardData.tags.join(', ')) : chalk.gray('None')}`
+        );
       } catch (error: any) {
         console.error(chalk.red(`Error: ${error.message}`));
         process.exit(1);

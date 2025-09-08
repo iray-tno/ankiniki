@@ -6,14 +6,14 @@ import { AnkiClient } from '../anki-client';
 
 export function createConfigCommand(): Command {
   const command = new Command('config');
-  
+
   command
     .description('Manage CLI configuration')
     .option('-s, --show', 'Show current configuration')
     .option('-e, --edit', 'Edit configuration interactively')
     .option('--set <key=value>', 'Set a configuration value')
     .option('--reset', 'Reset to default configuration')
-    .action(async (options) => {
+    .action(async options => {
       try {
         if (options.show) {
           await showConfig();
@@ -38,29 +38,33 @@ export function createConfigCommand(): Command {
 
 async function showConfig(): Promise<void> {
   const config = loadConfig();
-  
+
   console.log(chalk.bold('⚙️  Current Configuration:'));
   console.log(`   Config file: ${chalk.gray(getConfigPath())}`);
   console.log(`   AnkiConnect URL: ${chalk.cyan(config.ankiConnectUrl)}`);
   console.log(`   Default Deck: ${chalk.cyan(config.defaultDeck)}`);
   console.log(`   Default Model: ${chalk.cyan(config.defaultModel)}`);
-  console.log(`   Debug Mode: ${config.debugMode ? chalk.green('enabled') : chalk.gray('disabled')}`);
+  console.log(
+    `   Debug Mode: ${config.debugMode ? chalk.green('enabled') : chalk.gray('disabled')}`
+  );
 
   // Test connection
   const client = new AnkiClient();
   const isConnected = await client.ping();
-  console.log(`   Connection: ${isConnected ? chalk.green('✓ Connected') : chalk.red('✗ Not connected')}`);
+  console.log(
+    `   Connection: ${isConnected ? chalk.green('✓ Connected') : chalk.red('✗ Not connected')}`
+  );
 }
 
 async function editConfig(): Promise<void> {
   const config = loadConfig();
   const client = new AnkiClient();
-  
+
   try {
     // Get available decks and models
     const decks = await client.getDeckNames();
     const models = await client.modelNames();
-    
+
     const answers = await inquirer.prompt([
       {
         type: 'input',
@@ -100,11 +104,14 @@ async function editConfig(): Promise<void> {
 
     saveConfig(answers);
     console.log(chalk.green('✓ Configuration saved successfully'));
-    
   } catch (error) {
     // If we can't connect to Anki, allow basic config editing
-    console.log(chalk.yellow('⚠ Cannot connect to Anki. Editing basic configuration only.'));
-    
+    console.log(
+      chalk.yellow(
+        '⚠ Cannot connect to Anki. Editing basic configuration only.'
+      )
+    );
+
     const answers = await inquirer.prompt([
       {
         type: 'input',
@@ -145,15 +152,23 @@ async function setConfig(keyValue: string): Promise<void> {
     throw new Error('Invalid format. Use: --set key=value');
   }
 
-  const config = loadConfig();
-  const validKeys = ['ankiConnectUrl', 'defaultDeck', 'defaultModel', 'debugMode'];
+  const _config = loadConfig();
+  const validKeys = [
+    'ankiConnectUrl',
+    'defaultDeck',
+    'defaultModel',
+    'debugMode',
+  ];
 
   if (!validKeys.includes(key)) {
-    throw new Error(`Invalid key "${key}". Valid keys: ${validKeys.join(', ')}`);
+    throw new Error(
+      `Invalid key "${key}". Valid keys: ${validKeys.join(', ')}`
+    );
   }
 
   // Type conversion for boolean
-  const parsedValue = key === 'debugMode' ? value.toLowerCase() === 'true' : value;
+  const parsedValue =
+    key === 'debugMode' ? value.toLowerCase() === 'true' : value;
 
   saveConfig({ [key]: parsedValue });
   console.log(chalk.green(`✓ Set ${key} = ${parsedValue}`));

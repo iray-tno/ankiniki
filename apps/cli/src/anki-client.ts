@@ -10,7 +10,10 @@ import { loadConfig } from './config';
 export class AnkiClient {
   private config = loadConfig();
 
-  async request<T = any>(action: string, params: Record<string, any> = {}): Promise<T> {
+  async request<T = any>(
+    action: string,
+    params: Record<string, any> = {}
+  ): Promise<T> {
     const requestData: AnkiConnectRequest = {
       action,
       version: ANKI_CONNECT.API_VERSION,

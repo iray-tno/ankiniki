@@ -1,4 +1,4 @@
-import { Card, Deck, AnkinikiError } from './types';
+import { AnkinikiError } from './types';
 
 // ID generation
 export function generateId(): string {
@@ -29,7 +29,7 @@ export function sanitizeCardContent(content: string): string {
 export function extractCodeFromMarkdown(markdown: string): string[] {
   const codeBlockRegex = /```[\s\S]*?```/g;
   const matches = markdown.match(codeBlockRegex) || [];
-  return matches.map((match) =>
+  return matches.map(match =>
     match.replace(/```(\w+)?\n?/, '').replace(/```$/, '')
   );
 }
@@ -59,7 +59,7 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
+  return function (this: any, ...args: Parameters<T>) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
@@ -71,19 +71,23 @@ export async function retry<T>(
   maxAttempts: number = 3,
   delay: number = 1000
 ): Promise<T> {
-  let lastError: Error;
+  let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error as Error;
-      if (attempt === maxAttempts) break;
-      await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+      if (attempt === maxAttempts) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, delay * attempt));
     }
   }
 
-  throw lastError!;
+  throw new Error(
+    `Failed after ${maxAttempts} attempts: ${lastError?.message || 'Unknown error'}`
+  );
 }
 
 // Environment utilities

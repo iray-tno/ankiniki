@@ -31,8 +31,8 @@ router.get('/', async (req, res: Response<ApiResponse<HealthStatus>>) => {
   res.status(ankiConnected ? 200 : 503).json({
     success: ankiConnected,
     data: healthData,
-    message: ankiConnected 
-      ? 'All services are healthy' 
+    message: ankiConnected
+      ? 'All services are healthy'
       : 'AnkiConnect is not available',
   });
 });

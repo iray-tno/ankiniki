@@ -44,7 +44,7 @@ router.post('/', async (req, res: Response<ApiResponse<{ id: number }>>) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError('Invalid deck data: ' + error.message);
+      throw new ValidationError(`Invalid deck data: ${error.message}`);
     }
     throw error;
   }
@@ -75,7 +75,7 @@ router.delete('/:name', async (req, res: Response<ApiResponse>) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError('Invalid delete request: ' + error.message);
+      throw new ValidationError(`Invalid delete request: ${error.message}`);
     }
     throw error;
   }

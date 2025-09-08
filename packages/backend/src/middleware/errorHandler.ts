@@ -6,7 +6,7 @@ export function errorHandler(
   error: Error,
   req: Request,
   res: Response<ApiResponse>,
-  next: NextFunction
+  _next: NextFunction
 ) {
   logger.error('Request error', {
     error: error.message,
@@ -34,7 +34,7 @@ export function errorHandler(
 export function notFoundHandler(
   req: Request,
   res: Response<ApiResponse>,
-  next: NextFunction
+  _next: NextFunction
 ) {
   res.status(404).json({
     success: false,

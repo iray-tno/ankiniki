@@ -14,7 +14,6 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      enableRemoteModule: false,
       preload: join(__dirname, 'preload.js'),
     },
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
@@ -81,7 +80,7 @@ function setupApplicationMenu() {
         { role: 'cut' },
         { role: 'copy' },
         { role: 'paste' },
-        { role: 'selectall' },
+        { role: 'selectAll' },
       ],
     },
     {

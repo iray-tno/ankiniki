@@ -34,7 +34,7 @@ export function loadConfig(): CliConfig {
 export function saveConfig(config: Partial<CliConfig>): void {
   const currentConfig = loadConfig();
   const newConfig = { ...currentConfig, ...config };
-  
+
   try {
     writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2));
   } catch (error) {

@@ -10,7 +10,9 @@ async function startServer() {
     // Check AnkiConnect connection
     const isAnkiConnected = await ankiConnect.ping();
     if (!isAnkiConnected) {
-      logger.warn('AnkiConnect is not available. Make sure Anki is running with AnkiConnect addon.');
+      logger.warn(
+        'AnkiConnect is not available. Make sure Anki is running with AnkiConnect addon.'
+      );
     } else {
       logger.info('Successfully connected to AnkiConnect');
     }
@@ -39,7 +41,6 @@ async function startServer() {
         process.exit(0);
       });
     });
-
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);
