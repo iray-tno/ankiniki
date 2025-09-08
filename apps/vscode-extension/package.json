@@ -1,0 +1,181 @@
+{
+  "name": "ankiniki-vscode",
+  "displayName": "Ankiniki - Anki Companion",
+  "description": "Create Anki flashcards directly from VS Code with AI-powered card generation",
+  "version": "0.1.0",
+  "publisher": "ankiniki",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Education"
+  ],
+  "keywords": [
+    "anki",
+    "flashcards",
+    "learning",
+    "spaced repetition",
+    "education",
+    "memory"
+  ],
+  "activationEvents": [
+    "onCommand:ankiniki.addSelectedText",
+    "onCommand:ankiniki.addCodeBlock",
+    "onCommand:ankiniki.quickAdd",
+    "onCommand:ankiniki.openSidebar"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ankiniki.addSelectedText",
+        "title": "Add Selected Text as Flashcard",
+        "category": "Ankiniki"
+      },
+      {
+        "command": "ankiniki.addCodeBlock",
+        "title": "Add Code Block as Flashcard",
+        "category": "Ankiniki"
+      },
+      {
+        "command": "ankiniki.quickAdd",
+        "title": "Quick Add Flashcard",
+        "category": "Ankiniki"
+      },
+      {
+        "command": "ankiniki.openSidebar",
+        "title": "Open Ankiniki Sidebar",
+        "category": "Ankiniki"
+      },
+      {
+        "command": "ankiniki.openSettings",
+        "title": "Open Settings",
+        "category": "Ankiniki"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ankiniki.addSelectedText",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "ankiniki.addCodeBlock",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ankiniki.quickAdd",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ankiniki.addSelectedText",
+          "when": "editorHasSelection",
+          "group": "ankiniki@1"
+        },
+        {
+          "command": "ankiniki.addCodeBlock",
+          "when": "editorTextFocus",
+          "group": "ankiniki@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ankiniki.addSelectedText",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "ankiniki.addCodeBlock",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ankiniki",
+      "properties": {
+        "ankiniki.ankiConnectUrl": {
+          "type": "string",
+          "default": "http://localhost:8765",
+          "description": "AnkiConnect server URL"
+        },
+        "ankiniki.defaultDeck": {
+          "type": "string",
+          "default": "Default",
+          "description": "Default deck for new cards"
+        },
+        "ankiniki.defaultModel": {
+          "type": "string",
+          "default": "Basic",
+          "description": "Default card model/note type"
+        },
+        "ankiniki.autoDetectLanguage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect programming language for code blocks"
+        },
+        "ankiniki.includeFilePath": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include file path in generated cards"
+        },
+        "ankiniki.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show success/error notifications"
+        }
+      }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "ankinikiSidebar",
+          "name": "Ankiniki",
+          "when": "ankiniki.enabled"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ankiniki",
+          "title": "Ankiniki",
+          "icon": "$(book)"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "lint:fix": "eslint src --ext ts --fix",
+    "package": "vsce package",
+    "test": "npm run compile && node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.45.0",
+    "typescript": "^5.1.6",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "@ankiniki/shared": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iray-tno/ankiniki.git",
+    "directory": "apps/vscode-extension"
+  }
+}
