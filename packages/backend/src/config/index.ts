@@ -10,6 +10,8 @@ const ConfigSchema = z.object({
     .default('development'),
   ANKI_CONNECT_URL: z.string().default('http://localhost:8765'),
   ANKI_CONNECT_TIMEOUT: z.string().default('5000'),
+  ML_SERVICE_URL: z.string().default('http://localhost:8000'),
+  ML_SERVICE_TIMEOUT: z.string().default('30000'),
   LOG_LEVEL: z.string().default('info'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
 });
@@ -22,6 +24,10 @@ export const config = {
   ankiConnect: {
     url: env.ANKI_CONNECT_URL,
     timeout: parseInt(env.ANKI_CONNECT_TIMEOUT),
+  },
+  mlService: {
+    url: env.ML_SERVICE_URL,
+    timeout: parseInt(env.ML_SERVICE_TIMEOUT),
   },
   logging: {
     level: env.LOG_LEVEL,
