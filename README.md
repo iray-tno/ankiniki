@@ -28,11 +28,13 @@ Eliminate Anki's biggest barrier - the manual effort of card creation - allowing
 - **File Tracking**: Include source file paths and line numbers
 - **Markdown Support**: Rich formatting for technical content
 
-### 🤖 AI-Powered Card Generation 🚧
+### 🤖 AI-Powered Card Generation ✅
 
-- Automatic flashcard generation from technical articles, code snippets, and PDFs _(Coming Soon)_
-- Efficient knowledge extraction through incremental reading _(Planned)_
-- Support for multiple input formats (Markdown, code, PDF, etc.) _(Planned)_
+- **Intelligent Card Generation**: AI analyzes code and generates contextually relevant questions
+- **Multi-Format Processing**: Extract learning materials from code, Markdown, PDFs, and HTML
+- **Question Enhancement**: Improve existing questions for better learning outcomes
+- **Smart Content Analysis**: Automatic difficulty assessment and concept extraction
+- **Fallback Mode**: Works without OpenAI API using template-based generation
 
 ### 🌐 Cross-Platform ✅
 
@@ -66,12 +68,13 @@ Ankiniki is not a replacement for Anki but a companion tool with full compatibil
 - [x] **Shared Types**: TypeScript definitions and utilities
 - [x] **Monorepo Setup**: Workspace-based project structure
 
-### Phase 2: AI Integration & IDE Integration 🚧
+### Phase 2: AI Integration & IDE Integration ✅
 
-- [x] **VS Code Extension**: Create flashcards directly from your IDE ✅
-- [ ] Python ML microservice
-- [ ] Automatic card generation
-- [ ] Content ingestion pipeline
+- [x] **VS Code Extension**: Create flashcards directly from your IDE
+- [x] **Python ML Microservice**: FastAPI-based AI service with OpenAI integration
+- [x] **Automatic Card Generation**: Generate flashcards from code, text, and documents
+- [x] **Content Ingestion Pipeline**: Process PDFs, Markdown, HTML, and code files
+- [x] **Backend Integration**: Seamless API integration with existing Node.js backend
 
 ### Phase 3: Full Feature Set (Future)
 
@@ -257,6 +260,29 @@ curl http://localhost:3001/health
 curl http://localhost:3001/api/decks
 ```
 
+### AI-Powered Card Generation
+
+```bash
+# Start the ML microservice (Python)
+npm run ml-service:install  # Install Python dependencies
+npm run ml-service:dev      # Start the service
+
+# Or using Docker
+npm run ml-service:docker
+npm run ml-service:docker-run
+
+# Generate cards via API
+curl -X POST http://localhost:3001/api/cards/generate-and-create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "const factorial = (n) => n <= 1 ? 1 : n * factorial(n - 1);",
+    "content_type": "code",
+    "deckName": "Programming",
+    "programming_language": "javascript",
+    "max_cards": 3
+  }'
+```
+
 ## 🔧 Configuration
 
 ### AnkiConnect Setup
@@ -275,9 +301,25 @@ Create a `.env` file in `packages/backend/`:
 ```env
 PORT=3001
 ANKI_CONNECT_URL=http://localhost:8765
+ML_SERVICE_URL=http://localhost:8000
 NODE_ENV=development
 CORS_ORIGIN=http://localhost:3000
 ```
+
+### AI Service Configuration
+
+For enhanced AI features, configure the ML service in `services/ml-service/`:
+
+```env
+# Optional: OpenAI API key for enhanced AI features
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Service configuration
+PORT=8000
+LOG_LEVEL=INFO
+```
+
+**Note**: The ML service works without OpenAI API key using fallback template-based generation.
 
 ## 🧪 Testing
 
