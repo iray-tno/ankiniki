@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "serena": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "."
+      ],
+      "env": {
+        "SERENA_PROJECT_NAME": "Ankiniki",
+        "SERENA_PROJECT_TYPE": "monorepo",
+        "SERENA_TECH_STACK": "typescript,react,electron,nodejs,express",
+        "SERENA_DOMAIN": "educational-technology",
+        "SERENA_FOCUS": "anki-integration"
+      }
+    }
+  }
+}

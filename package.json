@@ -22,7 +22,9 @@
     "setup": "./scripts/setup.sh",
     "check": "./scripts/quality-check.sh",
     "ci": "npm run check && npm run test",
-    "serena:validate": "node scripts/validate-serena.js"
+    "serena:validate": "node scripts/validate-serena.js",
+    "serena:setup": "./scripts/setup-serena.sh",
+    "serena:test": "node scripts/test-serena.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.0.0",
