@@ -1,0 +1,18 @@
+Front,Back,Deck,Tags,Difficulty
+"What is const in JavaScript?","Block-scoped variable declaration that cannot be reassigned","JavaScript Fundamentals","javascript,variables,es6","beginner"
+"What is the difference between let and var?","let is block-scoped, var is function-scoped","JavaScript Fundamentals","javascript,variables,scope","beginner"
+"What does this arrow function do?
+```javascript
+const add = (a, b) => a + b;
+```","Returns the sum of two parameters using ES6 arrow function syntax","JavaScript Fundamentals","javascript,functions,es6","beginner"
+"What is array destructuring?","Syntax to extract values from arrays into distinct variables","JavaScript Fundamentals","javascript,arrays,destructuring","intermediate"
+"What does this code do?
+```javascript
+const [first, ...rest] = array;
+```","Destructures array: assigns first element to 'first' and remaining elements to 'rest' array","JavaScript Fundamentals","javascript,destructuring,spread","intermediate"
+"What is a Promise in JavaScript?","Object representing eventual completion or failure of asynchronous operation","JavaScript Fundamentals","javascript,promises,async","intermediate"
+"What is async/await?","Syntax for working with Promises that makes asynchronous code look synchronous","JavaScript Fundamentals","javascript,async,await","intermediate"
+"What does this code do?
+```javascript
+const result = await fetch('/api/data');
+```","Makes asynchronous HTTP request and waits for response before continuing","JavaScript Fundamentals","javascript,fetch,async","intermediate"

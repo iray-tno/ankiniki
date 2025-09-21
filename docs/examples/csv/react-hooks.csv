@@ -1,0 +1,17 @@
+Question,Answer,Subject,Topics,Level
+"What is useState?","React Hook for adding state to functional components","React Hooks","react,hooks,state","beginner"
+"What is useEffect?","React Hook for performing side effects and lifecycle events","React Hooks","react,hooks,lifecycle","beginner"
+"What does this React code do?
+```jsx
+const [count, setCount] = useState(0);
+```","Declares state variable 'count' with initial value 0 and setter function 'setCount'","React Hooks","react,hooks,useState","beginner"
+"What does this useEffect do?
+```jsx
+useEffect(() => {
+  document.title = `Count: ${count}`;
+}, [count]);
+```","Updates document title when count changes, with count as dependency","React Hooks","react,hooks,useEffect,dependencies","intermediate"
+"What is useCallback?","Hook that returns memoized callback function to prevent unnecessary re-renders","React Hooks","react,hooks,performance","intermediate"
+"What is useMemo?","Hook that returns memoized value to optimize expensive calculations","React Hooks","react,hooks,performance,memoization","intermediate"
+"What is useRef?","Hook that returns mutable ref object to access DOM elements or persist values","React Hooks","react,hooks,refs,dom","intermediate"
+"What is custom hook?","JavaScript function starting with 'use' that can call other hooks","React Hooks","react,hooks,custom","advanced"
