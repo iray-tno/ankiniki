@@ -52,20 +52,24 @@ ankiniki config --set defaultDeck=MyDeck
 ### Options
 
 #### Add Command
+
 - `--tags <tags>`: Comma-separated tags
 - `--model <model>`: Card model to use
 - `--interactive`: Interactive mode with editor
 
 #### List Command
+
 - `--decks`: List all decks (default)
 - `--cards <deck>`: List cards in specific deck
 - `--limit <number>`: Limit results (default: 10)
 
 #### Study Command
+
 - `--count <number>`: Number of cards to study (default: 5)
 - `--random`: Study in random order
 
 #### Config Command
+
 - `--show`: Show current configuration
 - `--edit`: Edit configuration interactively
 - `--set <key=value>`: Set a configuration value
