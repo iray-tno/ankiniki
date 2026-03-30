@@ -42,6 +42,7 @@ async function showConfig(): Promise<void> {
   console.log(chalk.bold('⚙️  Current Configuration:'));
   console.log(`   Config file: ${chalk.gray(getConfigPath())}`);
   console.log(`   AnkiConnect URL: ${chalk.cyan(config.ankiConnectUrl)}`);
+  console.log(`   Server URL:      ${chalk.cyan(config.serverUrl)}`);
   console.log(`   Default Deck: ${chalk.cyan(config.defaultDeck)}`);
   console.log(`   Default Model: ${chalk.cyan(config.defaultModel)}`);
   console.log(
@@ -71,6 +72,20 @@ async function editConfig(): Promise<void> {
         name: 'ankiConnectUrl',
         message: 'AnkiConnect URL:',
         default: config.ankiConnectUrl,
+        validate: (input: string) => {
+          try {
+            new URL(input);
+            return true;
+          } catch {
+            return 'Please enter a valid URL';
+          }
+        },
+      },
+      {
+        type: 'input',
+        name: 'serverUrl',
+        message: 'Ankiniki server URL (for import commands):',
+        default: config.serverUrl,
         validate: (input: string) => {
           try {
             new URL(input);
@@ -121,6 +136,12 @@ async function editConfig(): Promise<void> {
       },
       {
         type: 'input',
+        name: 'serverUrl',
+        message: 'Ankiniki server URL (for import commands):',
+        default: config.serverUrl,
+      },
+      {
+        type: 'input',
         name: 'defaultDeck',
         message: 'Default deck:',
         default: config.defaultDeck,
@@ -155,6 +176,7 @@ async function setConfig(keyValue: string): Promise<void> {
   const _config = loadConfig();
   const validKeys = [
     'ankiConnectUrl',
+    'serverUrl',
     'defaultDeck',
     'defaultModel',
     'debugMode',
@@ -187,6 +209,7 @@ async function resetConfig(): Promise<void> {
   if (confirm.reset) {
     saveConfig({
       ankiConnectUrl: 'http://localhost:8765',
+      serverUrl: 'http://localhost:3001',
       defaultDeck: 'Default',
       defaultModel: 'Basic',
       debugMode: false,
