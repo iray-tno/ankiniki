@@ -124,12 +124,16 @@
 - [ ] Add content source management
 - [ ] Create templates for different content types
 
-### 11. Enhanced CLI Features - PENDING
+### 11. Enhanced CLI Features - PARTIALLY COMPLETE
 
-- [ ] Add `ankiniki import [file-path]` command
+- [x] Add `ankiniki import <file>` command (CSV, JSON, Markdown — auto-detected)
+- [x] Add `POST /api/import/markdown` backend endpoint
+- [x] Add `POST /api/import/json/body` backend endpoint (programmatic use)
+- [ ] Add `ankiniki study --due` flag to study only Anki-scheduled due cards
+- [ ] Add `ankiniki deck create <name>` and `ankiniki deck delete <name>` commands
+- [ ] Add `ankiniki delete <noteId>` command to remove individual cards
+- [ ] Add AI generation commands (`ankiniki generate <file>`)
 - [ ] Implement batch processing for multiple files
-- [ ] Add AI generation commands
-- [ ] Create content source management
 - [ ] Add export/import of card collections
 
 ---
