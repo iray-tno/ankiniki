@@ -24,13 +24,6 @@
       "@ankiniki/backend": ["./packages/backend/src"]
     }
   },
-  "include": [
-    "packages/**/*",
-    "apps/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ]
+  "include": ["packages/**/*", "apps/**/*"],
+  "exclude": ["node_modules", "dist", "build"]
 }

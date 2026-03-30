@@ -5,6 +5,7 @@ Welcome to the comprehensive documentation for Ankiniki, the Anki companion tool
 ## 📚 Documentation Overview
 
 ### 🚀 Getting Started
+
 Perfect for new users who want to start using Ankiniki quickly.
 
 - **[Installation Guide](getting-started/installation.md)** - Install Ankiniki and set up your environment
@@ -13,9 +14,11 @@ Perfect for new users who want to start using Ankiniki quickly.
 - **[Your First Cards](getting-started/first-cards.md)** - Best practices for engineering flashcards
 
 ### 👨‍💻 User Guides
+
 Detailed guides for all Ankiniki components and features.
 
 #### Desktop Application
+
 - **[Desktop App Overview](user-guides/desktop-app/overview.md)** - Features and interface walkthrough
 - **[Card Editor](user-guides/desktop-app/card-editor.md)** - Creating and editing flashcards
 - **[Study Interface](user-guides/desktop-app/study-interface.md)** - Review and study sessions
@@ -23,6 +26,7 @@ Detailed guides for all Ankiniki components and features.
 - **[Settings & Preferences](user-guides/desktop-app/settings.md)** - Customizing your experience
 
 #### Command Line Interface (CLI)
+
 - **[CLI Overview](user-guides/cli/overview.md)** - Command-line tool introduction
 - **[All Commands](user-guides/cli/commands.md)** - Complete command reference
 - **[Interactive Mode](user-guides/cli/interactive-mode.md)** - Interactive card creation
@@ -30,12 +34,14 @@ Detailed guides for all Ankiniki components and features.
 - **[Scripting with CLI](user-guides/cli/scripting.md)** - Automation and batch operations
 
 #### Backend API
+
 - **[API Overview](user-guides/api/overview.md)** - Backend service introduction
 - **[API Endpoints](user-guides/api/endpoints.md)** - REST API reference
 - **[Authentication](user-guides/api/authentication.md)** - API security and access
 - **[Usage Examples](user-guides/api/examples.md)** - Common integration patterns
 
 ### 🔧 Developer Documentation
+
 For contributors and developers extending Ankiniki.
 
 - **[Development Guide](developer/DEVELOPMENT.md)** - Setting up development environment
@@ -46,6 +52,7 @@ For contributors and developers extending Ankiniki.
 - **[Testing Guide](developer/testing.md)** - Testing strategies and frameworks
 
 ### 🔗 Integration Guides
+
 Advanced integration with external tools and services.
 
 - **[AnkiConnect Integration](integration/anki-connect.md)** - Deep dive into Anki integration
@@ -54,6 +61,7 @@ Advanced integration with external tools and services.
 - **[Third-party Integrations](integration/third-party.md)** - External tool integrations
 
 ### 🛠️ Troubleshooting
+
 Solutions for common problems and issues.
 
 - **[Common Issues](troubleshooting/common-issues.md)** - Frequently encountered problems
@@ -62,6 +70,7 @@ Solutions for common problems and issues.
 - **[Platform-specific Issues](troubleshooting/platform-specific.md)** - OS-specific problems
 
 ### 📖 Reference
+
 Quick reference materials and comprehensive guides.
 
 - **[Configuration Reference](reference/configuration.md)** - All configuration options
@@ -81,6 +90,7 @@ Japanese translations are available in the [`ja/`](ja/) directory:
 ## 🎯 Quick Navigation
 
 ### I Want To...
+
 - **Get started quickly** → [Quick Start Tutorial](getting-started/quick-start.md)
 - **Install Ankiniki** → [Installation Guide](getting-started/installation.md)
 - **Use the desktop app** → [Desktop App Overview](user-guides/desktop-app/overview.md)
@@ -90,6 +100,7 @@ Japanese translations are available in the [`ja/`](ja/) directory:
 - **Solve a problem** → [Common Issues](troubleshooting/common-issues.md)
 
 ### By User Type
+
 - **📱 End Users**: Start with [Getting Started](getting-started/) guides
 - **⌨️ Power Users**: Check out [CLI Documentation](user-guides/cli/)
 - **🔧 Developers**: Begin with [Development Guide](developer/DEVELOPMENT.md)
@@ -97,14 +108,14 @@ Japanese translations are available in the [`ja/`](ja/) directory:
 
 ## 🔄 Documentation Status
 
-| Section | English | Japanese | Status |
-|---------|---------|----------|---------|
-| Getting Started | 🚧 In Progress | ⏳ Planned | Phase 1 |
-| User Guides | 🚧 In Progress | ⏳ Planned | Phase 1-2 |
-| Developer Docs | ✅ Complete | ⏳ Planned | Phase 2 |
-| Integration | ⏳ Planned | ⏳ Planned | Phase 2-3 |
-| Troubleshooting | 🚧 In Progress | ⏳ Planned | Phase 1 |
-| Reference | ⏳ Planned | ⏳ Planned | Phase 3 |
+| Section         | English        | Japanese   | Status    |
+| --------------- | -------------- | ---------- | --------- |
+| Getting Started | 🚧 In Progress | ⏳ Planned | Phase 1   |
+| User Guides     | 🚧 In Progress | ⏳ Planned | Phase 1-2 |
+| Developer Docs  | ✅ Complete    | ⏳ Planned | Phase 2   |
+| Integration     | ⏳ Planned     | ⏳ Planned | Phase 2-3 |
+| Troubleshooting | 🚧 In Progress | ⏳ Planned | Phase 1   |
+| Reference       | ⏳ Planned     | ⏳ Planned | Phase 3   |
 
 ## 📝 Contributing to Documentation
 
@@ -115,6 +126,7 @@ We welcome contributions to improve our documentation! Please see:
 - **[Translation Guidelines](ja/README.md#翻訳ガイドライン)** - Japanese translation standards
 
 ### Reporting Documentation Issues
+
 - **Missing Information**: Create an issue describing what's missing
 - **Incorrect Information**: Submit a correction with the right details
 - **Translation Improvements**: Help us improve Japanese translations

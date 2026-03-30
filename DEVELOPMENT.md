@@ -5,6 +5,7 @@ This document outlines the development workflow, code quality standards, and bes
 ## 🚀 Quick Start
 
 ### Initial Setup
+
 ```bash
 # Clone and setup
 git clone https://github.com/iray-tno/ankiniki.git
@@ -20,25 +21,28 @@ npm run build
 ```
 
 ### Development Workflow
+
 ```bash
 # Start all development servers
 npm run dev
 
 # Or start individual components
 cd packages/backend && npm run dev    # API server
-cd apps/desktop && npm run dev        # Electron app  
+cd apps/desktop && npm run dev        # Electron app
 cd apps/cli && npm run build          # CLI tool
 ```
 
 ## 🧹 Code Quality
 
 ### Automated Tools
+
 - **ESLint**: Code quality and consistency
-- **Prettier**: Code formatting  
+- **Prettier**: Code formatting
 - **TypeScript**: Type checking
 - **Husky**: Git hooks for quality checks
 
 ### Available Commands
+
 ```bash
 # Quality checks
 npm run lint          # Check code quality
@@ -56,7 +60,9 @@ npm run clean        # Clean build artifacts
 ```
 
 ### Pre-commit Hooks
+
 Git hooks automatically run before each commit:
+
 - ESLint auto-fixes
 - Prettier formatting
 - Type checking
@@ -65,12 +71,14 @@ Git hooks automatically run before each commit:
 ## 📝 Code Standards
 
 ### TypeScript Guidelines
+
 - **Strict Mode**: All projects use strict TypeScript
 - **Type Safety**: Prefer `interface` over `type` for object definitions
 - **No `any`**: Use proper typing, `unknown` for uncertain types
 - **Explicit Returns**: Use explicit return types for public APIs
 
 ### Code Style
+
 - **Formatting**: Prettier with 80 character line limit
 - **Imports**: Organize imports automatically
 - **Quotes**: Single quotes for strings, JSX
@@ -78,6 +86,7 @@ Git hooks automatically run before each commit:
 - **Trailing Commas**: ES5 compatible
 
 ### File Organization
+
 ```
 packages/
 ├── shared/           # Common types and utilities
@@ -107,6 +116,7 @@ apps/
 ```
 
 ### Naming Conventions
+
 - **Files**: kebab-case (`card-editor.tsx`)
 - **Components**: PascalCase (`CardEditor`)
 - **Functions**: camelCase (`createCard`)
@@ -116,15 +126,18 @@ apps/
 ## 🔧 IDE Configuration
 
 ### VS Code Setup
+
 The project includes VS Code workspace settings:
+
 - Auto-format on save
 - ESLint integration
 - TypeScript language server
 - Recommended extensions
 
 ### Recommended Extensions
+
 - ESLint
-- Prettier  
+- Prettier
 - TypeScript
 - Auto Rename Tag
 - GitLens
@@ -133,12 +146,13 @@ The project includes VS Code workspace settings:
 ## 🧪 Testing Strategy
 
 ### Test Structure
+
 ```bash
 # Unit tests
 packages/shared/src/*.test.ts
 packages/backend/src/**/*.test.ts
 
-# Integration tests  
+# Integration tests
 apps/cli/src/**/*.test.ts
 apps/desktop/src/**/*.test.ts
 
@@ -147,6 +161,7 @@ tests/e2e/
 ```
 
 ### Testing Commands
+
 ```bash
 npm run test                    # All tests
 cd packages/backend && npm test # Package-specific
@@ -155,12 +170,14 @@ cd packages/backend && npm test # Package-specific
 ## 📦 Build Process
 
 ### Development Builds
+
 ```bash
 npm run build                   # All packages
 cd packages/shared && npm run build # Individual package
 ```
 
 ### Production Builds
+
 ```bash
 # Desktop app distributables
 cd apps/desktop
@@ -178,23 +195,27 @@ npm link
 ### Common Issues
 
 1. **TypeScript Errors**
+
    ```bash
    npm run type-check
    # Fix errors in reported files
    ```
 
 2. **Linting Errors**
+
    ```bash
    npm run lint:fix     # Auto-fix
    npm run lint         # Manual review
    ```
 
 3. **Format Issues**
+
    ```bash
    npm run format       # Fix all formatting
    ```
 
 4. **Build Failures**
+
    ```bash
    npm run clean        # Clean everything
    npm install          # Reinstall deps
@@ -202,24 +223,28 @@ npm link
    ```
 
 5. **Git Hook Failures**
+
    ```bash
    # Manually run pre-commit checks
    npm run precommit
-   
+
    # Skip hooks if needed (not recommended)
    git commit --no-verify
    ```
 
 ### Development Environment
+
 - **Node.js**: 18+ required
-- **npm**: 9+ required  
+- **npm**: 9+ required
 - **OS**: Windows, macOS, Linux supported
 - **Anki**: Required for testing AnkiConnect integration
 
 ## 🎯 Quality Gates
 
 ### Definition of Done
+
 Before marking work complete:
+
 - [ ] All TypeScript compilation errors resolved
 - [ ] ESLint passes without warnings
 - [ ] Code formatted with Prettier
@@ -229,14 +254,16 @@ Before marking work complete:
 - [ ] Git hooks pass
 
 ### CI/CD Pipeline
+
 ```bash
 npm run ci    # Runs complete quality check + tests
 ```
 
 This validates:
+
 - TypeScript compilation
 - Linting rules
-- Code formatting  
+- Code formatting
 - Unit tests
 - Build processes
 - Security audit
@@ -254,11 +281,13 @@ This validates:
 ## 📊 Monitoring
 
 ### Performance Metrics
+
 - **Build Times**: Monitor with `npm run build`
 - **Bundle Sizes**: Check Electron app size
 - **Type Check Speed**: Track TypeScript performance
 
 ### Quality Metrics
+
 - **ESLint Warnings**: Aim for zero warnings
 - **Test Coverage**: Maintain high coverage
 - **Security Vulns**: Regular `npm audit`

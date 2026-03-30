@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import FormData from 'form-data';
-import { readConfig } from '../config';
+import { loadConfig } from '../config';
 
 interface ImportOptions {
   format: 'csv' | 'json';
@@ -49,7 +49,7 @@ export const importCommand = new Command('import')
   .option('--mapping <mapping>', 'Custom column mapping (JSON string)')
   .action(async (filePath: string, options: ImportOptions) => {
     try {
-      const config = readConfig();
+      const config = loadConfig();
 
       // Validate file exists
       if (!fs.existsSync(filePath)) {
@@ -170,13 +170,65 @@ async function importCsv(
 }
 
 async function importJson(
-  _filePath: string,
-  _options: ImportOptions,
-  _baseUrl: string
+  filePath: string,
+  options: ImportOptions,
+  baseUrl: string
 ): Promise<void> {
-  console.log(`📋 JSON import not yet implemented`);
-  console.log(`💡 Use CSV format or the API directly for now`);
-  process.exit(1);
+  console.log(`📋 Importing JSON file...`);
+
+  // Prepare import options for JSON
+  const jsonOptions = {
+    defaultDeck: options.deck,
+    defaultModel: options.model || 'Basic',
+    defaultTags: options.tags ? options.tags.split(',').map(t => t.trim()) : [],
+    dryRun: options.preview || options.dryRun || false,
+    validate: true,
+  };
+
+  // Create form data
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(filePath));
+  formData.append('options', JSON.stringify(jsonOptions));
+
+  // Choose endpoint based on preview mode
+  const endpoint = options.preview
+    ? '/api/import/json/preview'
+    : '/api/import/json';
+
+  try {
+    console.log(`🚀 ${options.preview ? 'Previewing' : 'Importing'} JSON...`);
+
+    const response = await axios.post(`${baseUrl}${endpoint}`, formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
+      timeout: 60000, // 60 second timeout for large files
+    });
+
+    const result = response.data;
+
+    if (!result.success) {
+      console.error('❌ Import failed:', result.error);
+      process.exit(1);
+    }
+
+    // Display results
+    if (options.preview || result.data.preview) {
+      displayJsonPreview(result.data);
+    } else {
+      displayJsonImportResults(result.data);
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        '❌ API Error:',
+        error.response?.data?.error || error.message
+      );
+    } else {
+      console.error('❌ Import error:', error);
+    }
+    process.exit(1);
+  }
 }
 
 interface PreviewData {
@@ -275,6 +327,128 @@ function displayImportResults(data: ImportResults): void {
   }
 
   console.log('\n🎉 Import completed successfully!');
+}
+
+interface JsonPreviewData {
+  totalCards: number;
+  validCards: number;
+  invalidCards: number;
+  formatType?: string;
+  detectedStructure?: {
+    hasCards: boolean;
+    hasDeckName: boolean;
+    hasDefaultTags: boolean;
+    hasDefaultModel: boolean;
+  };
+  sampleCards?: Array<{
+    front: string;
+    back: string;
+    deck: string;
+    tags: string[];
+  }>;
+  errors?: Array<{
+    rowNumber: number;
+    error: string;
+  }>;
+}
+
+function displayJsonPreview(data: JsonPreviewData): void {
+  console.log('\n📋 JSON Import Preview:');
+  console.log(`📁 Total cards: ${data.totalCards}`);
+  console.log(`✅ Valid cards: ${data.validCards}`);
+  console.log(`❌ Invalid cards: ${data.invalidCards}`);
+
+  if (data.formatType) {
+    console.log(
+      `📄 Format type: ${data.formatType === 'array' ? 'Array of cards' : 'Object with cards property'}`
+    );
+  }
+
+  if (data.detectedStructure) {
+    console.log('\n🔍 Detected structure:');
+    console.log(
+      `   📋 Has cards: ${data.detectedStructure.hasCards ? '✅' : '❌'}`
+    );
+    console.log(
+      `   📦 Has deck name: ${data.detectedStructure.hasDeckName ? '✅' : '❌'}`
+    );
+    console.log(
+      `   🏷️  Has default tags: ${data.detectedStructure.hasDefaultTags ? '✅' : '❌'}`
+    );
+    console.log(
+      `   📝 Has default model: ${data.detectedStructure.hasDefaultModel ? '✅' : '❌'}`
+    );
+  }
+
+  if (data.sampleCards && data.sampleCards.length > 0) {
+    console.log('\n📝 Sample cards:');
+    data.sampleCards.slice(0, 3).forEach((card, index: number) => {
+      console.log(
+        `\n${index + 1}. Front: ${card.front.substring(0, 60)}${card.front.length > 60 ? '...' : ''}`
+      );
+      console.log(
+        `   Back: ${card.back.substring(0, 60)}${card.back.length > 60 ? '...' : ''}`
+      );
+      console.log(`   Deck: ${card.deck}`);
+      console.log(`   Tags: ${card.tags.join(', ')}`);
+    });
+  }
+
+  if (data.errors && data.errors.length > 0) {
+    console.log('\n❌ Sample errors:');
+    data.errors.slice(0, 3).forEach(error => {
+      console.log(`   Card ${error.rowNumber}: ${error.error}`);
+    });
+  }
+
+  console.log('\n💡 To proceed with import, remove the --preview flag');
+}
+
+interface JsonImportResults {
+  totalCards: number;
+  successfulCards: number;
+  failedCards: number;
+  summary?: {
+    imported: number;
+    failed: number;
+    invalid: number;
+  };
+  results?: Array<{
+    rowNumber: number;
+    success: boolean;
+    error?: string;
+  }>;
+}
+
+function displayJsonImportResults(data: JsonImportResults): void {
+  console.log('\n✅ JSON Import Complete!');
+  console.log(`📊 Total cards processed: ${data.totalCards}`);
+  console.log(`✅ Successfully imported: ${data.successfulCards} cards`);
+  console.log(`❌ Failed to import: ${data.failedCards} cards`);
+
+  if (data.summary) {
+    console.log('\n📈 Summary:');
+    console.log(`   ✅ Imported: ${data.summary.imported}`);
+    console.log(`   ❌ Failed: ${data.summary.failed}`);
+    console.log(`   ⚠️  Invalid: ${data.summary.invalid}`);
+  }
+
+  // Show sample failures if any
+  if (data.results) {
+    const failures = data.results.filter(r => !r.success);
+    if (failures.length > 0) {
+      console.log('\n❌ Sample failures:');
+      failures.slice(0, 5).forEach(failure => {
+        console.log(`   Card ${failure.rowNumber}: ${failure.error}`);
+      });
+
+      if (failures.length > 5) {
+        console.log(`   ... and ${failures.length - 5} more failures`);
+      }
+    }
+  }
+
+  console.log('\n🎉 JSON import completed successfully!');
 }
 
 // Add helper command for column mapping

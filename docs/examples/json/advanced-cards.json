@@ -1,0 +1,37 @@
+{
+  "deck_name": "JavaScript Fundamentals",
+  "default_tags": ["javascript", "programming"],
+  "default_model": "Basic",
+  "cards": [
+    {
+      "front": "What is a closure in JavaScript?",
+      "back": "A closure is a function that has access to variables in its outer (enclosing) scope even after the outer function has returned",
+      "tags": ["closures", "functions"],
+      "difficulty": "intermediate"
+    },
+    {
+      "front": "What is the difference between let and var?",
+      "back": "let is block-scoped and cannot be redeclared in the same scope, while var is function-scoped and can be redeclared",
+      "tags": ["variables", "scope"],
+      "difficulty": "beginner"
+    },
+    {
+      "front": "What is hoisting?",
+      "back": "Hoisting is JavaScript's behavior of moving variable and function declarations to the top of their scope during compilation",
+      "tags": ["hoisting", "variables"],
+      "difficulty": "intermediate"
+    },
+    {
+      "front": "What is the event loop?",
+      "back": "The event loop is what allows JavaScript to perform non-blocking operations by offloading operations to the system kernel",
+      "tags": ["event-loop", "asynchronous"],
+      "difficulty": "advanced"
+    },
+    {
+      "front": "What are promises?",
+      "back": "Promises are objects that represent the eventual completion or failure of an asynchronous operation",
+      "tags": ["promises", "asynchronous"],
+      "difficulty": "intermediate"
+    }
+  ]
+}

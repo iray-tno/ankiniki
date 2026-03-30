@@ -1,0 +1,22 @@
+[
+  {
+    "front": "What is React?",
+    "back": "A JavaScript library for building user interfaces"
+  },
+  {
+    "front": "What is JSX?",
+    "back": "A syntax extension for JavaScript that allows you to write HTML-like code in React"
+  },
+  {
+    "front": "What is a React component?",
+    "back": "A reusable piece of UI that can accept inputs (props) and return React elements"
+  },
+  {
+    "front": "What is the useState hook?",
+    "back": "A React Hook that lets you add state to functional components"
+  },
+  {
+    "front": "What is the useEffect hook?",
+    "back": "A React Hook that lets you perform side effects in functional components"
+  }
+]

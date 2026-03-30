@@ -5,11 +5,16 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
-import csv from 'csv-parser';
+import * as csv from 'csv-parser';
 import { Readable } from 'stream';
 import { logger } from '../utils/logger';
 import { ankiConnect } from '../services/ankiConnect';
 // ValidationError import removed as it's not used in this file
+
+// Extend Request interface for multer
+interface MulterRequest extends Request {
+  file?: any;
+}
 
 const router = Router();
 
@@ -17,12 +22,18 @@ const router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit for CSV files
+    fileSize: 5 * 1024 * 1024, // 5MB limit for import files
   },
-  fileFilter: (req, file, cb) => {
-    // Allow CSV files
-    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
-    const allowedExtensions = ['.csv', '.txt'];
+  fileFilter: (req: any, file: any, cb: any) => {
+    // Allow CSV and JSON files
+    const allowedTypes = [
+      'text/csv',
+      'application/vnd.ms-excel',
+      'text/plain',
+      'application/json',
+      'text/json',
+    ];
+    const allowedExtensions = ['.csv', '.txt', '.json'];
 
     const hasAllowedType = allowedTypes.includes(file.mimetype);
     const hasAllowedExtension = allowedExtensions.some(ext =>
@@ -34,7 +45,7 @@ const upload = multer({
     } else {
       cb(
         new Error(
-          `Unsupported file type: ${file.mimetype}. Please upload a CSV file.`
+          `Unsupported file type: ${file.mimetype}. Please upload a CSV or JSON file.`
         )
       );
     }
@@ -104,7 +115,7 @@ function parseCsvContent(
       .on('end', () => {
         resolve(results);
       })
-      .on('error', error => {
+      .on('error', (error: any) => {
         reject(error);
       });
   });
@@ -220,7 +231,7 @@ function validateCards(cards: ProcessedCard[]): {
 router.post(
   '/csv',
   upload.single('file'),
-  async (req: Request, res: Response) => {
+  async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({
@@ -230,7 +241,7 @@ router.post(
       }
 
       // Parse options from form data
-      let options: z.infer<typeof CsvImportOptionsSchema> = {};
+      let options: Partial<z.infer<typeof CsvImportOptionsSchema>> = {};
       if (req.body.options) {
         try {
           options = JSON.parse(req.body.options);
@@ -430,7 +441,7 @@ router.post(
 router.post(
   '/csv/preview',
   upload.single('file'),
-  async (req: Request, res: Response) => {
+  async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({
@@ -440,7 +451,9 @@ router.post(
       }
 
       // Parse options with dryRun forced to true
-      let options: z.infer<typeof CsvImportOptionsSchema> = { dryRun: true };
+      let options: Partial<z.infer<typeof CsvImportOptionsSchema>> = {
+        dryRun: true,
+      };
       if (req.body.options) {
         try {
           const parsed = JSON.parse(req.body.options);
@@ -479,6 +492,409 @@ router.post(
       });
     } catch (error) {
       logger.error('CSV preview error:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error',
+      });
+    }
+  }
+);
+
+// JSON Import Schema
+const JsonImportOptionsSchema = z.object({
+  defaultDeck: z.string().optional(),
+  defaultModel: z.string().optional().default('Basic'),
+  defaultTags: z.array(z.string()).optional().default([]),
+  dryRun: z.boolean().optional().default(false),
+  validate: z.boolean().optional().default(true),
+});
+
+interface JsonCard {
+  front: string;
+  back: string;
+  deck?: string;
+  model?: string;
+  tags?: string[];
+  difficulty?: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface JsonImportFormat {
+  cards?: JsonCard[];
+  deck_name?: string;
+  default_tags?: string[];
+  default_model?: string;
+}
+
+/**
+ * Process JSON cards into standardized format
+ */
+function processJsonCards(
+  data: JsonImportFormat | JsonCard[],
+  options: z.infer<typeof JsonImportOptionsSchema>
+): ProcessedCard[] {
+  let cards: JsonCard[] = [];
+  let defaultDeck = options.defaultDeck;
+  let defaultTags = [...options.defaultTags];
+  let defaultModel = options.defaultModel;
+
+  // Handle different JSON formats
+  if (Array.isArray(data)) {
+    // Format: [{"front": "...", "back": "..."}, ...]
+    cards = data;
+  } else if (data.cards && Array.isArray(data.cards)) {
+    // Format: {"cards": [...], "deck_name": "...", ...}
+    cards = data.cards;
+    defaultDeck = data.deck_name || defaultDeck;
+    defaultTags = [...defaultTags, ...(data.default_tags || [])];
+    defaultModel = data.default_model || defaultModel;
+  } else {
+    throw new Error(
+      'Invalid JSON format. Expected array of cards or object with "cards" property.'
+    );
+  }
+
+  return cards.map((card, index) => {
+    // Ensure required fields exist
+    if (!card.front || !card.back) {
+      throw new Error(
+        `Card at index ${index} missing required front or back field`
+      );
+    }
+
+    // Combine tags
+    const allTags = [...defaultTags, ...(card.tags || [])];
+
+    return {
+      front: card.front.trim(),
+      back: card.back.trim(),
+      deck: (card.deck || defaultDeck || 'Default').trim(),
+      model: (card.model || defaultModel).trim(),
+      tags: allTags,
+      difficulty: card.difficulty?.trim(),
+      rowNumber: index + 1,
+    };
+  });
+}
+
+/**
+ * @swagger
+ * /api/import/json:
+ *   post:
+ *     summary: Import flashcards from JSON file
+ *     tags: [Import]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               options:
+ *                 type: string
+ *                 description: JSON string with import options
+ *     responses:
+ *       200:
+ *         description: Import results with success/error details
+ */
+router.post(
+  '/json',
+  upload.single('file'),
+  async (req: MulterRequest, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No JSON file uploaded',
+        });
+      }
+
+      // Parse options from form data
+      let options: Partial<z.infer<typeof JsonImportOptionsSchema>> = {};
+      if (req.body.options) {
+        try {
+          options = JSON.parse(req.body.options);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid options JSON format',
+          });
+        }
+      }
+
+      // Validate options
+      const validatedOptions = JsonImportOptionsSchema.parse(options);
+
+      logger.info('JSON import started', {
+        filename: req.file.originalname,
+        size: req.file.size,
+        options: validatedOptions,
+      });
+
+      // Parse JSON content
+      let jsonData: JsonImportFormat | JsonCard[];
+      try {
+        const jsonContent = req.file.buffer.toString('utf-8');
+        jsonData = JSON.parse(jsonContent);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid JSON format in uploaded file',
+        });
+      }
+
+      // Process JSON into cards
+      const processedCards = processJsonCards(jsonData, validatedOptions);
+
+      logger.info(`Processed ${processedCards.length} cards from JSON`);
+
+      // Validate cards
+      const { valid: validCards, errors: invalidCards } =
+        validateCards(processedCards);
+
+      logger.info(
+        `Validation complete: ${validCards.length} valid, ${invalidCards.length} invalid`
+      );
+
+      // If dry run, return preview without creating cards
+      if (validatedOptions.dryRun) {
+        return res.json({
+          success: true,
+          data: {
+            dryRun: true,
+            totalCards: processedCards.length,
+            validCards: validCards.length,
+            invalidCards: invalidCards.length,
+            preview: validCards.slice(0, 5), // Show first 5 valid cards
+            errors: invalidCards,
+          },
+        });
+      }
+
+      // Check if decks exist and models are valid
+      const existingDecks = await ankiConnect.getDeckNames();
+      const existingModels = await ankiConnect.modelNames();
+
+      const results: ProcessedCard[] = [];
+
+      // Create cards in Anki
+      for (const card of validCards) {
+        try {
+          // Validate deck exists
+          if (!existingDecks.includes(card.deck)) {
+            results.push({
+              ...card,
+              success: false,
+              error: `Deck '${card.deck}' does not exist`,
+            });
+            continue;
+          }
+
+          // Validate model exists
+          if (!existingModels.includes(card.model)) {
+            results.push({
+              ...card,
+              success: false,
+              error: `Model '${card.model}' does not exist`,
+            });
+            continue;
+          }
+
+          // Prepare fields based on model
+          const fields: Record<string, string> = {};
+          if (card.model === 'Basic') {
+            fields['Front'] = card.front;
+            fields['Back'] = card.back;
+          } else if (card.model === 'Cloze') {
+            fields['Text'] = `${card.front}\n\n${card.back}`;
+          } else {
+            // Default fallback
+            fields['Front'] = card.front;
+            fields['Back'] = card.back;
+          }
+
+          // Add import metadata tags
+          const allTags = [
+            ...card.tags,
+            'json-import',
+            `imported-${new Date().toISOString().split('T')[0]}`,
+          ];
+
+          // Add difficulty tag if specified
+          if (card.difficulty) {
+            allTags.push(`difficulty-${card.difficulty}`);
+          }
+
+          const noteId = await ankiConnect.addNote(
+            card.deck,
+            card.model,
+            fields,
+            allTags
+          );
+
+          results.push({
+            ...card,
+            success: true,
+            noteId,
+          });
+
+          logger.info(`Created card ${card.rowNumber}`, { noteId });
+        } catch (error) {
+          logger.error(`Failed to create card ${card.rowNumber}`, error);
+          results.push({
+            ...card,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      }
+
+      // Calculate statistics
+      const successfulCards = results.filter(card => card.success).length;
+      const failedCards = results.filter(card => !card.success).length;
+
+      logger.info('JSON import completed', {
+        total: processedCards.length,
+        successful: successfulCards,
+        failed: failedCards + invalidCards.length,
+      });
+
+      res.json({
+        success: true,
+        data: {
+          totalCards: processedCards.length,
+          successfulCards,
+          failedCards: failedCards + invalidCards.length,
+          results: [...results, ...invalidCards],
+          summary: {
+            imported: successfulCards,
+            failed: failedCards,
+            invalid: invalidCards.length,
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid import options',
+          details: error.errors,
+        });
+      }
+
+      logger.error('JSON import error:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error',
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/import/json/preview:
+ *   post:
+ *     summary: Preview JSON import without creating cards
+ *     tags: [Import]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               options:
+ *                 type: string
+ *                 description: JSON string with import options
+ *     responses:
+ *       200:
+ *         description: Preview of cards to be imported
+ */
+router.post(
+  '/json/preview',
+  upload.single('file'),
+  async (req: MulterRequest, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No JSON file uploaded',
+        });
+      }
+
+      // Parse options with dryRun forced to true
+      let options: Partial<z.infer<typeof JsonImportOptionsSchema>> = {
+        dryRun: true,
+      };
+      if (req.body.options) {
+        try {
+          const parsed = JSON.parse(req.body.options);
+          options = { ...parsed, dryRun: true };
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid options JSON format',
+          });
+        }
+      }
+
+      const validatedOptions = JsonImportOptionsSchema.parse(options);
+
+      // Parse JSON content
+      let jsonData: JsonImportFormat | JsonCard[];
+      try {
+        const jsonContent = req.file.buffer.toString('utf-8');
+        jsonData = JSON.parse(jsonContent);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid JSON format in uploaded file',
+        });
+      }
+
+      // Process and validate
+      const processedCards = processJsonCards(jsonData, validatedOptions);
+      const { valid: validCards, errors: invalidCards } =
+        validateCards(processedCards);
+
+      // Detect format type
+      let formatType = 'unknown';
+      if (Array.isArray(jsonData)) {
+        formatType = 'array';
+      } else if (jsonData.cards) {
+        formatType = 'object_with_cards';
+      }
+
+      res.json({
+        success: true,
+        data: {
+          preview: true,
+          totalCards: processedCards.length,
+          validCards: validCards.length,
+          invalidCards: invalidCards.length,
+          sampleCards: validCards.slice(0, 10), // Show first 10 valid cards
+          errors: invalidCards.slice(0, 10), // Show first 10 errors
+          formatType,
+          detectedStructure: {
+            hasCards: Array.isArray(jsonData) || Boolean(jsonData.cards),
+            hasDeckName:
+              !Array.isArray(jsonData) && Boolean(jsonData.deck_name),
+            hasDefaultTags:
+              !Array.isArray(jsonData) && Boolean(jsonData.default_tags),
+            hasDefaultModel:
+              !Array.isArray(jsonData) && Boolean(jsonData.default_model),
+          },
+        },
+      });
+    } catch (error) {
+      logger.error('JSON preview error:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Internal server error',

@@ -40,10 +40,9 @@ apps/desktop/build/
 apps/vscode-extension/*.vsix
 apps/vscode-extension/out/
 
+# TypeScript build info
+*.tsbuildinfo
+
 # Temporary files
 *.tmp
 *.temp
-
-# AI Assistant local overrides (keep base config in repo)
-.serena/local.json
-.serena/*.local.md

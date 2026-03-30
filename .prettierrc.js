@@ -6,16 +6,16 @@ module.exports = {
   printWidth: 80,
   tabWidth: 2,
   useTabs: false,
-  
+
   // JSX specific
   jsxSingleQuote: true,
   jsxBracketSameLine: false,
-  
+
   // Other formatting
   arrowParens: 'avoid',
   bracketSpacing: true,
   endOfLine: 'lf',
-  
+
   // File-specific overrides
   overrides: [
     {
