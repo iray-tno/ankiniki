@@ -4,6 +4,7 @@ import deckRoutes from './decks';
 import cardRoutes from './cards';
 import mlRoutes from './ml';
 import importRoutes from './import';
+import exportRoutes from './export';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use('/api/decks', deckRoutes);
 router.use('/api/cards', cardRoutes);
 router.use('/api/ml', mlRoutes);
 router.use('/api/import', importRoutes);
+router.use('/api/export', exportRoutes);
 
 export default router;

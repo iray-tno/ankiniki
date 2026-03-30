@@ -144,6 +144,15 @@ export class AnkiConnectService {
     }
   }
 
+  // Export
+  async exportPackage(
+    deck: string,
+    path: string,
+    includeSched: boolean = false
+  ): Promise<boolean> {
+    return this.request<boolean>('exportPackage', { deck, path, includeSched });
+  }
+
   // Sync
   async sync(): Promise<void> {
     return this.request<void>('sync');
