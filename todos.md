@@ -130,8 +130,8 @@
 - [x] Add `POST /api/import/markdown` backend endpoint
 - [x] Add `POST /api/import/json/body` backend endpoint (programmatic use)
 - [ ] Add `ankiniki study --due` flag to study only Anki-scheduled due cards
-- [ ] Add `ankiniki deck create <name>` and `ankiniki deck delete <name>` commands
-- [ ] Add `ankiniki delete <noteId>` command to remove individual cards
+- [x] Add `ankiniki deck create <name>` and `ankiniki deck delete <name>` commands
+- [x] Add `ankiniki delete <noteId>` command to remove individual cards
 - [ ] Add AI generation commands (`ankiniki generate <file>`)
 - [ ] Implement batch processing for multiple files
 - [ ] Add export/import of card collections
