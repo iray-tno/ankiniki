@@ -74,6 +74,14 @@ export class AnkiClient {
     return this.request<void>('deleteNotes', { notes: noteIds });
   }
 
+  async exportPackage(
+    deck: string,
+    path: string,
+    includeSched: boolean = false
+  ): Promise<boolean> {
+    return this.request<boolean>('exportPackage', { deck, path, includeSched });
+  }
+
   // Note operations
   async addNote(
     deckName: string,

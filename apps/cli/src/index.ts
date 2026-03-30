@@ -9,6 +9,7 @@ import { createStudyCommand } from './commands/study';
 import { importCommand } from './commands/import';
 import { createDeckCommand } from './commands/deck';
 import { createDeleteCommand } from './commands/delete';
+import { createExportCommand } from './commands/export';
 import { APP_CONFIG } from '@ankiniki/shared';
 
 const program = new Command();
@@ -26,6 +27,7 @@ program.addCommand(createConfigCommand());
 program.addCommand(importCommand);
 program.addCommand(createDeckCommand());
 program.addCommand(createDeleteCommand());
+program.addCommand(createExportCommand());
 
 // Global error handling
 process.on('unhandledRejection', error => {
