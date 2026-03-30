@@ -113,20 +113,26 @@ docs/ja/
 ## Documentation Types and Audiences
 
 ### 1. End User Documentation
+
 **Target**: Engineers wanting to use Ankiniki for learning
+
 - **Getting Started**: Installation, setup, first use
 - **User Guides**: Feature-specific usage instructions
 - **Troubleshooting**: Common problems and solutions
 
-### 2. Developer Documentation  
+### 2. Developer Documentation
+
 **Target**: Contributors and developers extending Ankiniki
+
 - **Development Setup**: Local development environment
 - **Architecture**: System design and patterns
 - **API Reference**: Backend API documentation
 - **Contributing**: Guidelines for contributions
 
 ### 3. Integration Documentation
+
 **Target**: Advanced users and third-party developers
+
 - **AnkiConnect**: Deep integration details
 - **APIs**: Integration with external systems
 - **Extensions**: Future VS Code and AI features
@@ -134,44 +140,51 @@ docs/ja/
 ## Content Guidelines
 
 ### Writing Style
+
 - **Clear and Concise**: Direct instructions with examples
 - **Code-First**: Include code examples for all features
 - **Screenshot-Heavy**: Visual guides for UI interactions
 - **Cross-Referenced**: Links between related sections
 
 ### Technical Standards
+
 - **Markdown**: All documentation in Markdown format
 - **Code Blocks**: Syntax highlighting for all code examples
 - **Diagrams**: Mermaid diagrams for architecture
 - **Version Info**: Clear version compatibility notes
 
 ### Japanese Translation Guidelines
+
 - **Technical Terms**: Keep English terms in parentheses where appropriate
-- **Cultural Context**: Adapt examples for Japanese development context  
+- **Cultural Context**: Adapt examples for Japanese development context
 - **Consistent Terminology**: Maintain consistent Japanese technical vocabulary
 - **Natural Language**: Focus on natural Japanese rather than literal translation
 
 ## Implementation Phases
 
 ### Phase 1: Core English Documentation
+
 1. **Getting Started** (installation, quick start)
 2. **User Guides** (desktop app, CLI basics)
 3. **Developer Setup** (DEVELOPMENT.md enhancement)
 4. **Basic Troubleshooting**
 
 ### Phase 2: Comprehensive English Documentation
+
 1. **Complete User Guides** (all features)
 2. **API Reference** (complete backend documentation)
 3. **Advanced Developer Docs** (architecture, testing)
 4. **Integration Guides**
 
 ### Phase 3: Japanese Translation
+
 1. **Priority Translation** (getting started, user guides)
 2. **Technical Translation** (developer docs, API reference)
 3. **Localization** (culturally appropriate examples)
 4. **Translation Review** (native speaker review)
 
 ### Phase 4: Maintenance and Updates
+
 1. **Version Synchronization** (keep translations current)
 2. **Community Contributions** (translation improvements)
 3. **Feedback Integration** (user feedback incorporation)
@@ -180,18 +193,21 @@ docs/ja/
 ## Tools and Automation
 
 ### Documentation Tools
+
 - **Markdown**: Standard format for all docs
 - **MkDocs/GitBook**: Potential static site generation
 - **Mermaid**: Diagrams and flowcharts
 - **Screenshots**: Automated screenshot generation
 
 ### Translation Management
+
 - **Translation Keys**: Consistent terminology database
 - **Review Process**: Native speaker review workflow
 - **Sync Tracking**: Translation completeness tracking
 - **Community Contributions**: Guidelines for translation PRs
 
 ### Quality Assurance
+
 - **Link Checking**: Automated broken link detection
 - **Code Testing**: Test all code examples
 - **Screenshot Updates**: Keep UI screenshots current
@@ -200,6 +216,7 @@ docs/ja/
 ## Success Metrics
 
 ### Completion Metrics
+
 - [ ] All Phase 1 English docs complete
 - [ ] All user-facing features documented
 - [ ] Japanese translation 80% complete
@@ -207,6 +224,7 @@ docs/ja/
 - [ ] All code examples tested
 
 ### Quality Metrics
+
 - User feedback incorporation
 - Documentation usage analytics
 - Translation accuracy reviews

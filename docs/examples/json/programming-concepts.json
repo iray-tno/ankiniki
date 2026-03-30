@@ -1,0 +1,30 @@
+[
+  {
+    "front": "What is Big O notation?",
+    "back": "Big O notation describes the upper bound of time or space complexity of an algorithm in the worst-case scenario",
+    "deck": "Computer Science",
+    "tags": ["algorithms", "complexity"],
+    "difficulty": "intermediate"
+  },
+  {
+    "front": "What is a binary search tree?",
+    "back": "A binary search tree is a binary tree where the left subtree contains only nodes with values less than the parent node, and the right subtree contains only nodes with values greater than the parent node",
+    "deck": "Data Structures",
+    "tags": ["trees", "data-structures"],
+    "difficulty": "intermediate"
+  },
+  {
+    "front": "What is recursion?",
+    "back": "Recursion is a programming technique where a function calls itself to solve a smaller version of the same problem",
+    "deck": "Programming Concepts",
+    "tags": ["recursion", "functions"],
+    "difficulty": "beginner"
+  },
+  {
+    "front": "What is the difference between stack and heap memory?",
+    "back": "Stack memory stores local variables and function calls in a LIFO structure, while heap memory stores objects and is managed by garbage collection",
+    "deck": "Memory Management",
+    "tags": ["memory", "stack", "heap"],
+    "difficulty": "advanced"
+  }
+]

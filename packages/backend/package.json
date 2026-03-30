@@ -28,7 +28,6 @@
     "@types/cors": "^2.8.13",
     "@types/morgan": "^1.9.4",
     "@types/multer": "^1.4.7",
-    "@types/csv-parser": "^3.0.0",
     "@types/node": "^20.5.0",
     "jest": "^29.6.2",
     "tsx": "^3.12.7",
