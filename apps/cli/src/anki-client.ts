@@ -66,6 +66,14 @@ export class AnkiClient {
     return this.request<number>('createDeck', { deck: name });
   }
 
+  async deleteDeck(name: string): Promise<void> {
+    return this.request<void>('deleteDecks', { decks: [name], cardsToo: true });
+  }
+
+  async deleteNotes(noteIds: number[]): Promise<void> {
+    return this.request<void>('deleteNotes', { notes: noteIds });
+  }
+
   // Note operations
   async addNote(
     deckName: string,
