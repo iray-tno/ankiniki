@@ -5,6 +5,7 @@ import { CLI, ANKI_CONNECT } from '@ankiniki/shared';
 
 export interface CliConfig {
   ankiConnectUrl: string;
+  serverUrl: string;
   defaultDeck: string;
   defaultModel: string;
   debugMode: boolean;
@@ -14,6 +15,7 @@ const CONFIG_FILE = join(homedir(), CLI.CONFIG_FILE);
 
 const DEFAULT_CONFIG: CliConfig = {
   ankiConnectUrl: ANKI_CONNECT.DEFAULT_URL,
+  serverUrl: 'http://localhost:3001',
   defaultDeck: 'Default',
   defaultModel: 'Basic',
   debugMode: false,
