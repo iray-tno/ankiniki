@@ -9,7 +9,19 @@ import * as csv from 'csv-parser';
 import { Readable } from 'stream';
 import { logger } from '../utils/logger';
 import { ankiConnect } from '../services/ankiConnect';
-// ValidationError import removed as it's not used in this file
+import {
+  CsvImportOptionsSchema,
+  JsonImportOptionsSchema,
+  MarkdownImportOptionsSchema,
+  processRows,
+  validateCards,
+  processJsonCards,
+  parseMarkdownCards,
+  type CsvRow,
+  type ProcessedCard,
+  type JsonCard,
+  type JsonImportFormat,
+} from '../lib/import-parsers';
 
 // Extend Request interface for multer
 interface MulterRequest extends Request {
@@ -52,44 +64,6 @@ const upload = multer({
   },
 });
 
-// CSV Import Schema
-const CsvImportOptionsSchema = z.object({
-  delimiter: z.string().optional().default(','),
-  defaultDeck: z.string().optional(),
-  defaultModel: z.string().optional().default('Basic'),
-  defaultTags: z.array(z.string()).optional().default([]),
-  skipHeader: z.boolean().optional().default(true),
-  dryRun: z.boolean().optional().default(false),
-  columnMapping: z
-    .object({
-      front: z.string().default('Front'),
-      back: z.string().default('Back'),
-      deck: z.string().optional().default('Deck'),
-      tags: z.string().optional().default('Tags'),
-      model: z.string().optional().default('Model'),
-      difficulty: z.string().optional().default('Difficulty'),
-    })
-    .optional()
-    .default({}),
-});
-
-interface CsvRow {
-  [key: string]: string;
-}
-
-interface ProcessedCard {
-  front: string;
-  back: string;
-  deck: string;
-  model: string;
-  tags: string[];
-  difficulty?: string;
-  rowNumber: number;
-  success?: boolean;
-  error?: string;
-  noteId?: number;
-}
-
 /**
  * Parse CSV content into structured data
  */
@@ -119,90 +93,6 @@ function parseCsvContent(
         reject(error);
       });
   });
-}
-
-/**
- * Process CSV rows into card format
- */
-function processRows(
-  rows: CsvRow[],
-  options: z.infer<typeof CsvImportOptionsSchema>
-): ProcessedCard[] {
-  const { columnMapping, defaultDeck, defaultModel, defaultTags } = options;
-
-  return rows.map((row, index) => {
-    // Extract values using column mapping
-    const front = row[columnMapping.front] || '';
-    const back = row[columnMapping.back] || '';
-    const deck = row[columnMapping.deck] || defaultDeck || 'Default';
-    const model = row[columnMapping.model] || defaultModel;
-
-    // Parse tags - handle comma-separated strings
-    let tags: string[] = [...defaultTags];
-    if (row[columnMapping.tags]) {
-      const csvTags = row[columnMapping.tags]
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
-      tags = [...tags, ...csvTags];
-    }
-
-    const difficulty = row[columnMapping.difficulty];
-
-    return {
-      front: front.trim(),
-      back: back.trim(),
-      deck: deck.trim(),
-      model: model.trim(),
-      tags,
-      difficulty: difficulty?.trim(),
-      rowNumber: index + 1,
-    };
-  });
-}
-
-/**
- * Validate processed cards
- */
-function validateCards(cards: ProcessedCard[]): {
-  valid: ProcessedCard[];
-  errors: ProcessedCard[];
-} {
-  const valid: ProcessedCard[] = [];
-  const errors: ProcessedCard[] = [];
-
-  for (const card of cards) {
-    if (!card.front) {
-      errors.push({
-        ...card,
-        success: false,
-        error: 'Front field is required',
-      });
-      continue;
-    }
-
-    if (!card.back) {
-      errors.push({
-        ...card,
-        success: false,
-        error: 'Back field is required',
-      });
-      continue;
-    }
-
-    if (!card.deck) {
-      errors.push({
-        ...card,
-        success: false,
-        error: 'Deck name is required',
-      });
-      continue;
-    }
-
-    valid.push(card);
-  }
-
-  return { valid, errors };
 }
 
 /**
@@ -499,83 +389,6 @@ router.post(
     }
   }
 );
-
-// JSON Import Schema
-const JsonImportOptionsSchema = z.object({
-  defaultDeck: z.string().optional(),
-  defaultModel: z.string().optional().default('Basic'),
-  defaultTags: z.array(z.string()).optional().default([]),
-  dryRun: z.boolean().optional().default(false),
-  validate: z.boolean().optional().default(true),
-});
-
-interface JsonCard {
-  front: string;
-  back: string;
-  deck?: string;
-  model?: string;
-  tags?: string[];
-  difficulty?: string;
-  metadata?: Record<string, unknown>;
-}
-
-interface JsonImportFormat {
-  cards?: JsonCard[];
-  deck_name?: string;
-  default_tags?: string[];
-  default_model?: string;
-}
-
-/**
- * Process JSON cards into standardized format
- */
-function processJsonCards(
-  data: JsonImportFormat | JsonCard[],
-  options: z.infer<typeof JsonImportOptionsSchema>
-): ProcessedCard[] {
-  let cards: JsonCard[] = [];
-  let defaultDeck = options.defaultDeck;
-  let defaultTags = [...options.defaultTags];
-  let defaultModel = options.defaultModel;
-
-  // Handle different JSON formats
-  if (Array.isArray(data)) {
-    // Format: [{"front": "...", "back": "..."}, ...]
-    cards = data;
-  } else if (data.cards && Array.isArray(data.cards)) {
-    // Format: {"cards": [...], "deck_name": "...", ...}
-    cards = data.cards;
-    defaultDeck = data.deck_name || defaultDeck;
-    defaultTags = [...defaultTags, ...(data.default_tags || [])];
-    defaultModel = data.default_model || defaultModel;
-  } else {
-    throw new Error(
-      'Invalid JSON format. Expected array of cards or object with "cards" property.'
-    );
-  }
-
-  return cards.map((card, index) => {
-    // Ensure required fields exist
-    if (!card.front || !card.back) {
-      throw new Error(
-        `Card at index ${index} missing required front or back field`
-      );
-    }
-
-    // Combine tags
-    const allTags = [...defaultTags, ...(card.tags || [])];
-
-    return {
-      front: card.front.trim(),
-      back: card.back.trim(),
-      deck: (card.deck || defaultDeck || 'Default').trim(),
-      model: (card.model || defaultModel).trim(),
-      tags: allTags,
-      difficulty: card.difficulty?.trim(),
-      rowNumber: index + 1,
-    };
-  });
-}
 
 /**
  * @swagger
@@ -904,106 +717,6 @@ router.post(
 );
 
 // ─── Markdown Import ─────────────────────────────────────────────────────────
-
-const MarkdownImportOptionsSchema = z.object({
-  defaultDeck: z.string().optional(),
-  defaultModel: z.string().optional().default('Basic'),
-  defaultTags: z.array(z.string()).optional().default([]),
-  dryRun: z.boolean().optional().default(false),
-});
-
-/**
- * Parse frontmatter block (between --- markers) into key-value pairs.
- * Supports string values and simple arrays: tags: [a, b, c]
- */
-function parseFrontmatter(block: string): Record<string, string | string[]> {
-  const result: Record<string, string | string[]> = {};
-  for (const line of block.split('\n')) {
-    const match = line.match(/^(\w[\w_-]*):\s*(.*)$/);
-    if (!match) {
-      continue;
-    }
-    const [, key, value] = match;
-    const arrayMatch = value.trim().match(/^\[(.+)\]$/);
-    if (arrayMatch) {
-      result[key] = arrayMatch[1]
-        .split(',')
-        .map(s => s.trim().replace(/^['"]|['"]$/g, ''));
-    } else {
-      result[key] = value.trim();
-    }
-  }
-  return result;
-}
-
-/**
- * Parse markdown content into ProcessedCard array.
- *
- * Expected format:
- *   ---
- *   deck: My Deck
- *   tags: [tag1, tag2]
- *   ---
- *
- *   ## Card title (optional)
- *   **Front:** Question text
- *   **Back:** Answer text
- */
-function parseMarkdownCards(
-  content: string,
-  options: z.infer<typeof MarkdownImportOptionsSchema>
-): ProcessedCard[] {
-  let body = content;
-  let deckFromMeta = options.defaultDeck || 'Default';
-  let tagsFromMeta: string[] = [...options.defaultTags];
-  const model = options.defaultModel;
-
-  // Extract frontmatter
-  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (fmMatch) {
-    const meta = parseFrontmatter(fmMatch[1]);
-    body = fmMatch[2];
-    if (typeof meta.deck === 'string') {
-      deckFromMeta = meta.deck;
-    }
-    if (Array.isArray(meta.tags)) {
-      tagsFromMeta = [...tagsFromMeta, ...meta.tags];
-    } else if (typeof meta.tags === 'string') {
-      tagsFromMeta = [...tagsFromMeta, meta.tags];
-    }
-  }
-
-  // Split into sections by ## headers (or top-level content before first ##)
-  const sections = body.split(/\n(?=##\s)/);
-  const cards: ProcessedCard[] = [];
-
-  for (const section of sections) {
-    const frontMatch = section.match(
-      /\*\*Front:\*\*\s*(.+?)(?=\n\*\*Back:|$)/s
-    );
-    const backMatch = section.match(/\*\*Back:\*\*\s*([\s\S]+?)(?=\n##|$)/);
-    if (!frontMatch || !backMatch) {
-      continue;
-    }
-
-    const front = frontMatch[1].trim();
-    const back = backMatch[1].trim();
-    if (!front || !back) {
-      continue;
-    }
-
-    cards.push({
-      front,
-      back,
-      deck: deckFromMeta,
-      model,
-      tags: [...tagsFromMeta],
-      rowNumber: cards.length + 1,
-    });
-  }
-
-  return cards;
-}
 
 router.post(
   '/markdown',
