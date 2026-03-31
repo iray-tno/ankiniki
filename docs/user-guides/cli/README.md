@@ -362,6 +362,84 @@ ankiniki import mapping
 
 ---
 
+### `deck` — Manage decks
+
+```bash
+ankiniki deck list                   # list all decks with card counts
+ankiniki deck create <name>          # create a new deck
+ankiniki deck delete <name>          # delete deck (confirmation prompt)
+ankiniki deck delete <name> --force  # skip confirmation
+```
+
+**Examples:**
+
+```bash
+# See all decks
+ankiniki deck list
+
+# Create a nested deck
+ankiniki deck create "Programming::TypeScript"
+
+# Delete a deck and all its cards
+ankiniki deck delete "Old Deck"
+```
+
+> `ankiniki deck delete` removes the deck **and all its cards**. A confirmation prompt is shown by default.
+
+---
+
+### `delete` — Remove a card
+
+```bash
+ankiniki delete <noteId>           # shows card preview + confirmation
+ankiniki delete <noteId> --force   # skip confirmation
+```
+
+Note IDs are shown by `ankiniki list --cards <deck>`.
+
+**Example:**
+
+```bash
+# Find the note ID first
+ankiniki list --cards "JavaScript"
+# → 1. Card ID: 1700000001
+#      Front: What is hoisting?
+
+# Delete it
+ankiniki delete 1700000001
+```
+
+---
+
+### `export` — Export a deck as `.apkg`
+
+```bash
+ankiniki export <deck> [output]
+```
+
+**Examples:**
+
+```bash
+# Export to current directory (saves as JavaScript.apkg)
+ankiniki export "JavaScript"
+
+# Export to a specific path
+ankiniki export "Programming::Rust" ~/backups/rust.apkg
+
+# Include scheduling and review history
+ankiniki export "JavaScript" --include-sched
+```
+
+**Options:**
+
+| Option            | Description                                     |
+| ----------------- | ----------------------------------------------- |
+| `--include-sched` | Include Anki scheduling and review history data |
+
+The `.apkg` file can be imported directly into any Anki installation via File → Import.
+
+---
+
 ## Common Workflows
 
 ### Engineer workflow: capture while coding
@@ -390,6 +468,27 @@ ankiniki import study-notes.md
 ```bash
 # 10 random cards from your main deck
 ankiniki study "Programming" --count 10 --random
+```
+
+### Back up or share a deck
+
+```bash
+# Export a deck to share with a colleague or move to another machine
+ankiniki export "Programming::Rust" rust-deck.apkg
+
+# Include your review history (progress, scheduling)
+ankiniki export "Programming::Rust" rust-deck.apkg --include-sched
+# Import on the other machine: Anki → File → Import → select rust-deck.apkg
+```
+
+### Clean up old cards
+
+```bash
+# List cards to find the one to remove
+ankiniki list --cards "JavaScript" --limit 50
+
+# Delete by note ID (shown in the list output)
+ankiniki delete 1700000001
 ```
 
 ### Sync config on a new machine
