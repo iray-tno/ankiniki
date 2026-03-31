@@ -362,6 +362,84 @@ ankiniki import mapping
 
 ---
 
+### `deck` — デッキ管理
+
+```bash
+ankiniki deck list                   # デッキ一覧をカード数つきで表示
+ankiniki deck create <name>          # デッキを作成
+ankiniki deck delete <name>          # デッキを削除（確認プロンプトあり）
+ankiniki deck delete <name> --force  # 確認をスキップして削除
+```
+
+**使用例:**
+
+```bash
+# デッキ一覧を確認
+ankiniki deck list
+
+# ネストしたデッキを作成
+ankiniki deck create "Programming::TypeScript"
+
+# デッキを削除
+ankiniki deck delete "古いデッキ"
+```
+
+> `ankiniki deck delete` はデッキ内の**すべてのカードも削除**します。デフォルトで確認プロンプトが表示されます。
+
+---
+
+### `delete` — カードを削除
+
+```bash
+ankiniki delete <noteId>           # カードのプレビューを表示して確認
+ankiniki delete <noteId> --force   # 確認をスキップして削除
+```
+
+Note ID は `ankiniki list --cards <デッキ>` で確認できます。
+
+**使用例:**
+
+```bash
+# まず Note ID を確認
+ankiniki list --cards "JavaScript"
+# → 1. Card ID: 1700000001
+#      Front: ホイスティングとは？
+
+# 削除
+ankiniki delete 1700000001
+```
+
+---
+
+### `export` — デッキを `.apkg` としてエクスポート
+
+```bash
+ankiniki export <デッキ名> [出力先]
+```
+
+**使用例:**
+
+```bash
+# カレントディレクトリに保存（JavaScript.apkg として保存）
+ankiniki export "JavaScript"
+
+# 保存先を指定
+ankiniki export "Programming::Rust" ~/backups/rust.apkg
+
+# 学習履歴・スケジューリングデータも含める
+ankiniki export "JavaScript" --include-sched
+```
+
+**オプション:**
+
+| オプション        | 説明                                      |
+| ----------------- | ----------------------------------------- |
+| `--include-sched` | Anki のスケジューリングと学習履歴を含める |
+
+エクスポートした `.apkg` ファイルは、Anki の「ファイル → インポート」から任意の Anki 環境にインポートできます。
+
+---
+
 ## よくあるワークフロー
 
 ### コーディング中にその場でカードを追加する
@@ -390,6 +468,27 @@ ankiniki import study-notes.md
 ```bash
 # メインデッキからランダムに10枚
 ankiniki study "Programming" --count 10 --random
+```
+
+### デッキをバックアップ・共有する
+
+```bash
+# 同僚への共有や別マシンへの移行のためにエクスポート
+ankiniki export "Programming::Rust" rust-deck.apkg
+
+# 学習履歴（進捗・スケジュール）も含める
+ankiniki export "Programming::Rust" rust-deck.apkg --include-sched
+# 移行先での取り込み: Anki → ファイル → インポート → rust-deck.apkg を選択
+```
+
+### 不要なカードを削除する
+
+```bash
+# カード一覧で Note ID を確認
+ankiniki list --cards "JavaScript" --limit 50
+
+# Note ID を指定して削除
+ankiniki delete 1700000001
 ```
 
 ### 新しいマシンでの設定
