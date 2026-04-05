@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import http from 'http';
 import {
   AnkiConnectRequest,
   AnkiConnectResponse,
@@ -38,6 +39,8 @@ export class AnkiConnectService {
           headers: {
             'Content-Type': 'application/json',
           },
+          // Disable keep-alive by using a new agent or explicitly setting headers
+          httpAgent: new http.Agent({ keepAlive: false }),
         }
       );
 
@@ -65,8 +68,15 @@ export class AnkiConnectService {
         }
       }
 
-      logger.error('AnkiConnect request failed', error);
-      throw new AnkiConnectError('Failed to communicate with Anki');
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error('AnkiConnect request failed', {
+        action,
+        error: errorMessage,
+      });
+      throw new AnkiConnectError(
+        `Failed to communicate with Anki: ${errorMessage}`
+      );
     }
   }
 

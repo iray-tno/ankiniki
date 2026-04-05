@@ -317,7 +317,7 @@ class MLServiceClient {
       }
 
       const formData = new FormData();
-      const blob = new Blob([file], {
+      const blob = new Blob([new Uint8Array(file)], {
         type: contentType || 'application/octet-stream',
       });
       formData.append('file', blob, filename);

@@ -2,26 +2,26 @@
  * Import Routes - Bulk card import functionality
  */
 
-import { Router, Request, Response } from 'express';
+import csv from 'csv-parser';
+import { Request, Response, Router } from 'express';
 import multer from 'multer';
-import { z } from 'zod';
-import * as csv from 'csv-parser';
 import { Readable } from 'stream';
-import { logger } from '../utils/logger';
-import { ankiConnect } from '../services/ankiConnect';
+import { z } from 'zod';
 import {
   CsvImportOptionsSchema,
   JsonImportOptionsSchema,
   MarkdownImportOptionsSchema,
+  parseMarkdownCards,
+  processJsonCards,
   processRows,
   validateCards,
-  processJsonCards,
-  parseMarkdownCards,
   type CsvRow,
-  type ProcessedCard,
   type JsonCard,
   type JsonImportFormat,
+  type ProcessedCard,
 } from '../lib/import-parsers';
+import { ankiConnect } from '../services/ankiConnect';
+import { logger } from '../utils/logger';
 
 // Extend Request interface for multer
 interface MulterRequest extends Request {
@@ -65,6 +65,29 @@ const upload = multer({
 });
 
 /**
+ * Ensure a deck exists, creating it if necessary
+ * @returns true if deck exists or was created, false otherwise
+ */
+async function ensureDeckExists(
+  deckName: string,
+  existingDecks: Set<string>
+): Promise<boolean> {
+  if (existingDecks.has(deckName)) {
+    return true;
+  }
+
+  try {
+    logger.info(`Creating missing deck: ${deckName}`);
+    await ankiConnect.createDeck(deckName);
+    existingDecks.add(deckName);
+    return true;
+  } catch (error) {
+    logger.error(`Failed to create deck: ${deckName}`, error);
+    return false;
+  }
+}
+
+/**
  * Parse CSV content into structured data
  */
 function parseCsvContent(
@@ -79,8 +102,6 @@ function parseCsvContent(
       .pipe(
         csv({
           separator: options.delimiter,
-          skipEmptyLines: true,
-          skipLinesWithError: false,
         })
       )
       .on('data', (row: CsvRow) => {
@@ -185,7 +206,7 @@ router.post(
       }
 
       // Check if decks exist and models are valid
-      const existingDecks = await ankiConnect.getDeckNames();
+      const existingDecks = new Set(await ankiConnect.getDeckNames());
       const existingModels = await ankiConnect.modelNames();
 
       const results: ProcessedCard[] = [];
@@ -193,12 +214,13 @@ router.post(
       // Create cards in Anki
       for (const card of validCards) {
         try {
-          // Validate deck exists
-          if (!existingDecks.includes(card.deck)) {
+          // Validate/Create deck
+          const deckOk = await ensureDeckExists(card.deck, existingDecks);
+          if (!deckOk) {
             results.push({
               ...card,
               success: false,
-              error: `Deck '${card.deck}' does not exist`,
+              error: `Failed to create or find deck '${card.deck}'`,
             });
             continue;
           }
@@ -488,7 +510,7 @@ router.post(
       }
 
       // Check if decks exist and models are valid
-      const existingDecks = await ankiConnect.getDeckNames();
+      const existingDecks = new Set(await ankiConnect.getDeckNames());
       const existingModels = await ankiConnect.modelNames();
 
       const results: ProcessedCard[] = [];
@@ -496,12 +518,13 @@ router.post(
       // Create cards in Anki
       for (const card of validCards) {
         try {
-          // Validate deck exists
-          if (!existingDecks.includes(card.deck)) {
+          // Validate/Create deck
+          const deckOk = await ensureDeckExists(card.deck, existingDecks);
+          if (!deckOk) {
             results.push({
               ...card,
               success: false,
-              error: `Deck '${card.deck}' does not exist`,
+              error: `Failed to create or find deck '${card.deck}'`,
             });
             continue;
           }
@@ -601,7 +624,10 @@ router.post(
       logger.error('JSON import error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error) || 'Internal server error',
       });
     }
   }
@@ -765,20 +791,23 @@ router.post(
         });
       }
 
-      const existingDecks = await ankiConnect.getDeckNames();
+      const existingDecks = new Set(await ankiConnect.getDeckNames());
       const existingModels = await ankiConnect.modelNames();
       const results: ProcessedCard[] = [];
 
       for (const card of validCards) {
         try {
-          if (!existingDecks.includes(card.deck)) {
+          // Validate/Create deck
+          const deckOk = await ensureDeckExists(card.deck, existingDecks);
+          if (!deckOk) {
             results.push({
               ...card,
               success: false,
-              error: `Deck '${card.deck}' does not exist`,
+              error: `Failed to create or find deck '${card.deck}'`,
             });
             continue;
           }
+
           if (!existingModels.includes(card.model)) {
             results.push({
               ...card,
@@ -941,20 +970,23 @@ router.post('/json/body', async (req: Request, res: Response) => {
       });
     }
 
-    const existingDecks = await ankiConnect.getDeckNames();
+    const existingDecks = new Set(await ankiConnect.getDeckNames());
     const existingModels = await ankiConnect.modelNames();
     const results: ProcessedCard[] = [];
 
     for (const card of validCards) {
       try {
-        if (!existingDecks.includes(card.deck)) {
+        // Validate/Create deck
+        const deckOk = await ensureDeckExists(card.deck, existingDecks);
+        if (!deckOk) {
           results.push({
             ...card,
             success: false,
-            error: `Deck '${card.deck}' does not exist`,
+            error: `Failed to create or find deck '${card.deck}'`,
           });
           continue;
         }
+
         if (!existingModels.includes(card.model)) {
           results.push({
             ...card,
