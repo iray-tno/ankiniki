@@ -45,4 +45,4 @@ apps/vscode-extension/out/
 
 # Temporary files
 *.tmp
-*.temp
+*.temp/demo/
