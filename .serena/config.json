@@ -1,0 +1,70 @@
+{
+  "project": {
+    "name": "ankiniki",
+    "version": "0.1.0",
+    "type": "monorepo",
+    "description": "Anki companion tool for engineers",
+    "domain": "educational-technology",
+    "focus": "anki-integration"
+  },
+  "architecture": {
+    "style": "Monorepo with workspaces",
+    "packages": [
+      {
+        "name": "@ankiniki/shared",
+        "path": "packages/shared",
+        "description": "Shared types and utilities"
+      },
+      {
+        "name": "@ankiniki/backend",
+        "path": "packages/backend",
+        "description": "Express.js backend server"
+      }
+    ],
+    "apps": [
+      {
+        "name": "@ankiniki/cli",
+        "path": "apps/cli",
+        "description": "Command-line interface"
+      },
+      {
+        "name": "@ankiniki/desktop",
+        "path": "apps/desktop",
+        "description": "Electron/React desktop application"
+      },
+      {
+        "name": "@ankiniki/vscode-extension",
+        "path": "apps/vscode-extension",
+        "description": "VS Code extension"
+      }
+    ],
+    "services": [
+      {
+        "name": "ml-service",
+        "path": "services/ml-service",
+        "description": "Python FastAPI machine learning service"
+      }
+    ]
+  },
+  "tech_stack": {
+    "languages": ["typescript", "javascript", "python", "bash"],
+    "frontend": ["react", "vite", "electron"],
+    "backend": ["node.js", "express", "fastapi"],
+    "tools": ["commander", "inquirer", "zod", "axios", "uv", "husky"]
+  },
+  "development": {
+    "scripts": {
+      "build": "npm run build",
+      "test": "npm run test",
+      "lint": "npm run lint",
+      "format": "npm run format",
+      "serena:setup": "npm run serena:setup",
+      "serena:validate": "npm run serena:validate"
+    },
+    "conventions": {
+      "git": "GitHub flow",
+      "commits": "Issue-referenced descriptive commits",
+      "branching": "feature/issue-{NUMBER}_{description}"
+    }
+  }
+}
