@@ -18,6 +18,93 @@ import {
 import csv from 'csv-parser';
 import { Readable } from 'stream';
 
+/**
+ * Core bundling logic extracted for testability
+ */
+export async function bundleFile(
+  filePath: string,
+  output: string | undefined,
+  options: { deck?: string; model?: string; tags?: string[] }
+) {
+  const fullPath = path.resolve(filePath);
+  if (!fs.existsSync(fullPath)) {
+    throw new Error(`File not found: ${fullPath}`);
+  }
+
+  const ext = path.extname(fullPath).toLowerCase();
+  const baseName = path.basename(fullPath, ext);
+  const outputPath = output
+    ? path.resolve(output)
+    : path.join(process.cwd(), `${baseName}.apkg`);
+
+  let processedCards: ProcessedCard[] = [];
+  const content = fs.readFileSync(fullPath, 'utf-8');
+
+  if (ext === '.json') {
+    const jsonData = JSON.parse(content);
+    processedCards = processJsonCards(jsonData, {
+      defaultDeck: options.deck,
+      defaultModel: options.model || 'Basic',
+      defaultTags: options.tags || [],
+    });
+  } else if (ext === '.csv') {
+    const rows: Record<string, string>[] = [];
+    await new Promise<void>((resolve, reject) => {
+      Readable.from([content])
+        .pipe(csv())
+        .on('data', (row: Record<string, string>) => rows.push(row))
+        .on('end', () => resolve())
+        .on('error', (err: Error) => reject(err));
+    });
+    processedCards = processRows(rows, {
+      defaultDeck: options.deck,
+      defaultModel: options.model || 'Basic',
+      defaultTags: options.tags || [],
+    });
+  } else if (ext === '.md' || ext === '.markdown') {
+    processedCards = parseMarkdownCards(content, {
+      defaultDeck: options.deck,
+      defaultModel: options.model || 'Basic',
+      defaultTags: options.tags || [],
+    });
+  } else {
+    throw new Error(`Unsupported file extension: ${ext}`);
+  }
+
+  const { valid: validCards, errors } = validateCards(processedCards);
+
+  if (validCards.length === 0) {
+    let errorMsg = 'No valid cards found to bundle';
+    if (errors.length > 0) {
+      errorMsg += ` (${errors.length} errors found)`;
+    }
+    throw new Error(errorMsg);
+  }
+
+  // Create .apkg
+  const deckName = options.deck || validCards[0].deck || 'Ankiniki Bundle';
+  const apkg = new (AnkiExport as any)(deckName);
+
+  for (const card of validCards) {
+    const tags = [...card.tags];
+    if (options.tags) {
+      tags.push(...options.tags);
+    }
+
+    apkg.addCard(card.front, card.back, { tags });
+  }
+
+  const zip = await apkg.save();
+  fs.writeFileSync(outputPath, zip, 'binary');
+
+  return {
+    cardCount: validCards.length,
+    outputPath,
+    errorCount: errors.length,
+    errors,
+  };
+}
+
 export function createBundleCommand(): Command {
   const command = new Command('bundle');
 
@@ -38,98 +125,25 @@ export function createBundleCommand(): Command {
         output: string | undefined,
         options: { deck?: string; model?: string; tags?: string[] }
       ) => {
-        const fullPath = path.resolve(filePath);
-        if (!fs.existsSync(fullPath)) {
-          console.error(chalk.red(`File not found: ${fullPath}`));
-          process.exit(1);
-        }
-
-        const ext = path.extname(fullPath).toLowerCase();
-        const baseName = path.basename(fullPath, ext);
-        const outputPath = output
-          ? path.resolve(output)
-          : path.join(process.cwd(), `${baseName}.apkg`);
-
         const spinner = ora(`Bundling ${chalk.cyan(filePath)}...`).start();
 
         try {
-          let processedCards: ProcessedCard[] = [];
-          const content = fs.readFileSync(fullPath, 'utf-8');
-
-          if (ext === '.json') {
-            const jsonData = JSON.parse(content);
-            processedCards = processJsonCards(jsonData, {
-              defaultDeck: options.deck,
-              defaultModel: options.model || 'Basic',
-              defaultTags: options.tags || [],
-            });
-          } else if (ext === '.csv') {
-            const rows: Record<string, string>[] = [];
-            await new Promise<void>((resolve, reject) => {
-              Readable.from([content])
-                .pipe(csv())
-                .on('data', (row: Record<string, string>) => rows.push(row))
-                .on('end', () => resolve())
-                .on('error', (err: Error) => reject(err));
-            });
-            processedCards = processRows(rows, {
-              defaultDeck: options.deck,
-              defaultModel: options.model || 'Basic',
-              defaultTags: options.tags || [],
-            });
-          } else if (ext === '.md' || ext === '.markdown') {
-            processedCards = parseMarkdownCards(content, {
-              defaultDeck: options.deck,
-              defaultModel: options.model || 'Basic',
-              defaultTags: options.tags || [],
-            });
-          } else {
-            spinner.fail(`Unsupported file extension: ${ext}`);
-            process.exit(1);
-          }
-
-          const { valid: validCards, errors } = validateCards(processedCards);
-
-          if (validCards.length === 0) {
-            spinner.fail('No valid cards found to bundle');
-            if (errors.length > 0) {
-              console.error(chalk.yellow(`\nFound ${errors.length} errors:`));
-              errors
-                .slice(0, 5)
-                .forEach(e =>
-                  console.error(` - Card ${e.rowNumber}: ${e.error}`)
-                );
-            }
-            process.exit(1);
-          }
-
-          // Create .apkg
-          // anki-apkg-export creates one deck per file.
-          // If we have multiple decks in input, we might need a more complex tool,
-          // but for now we'll use the first card's deck or the override.
-          const deckName =
-            options.deck || validCards[0].deck || 'Ankiniki Bundle';
-          const apkg = new (AnkiExport as any)(deckName);
-
-          for (const card of validCards) {
-            const tags = [...card.tags];
-            if (options.tags) {
-              tags.push(...options.tags);
-            }
-
-            apkg.addCard(card.front, card.back, { tags });
-          }
-
-          const zip = await apkg.save();
-          fs.writeFileSync(outputPath, zip, 'binary');
+          const result = await bundleFile(filePath, output, options);
 
           spinner.succeed(
-            `Successfully bundled ${validCards.length} cards into ${chalk.cyan(outputPath)}`
+            `Successfully bundled ${result.cardCount} cards into ${chalk.cyan(
+              result.outputPath
+            )}`
           );
-          if (errors.length > 0) {
+          if (result.errorCount > 0) {
             console.warn(
-              chalk.yellow(`\n⚠️  Skipped ${errors.length} invalid cards.`)
+              chalk.yellow(`\n⚠️  Skipped ${result.errorCount} invalid cards.`)
             );
+            result.errors
+              .slice(0, 5)
+              .forEach(e =>
+                console.error(` - Card ${e.rowNumber}: ${e.error}`)
+              );
           }
         } catch (error: any) {
           spinner.fail(`Bundling failed: ${error.message}`);

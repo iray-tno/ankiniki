@@ -65,29 +65,6 @@ const upload = multer({
 });
 
 /**
- * Ensure a deck exists, creating it if necessary
- * @returns true if deck exists or was created, false otherwise
- */
-async function ensureDeckExists(
-  deckName: string,
-  existingDecks: Set<string>
-): Promise<boolean> {
-  if (existingDecks.has(deckName)) {
-    return true;
-  }
-
-  try {
-    logger.info(`Creating missing deck: ${deckName}`);
-    await ankiConnect.createDeck(deckName);
-    existingDecks.add(deckName);
-    return true;
-  } catch (error) {
-    logger.error(`Failed to create deck: ${deckName}`, error);
-    return false;
-  }
-}
-
-/**
  * Parse CSV content into structured data
  */
 function parseCsvContent(
@@ -215,7 +192,10 @@ router.post(
       for (const card of validCards) {
         try {
           // Validate/Create deck
-          const deckOk = await ensureDeckExists(card.deck, existingDecks);
+          const deckOk = await ankiConnect.ensureDeckExists(
+            card.deck,
+            existingDecks
+          );
           if (!deckOk) {
             results.push({
               ...card,
@@ -519,7 +499,10 @@ router.post(
       for (const card of validCards) {
         try {
           // Validate/Create deck
-          const deckOk = await ensureDeckExists(card.deck, existingDecks);
+          const deckOk = await ankiConnect.ensureDeckExists(
+            card.deck,
+            existingDecks
+          );
           if (!deckOk) {
             results.push({
               ...card,
@@ -798,7 +781,10 @@ router.post(
       for (const card of validCards) {
         try {
           // Validate/Create deck
-          const deckOk = await ensureDeckExists(card.deck, existingDecks);
+          const deckOk = await ankiConnect.ensureDeckExists(
+            card.deck,
+            existingDecks
+          );
           if (!deckOk) {
             results.push({
               ...card,
@@ -977,7 +963,10 @@ router.post('/json/body', async (req: Request, res: Response) => {
     for (const card of validCards) {
       try {
         // Validate/Create deck
-        const deckOk = await ensureDeckExists(card.deck, existingDecks);
+        const deckOk = await ankiConnect.ensureDeckExists(
+          card.deck,
+          existingDecks
+        );
         if (!deckOk) {
           results.push({
             ...card,

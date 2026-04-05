@@ -167,6 +167,29 @@ export class AnkiConnectService {
   async sync(): Promise<void> {
     return this.request<void>('sync');
   }
+
+  /**
+   * Ensure a deck exists, creating it if necessary
+   * @returns true if deck exists or was created, false otherwise
+   */
+  async ensureDeckExists(
+    deckName: string,
+    existingDecks: Set<string>
+  ): Promise<boolean> {
+    if (existingDecks.has(deckName)) {
+      return true;
+    }
+
+    try {
+      logger.info(`Creating missing deck: ${deckName}`);
+      await this.createDeck(deckName);
+      existingDecks.add(deckName);
+      return true;
+    } catch (error) {
+      logger.error(`Failed to create deck: ${deckName}`, error);
+      return false;
+    }
+  }
 }
 
 export const ankiConnect = new AnkiConnectService();
