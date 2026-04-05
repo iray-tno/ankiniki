@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ankiniki/shared": "*",
+    "anki-apkg-export": "^4.0.3",
     "axios": "^1.5.0",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
