@@ -46,6 +46,8 @@ export async function bundleFile(
       defaultDeck: options.deck,
       defaultModel: options.model || 'Basic',
       defaultTags: options.tags || [],
+      dryRun: false,
+      validate: true,
     });
   } else if (ext === '.csv') {
     const rows: Record<string, string>[] = [];
@@ -60,12 +62,24 @@ export async function bundleFile(
       defaultDeck: options.deck,
       defaultModel: options.model || 'Basic',
       defaultTags: options.tags || [],
+      delimiter: ',',
+      skipHeader: true,
+      dryRun: false,
+      columnMapping: {
+        front: 'Front',
+        back: 'Back',
+        deck: 'Deck',
+        tags: 'Tags',
+        model: 'Model',
+        difficulty: 'Difficulty',
+      },
     });
   } else if (ext === '.md' || ext === '.markdown') {
     processedCards = parseMarkdownCards(content, {
       defaultDeck: options.deck,
       defaultModel: options.model || 'Basic',
       defaultTags: options.tags || [],
+      dryRun: false,
     });
   } else {
     throw new Error(`Unsupported file extension: ${ext}`);
@@ -83,7 +97,7 @@ export async function bundleFile(
 
   // Create .apkg
   const deckName = options.deck || validCards[0].deck || 'Ankiniki Bundle';
-  const apkg = new (AnkiExport as any)(deckName);
+  const apkg = new AnkiExport(deckName);
 
   for (const card of validCards) {
     const tags = [...card.tags];
