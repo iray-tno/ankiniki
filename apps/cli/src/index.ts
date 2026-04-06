@@ -10,6 +10,7 @@ import { importCommand } from './commands/import';
 import { createDeckCommand } from './commands/deck';
 import { createDeleteCommand } from './commands/delete';
 import { createExportCommand } from './commands/export';
+import { createBundleCommand } from './commands/bundle';
 import { APP_CONFIG } from '@ankiniki/shared';
 
 const program = new Command();
@@ -28,6 +29,7 @@ program.addCommand(importCommand);
 program.addCommand(createDeckCommand());
 program.addCommand(createDeleteCommand());
 program.addCommand(createExportCommand());
+program.addCommand(createBundleCommand());
 
 // Global error handling
 process.on('unhandledRejection', error => {

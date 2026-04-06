@@ -1,0 +1,42 @@
+[
+  { "front": "To be honest...", "back": "正直に言うと...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "Actually...", "back": "実は...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "Basically...", "back": "要するに...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "Literally...", "back": "文字通り...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "In other words...", "back": "言い換えれば...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "The thing is...", "back": "問題は...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  {
+    "front": "At the end of the day...",
+    "back": "結局のところ...",
+    "deck": "Demonstration",
+    "tags": ["filler", "casual"]
+  },
+  { "front": "By the way...", "back": "ところで...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "Speaking of which...", "back": "そういえば...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "For example...", "back": "例えば...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "In my opinion...", "back": "私の意見では...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  {
+    "front": "Believe it or not...",
+    "back": "信じられないかもしれませんが...",
+    "deck": "Demonstration",
+    "tags": ["filler", "casual"]
+  },
+  {
+    "front": "To tell you the truth...",
+    "back": "実を言うと...",
+    "deck": "Demonstration",
+    "tags": ["filler", "casual"]
+  },
+  {
+    "front": "As far as I know...",
+    "back": "私が知る限りでは...",
+    "deck": "Demonstration",
+    "tags": ["filler", "casual"]
+  },
+  { "front": "I guess...", "back": "〜だと思う...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "Maybe...", "back": "たぶん...", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "Exactly!", "back": "その通り！", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "Definitely.", "back": "間違いなく。", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "No way!", "back": "まさか！", "deck": "Demonstration", "tags": ["filler", "casual"] },
+  { "front": "I see.", "back": "なるほど。", "deck": "Demonstration", "tags": ["filler", "casual"] }
+]

@@ -41,8 +41,8 @@ apps/vscode-extension/*.vsix
 apps/vscode-extension/out/
 
 # TypeScript build info
-*.tsbuildinfo
+**/*.tsbuildinfo
 
 # Temporary files
 *.tmp
-*.temp
+*.temp/demo/

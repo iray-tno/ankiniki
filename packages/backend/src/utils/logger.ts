@@ -1,4 +1,5 @@
 import winston from 'winston';
+import util from 'util';
 import { config } from '../config';
 
 const logFormat = winston.format.combine(
@@ -12,8 +13,10 @@ const consoleFormat = winston.format.combine(
   winston.format.simple(),
   winston.format.printf(({ timestamp, level, message, ...meta }) => {
     let log = `${timestamp} [${level}]: ${message}`;
-    if (Object.keys(meta).length > 0) {
-      log += `\n${JSON.stringify(meta, null, 2)}`;
+    const metaEntries = Object.keys(meta);
+    if (metaEntries.length > 0) {
+      // Use util.inspect to handle circular structures safely
+      log += `\n${util.inspect(meta, { depth: 5, colors: true, compact: false })}`;
     }
     return log;
   })

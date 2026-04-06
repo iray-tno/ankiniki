@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import http from 'http';
 import {
   AnkiConnectRequest,
   AnkiConnectResponse,
@@ -38,6 +39,8 @@ export class AnkiConnectService {
           headers: {
             'Content-Type': 'application/json',
           },
+          // Disable keep-alive by using a new agent or explicitly setting headers
+          httpAgent: new http.Agent({ keepAlive: false }),
         }
       );
 
@@ -65,8 +68,15 @@ export class AnkiConnectService {
         }
       }
 
-      logger.error('AnkiConnect request failed', error);
-      throw new AnkiConnectError('Failed to communicate with Anki');
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error('AnkiConnect request failed', {
+        action,
+        error: errorMessage,
+      });
+      throw new AnkiConnectError(
+        `Failed to communicate with Anki: ${errorMessage}`
+      );
     }
   }
 
@@ -156,6 +166,29 @@ export class AnkiConnectService {
   // Sync
   async sync(): Promise<void> {
     return this.request<void>('sync');
+  }
+
+  /**
+   * Ensure a deck exists, creating it if necessary
+   * @returns true if deck exists or was created, false otherwise
+   */
+  async ensureDeckExists(
+    deckName: string,
+    existingDecks: Set<string>
+  ): Promise<boolean> {
+    if (existingDecks.has(deckName)) {
+      return true;
+    }
+
+    try {
+      logger.info(`Creating missing deck: ${deckName}`);
+      await this.createDeck(deckName);
+      existingDecks.add(deckName);
+      return true;
+    } catch (error) {
+      logger.error(`Failed to create deck: ${deckName}`, error);
+      return false;
+    }
   }
 }
 
