@@ -8,6 +8,7 @@ import path from 'path';
 import axios from 'axios';
 import FormData from 'form-data';
 import { loadConfig } from '../config';
+import { BackendManager } from '../backend-manager';
 
 type ImportFormat = 'csv' | 'json' | 'markdown';
 
@@ -48,17 +49,21 @@ export const importCommand = new Command('import')
   .option('--dry-run', "Dry run - validate but don't create cards")
   .option('--mapping <mapping>', 'Custom column mapping for CSV (JSON string)')
   .action(async (filePath: string, options: ImportOptions) => {
-    try {
-      const config = loadConfig();
+    const config = loadConfig();
+    const baseUrl = config.serverUrl;
+    let cleanup: (() => void) | undefined;
 
+    try {
       if (!fs.existsSync(filePath)) {
         console.error(`❌ File not found: ${filePath}`);
         process.exit(1);
       }
 
+      // Ensure backend is running
+      cleanup = await BackendManager.ensure(baseUrl);
+
       const absolutePath = path.resolve(filePath);
       const format: ImportFormat = options.format ?? detectFormat(absolutePath);
-      const baseUrl = config.serverUrl;
 
       console.log(`📁 Importing from: ${absolutePath}`);
       console.log(`📄 Format: ${format}`);
@@ -79,6 +84,10 @@ export const importCommand = new Command('import')
         error instanceof Error ? error.message : 'Unknown error'
       );
       process.exit(1);
+    } finally {
+      if (cleanup) {
+        cleanup();
+      }
     }
   });
 
