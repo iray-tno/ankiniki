@@ -8,7 +8,7 @@ import {
   CsvImportOptionsSchema,
   JsonImportOptionsSchema,
   MarkdownImportOptionsSchema,
-} from '../lib/import-parsers';
+} from '../import-parsers';
 
 // ─── parseFrontmatter ─────────────────────────────────────────────────────────
 

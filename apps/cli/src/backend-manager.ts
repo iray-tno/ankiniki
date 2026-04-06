@@ -4,13 +4,14 @@ import path from 'path';
 import fs from 'fs';
 import chalk from 'chalk';
 import ora from 'ora';
+import { SERVER } from '@ankiniki/shared';
 
 export class BackendManager {
   private serverUrl: string;
   private backendProcess: ChildProcess | null = null;
   private wasStartedByCli: boolean = false;
 
-  constructor(serverUrl: string = 'http://localhost:3001') {
+  constructor(serverUrl: string = SERVER.DEFAULT_URL) {
     this.serverUrl = serverUrl;
   }
 
@@ -73,7 +74,7 @@ export class BackendManager {
       this.backendProcess = spawn(command, args, {
         cwd: rootDir,
         stdio: 'pipe', // Pipe output to monitor it
-        env: { ...process.env, PORT: '3001' },
+        env: { ...process.env, PORT: String(SERVER.DEFAULT_PORT) },
       });
 
       this.wasStartedByCli = true;

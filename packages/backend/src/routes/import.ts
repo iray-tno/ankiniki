@@ -19,7 +19,7 @@ import {
   type JsonCard,
   type JsonImportFormat,
   type ProcessedCard,
-} from '../lib/import-parsers';
+} from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import { logger } from '../utils/logger';
 

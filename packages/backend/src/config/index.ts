@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { SERVER } from '@ankiniki/shared';
 
 dotenv.config();
 
 const ConfigSchema = z.object({
-  PORT: z.string().default('3001'),
+  PORT: z.string().default(String(SERVER.DEFAULT_PORT)),
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
