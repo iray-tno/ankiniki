@@ -1,7 +1,7 @@
 import { homedir } from 'os';
 import { join } from 'path';
 import { readFileSync, writeFileSync, existsSync } from 'fs-extra';
-import { CLI, ANKI_CONNECT } from '@ankiniki/shared';
+import { CLI, ANKI_CONNECT, SERVER } from '@ankiniki/shared';
 
 export interface CliConfig {
   ankiConnectUrl: string;
@@ -15,7 +15,7 @@ const CONFIG_FILE = join(homedir(), CLI.CONFIG_FILE);
 
 const DEFAULT_CONFIG: CliConfig = {
   ankiConnectUrl: ANKI_CONNECT.DEFAULT_URL,
-  serverUrl: 'http://localhost:3001',
+  serverUrl: SERVER.DEFAULT_URL,
   defaultDeck: 'Default',
   defaultModel: 'Basic',
   debugMode: false,

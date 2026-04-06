@@ -14,7 +14,7 @@ import {
   processRows,
   validateCards,
   type ProcessedCard,
-} from '@ankiniki/backend/src/lib/import-parsers';
+} from '@ankiniki/shared';
 import csv from 'csv-parser';
 import { Readable } from 'stream';
 

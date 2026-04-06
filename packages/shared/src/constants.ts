@@ -5,6 +5,12 @@ export const ANKI_CONNECT = {
   API_VERSION: 6,
 } as const;
 
+// Backend Server configuration
+export const SERVER = {
+  DEFAULT_PORT: 3001,
+  DEFAULT_URL: 'http://localhost:3001',
+} as const;
+
 // Application configuration
 export const APP_CONFIG = {
   NAME: 'Ankiniki',
