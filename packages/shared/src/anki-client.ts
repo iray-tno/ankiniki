@@ -69,7 +69,8 @@ export class AnkiConnectClient {
 
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED') {
-          errorMessage = 'Cannot connect to Anki. Make sure Anki is running and AnkiConnect addon is installed.';
+          errorMessage =
+            'Cannot connect to Anki. Make sure Anki is running and AnkiConnect addon is installed.';
         } else if (error.code === 'ECONNABORTED') {
           errorMessage = 'AnkiConnect request timed out';
         }
@@ -79,7 +80,7 @@ export class AnkiConnectClient {
         action,
         error: errorMessage,
       });
-      
+
       throw new AnkiConnectError(errorMessage);
     }
   }
@@ -168,5 +169,9 @@ export class AnkiConnectClient {
     includeSched: boolean = false
   ): Promise<boolean> {
     return this.request<boolean>('exportPackage', { deck, path, includeSched });
+  }
+
+  async canAddNotes(notes: Record<string, unknown>[]): Promise<boolean[]> {
+    return this.request<boolean[]>('canAddNotes', { notes });
   }
 }
