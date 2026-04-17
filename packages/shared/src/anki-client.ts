@@ -1,4 +1,3 @@
-import axios, { AxiosResponse } from 'axios';
 import {
   AnkiConnectRequest,
   AnkiConnectResponse,
@@ -10,10 +9,10 @@ export interface AnkiConnectClientOptions {
   baseURL?: string;
   timeout?: number;
   logger?: {
-    debug: (message: string, meta?: any) => void;
-    info: (message: string, meta?: any) => void;
-    warn: (message: string, meta?: any) => void;
-    error: (message: string, meta?: any) => void;
+    debug: (message: string, meta?: unknown) => void;
+    info: (message: string, meta?: unknown) => void;
+    warn: (message: string, meta?: unknown) => void;
+    error: (message: string, meta?: unknown) => void;
   };
 }
 
@@ -28,9 +27,9 @@ export class AnkiConnectClient {
     this.logger = options.logger;
   }
 
-  async request<T = any>(
+  async request<T = unknown>(
     action: string,
-    params: Record<string, any> = {}
+    params: Record<string, unknown> = {}
   ): Promise<T> {
     const requestData: AnkiConnectRequest = {
       action,
@@ -38,49 +37,67 @@ export class AnkiConnectClient {
       params,
     };
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
     try {
       this.logger?.debug('AnkiConnect request', { action, params });
 
-      const response: AxiosResponse<AnkiConnectResponse> = await axios.post(
-        this.baseURL,
-        requestData,
-        {
-          timeout: this.timeout,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await fetch(this.baseURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData),
+        signal: controller.signal,
+      });
 
-      const { result, error } = response.data;
+      const data = (await response.json()) as AnkiConnectResponse;
 
-      if (error) {
-        throw new AnkiConnectError(`AnkiConnect error: ${error}`);
+      if (data.error) {
+        throw new AnkiConnectError(`AnkiConnect error: ${data.error}`);
       }
 
-      this.logger?.debug('AnkiConnect response', { action, result });
-      return result as T;
+      this.logger?.debug('AnkiConnect response', {
+        action,
+        result: data.result,
+      });
+      return data.result as T;
     } catch (error) {
       if (error instanceof AnkiConnectError) {
         throw error;
       }
 
-      let errorMessage = error instanceof Error ? error.message : String(error);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        const msg = 'AnkiConnect request timed out';
+        this.logger?.error(msg, { action });
+        throw new AnkiConnectError(msg);
+      }
 
-      if (axios.isAxiosError(error)) {
-        if (error.code === 'ECONNREFUSED') {
-          errorMessage = 'Cannot connect to Anki. Make sure Anki is running and AnkiConnect addon is installed.';
-        } else if (error.code === 'ECONNABORTED') {
-          errorMessage = 'AnkiConnect request timed out';
+      if (error instanceof TypeError) {
+        const cause = (
+          error as NodeJS.ErrnoException & { cause?: NodeJS.ErrnoException }
+        ).cause;
+        if (
+          cause?.code === 'ECONNREFUSED' ||
+          error.message.includes('ECONNREFUSED')
+        ) {
+          const msg =
+            'Cannot connect to Anki. Make sure Anki is running and AnkiConnect addon is installed.';
+          this.logger?.error(msg, { action });
+          throw new AnkiConnectError(msg);
         }
       }
 
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger?.error('AnkiConnect request failed', {
         action,
         error: errorMessage,
       });
-      
-      throw new AnkiConnectError(errorMessage);
+      throw new AnkiConnectError(
+        `Failed to communicate with Anki: ${errorMessage}`
+      );
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -104,30 +121,26 @@ export class AnkiConnectClient {
     fields: Record<string, string>,
     tags: string[] = []
   ): Promise<number> {
-    const note = {
-      deckName,
-      modelName,
-      fields,
-      tags,
-    };
-
-    return this.request<number>('addNote', { note });
+    return this.request<number>('addNote', {
+      note: { deckName, modelName, fields, tags },
+    });
   }
 
   async updateNoteFields(
     noteId: number,
     fields: Record<string, string>
   ): Promise<void> {
-    const note = {
-      id: noteId,
-      fields,
-    };
-
-    return this.request<void>('updateNoteFields', { note });
+    return this.request<void>('updateNoteFields', {
+      note: { id: noteId, fields },
+    });
   }
 
   async deleteNotes(noteIds: number[]): Promise<void> {
     return this.request<void>('deleteNotes', { notes: noteIds });
+  }
+
+  async canAddNotes(notes: Record<string, unknown>[]): Promise<boolean[]> {
+    return this.request<boolean[]>('canAddNotes', { notes });
   }
 
   // Query operations
@@ -135,8 +148,8 @@ export class AnkiConnectClient {
     return this.request<number[]>('findNotes', { query });
   }
 
-  async notesInfo(noteIds: number[]): Promise<any[]> {
-    return this.request<any[]>('notesInfo', { notes: noteIds });
+  async notesInfo(noteIds: number[]): Promise<unknown[]> {
+    return this.request<unknown[]>('notesInfo', { notes: noteIds });
   }
 
   // Model operations
