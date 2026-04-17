@@ -11,6 +11,8 @@ import {
   CsvImportOptionsSchema,
   JsonImportOptionsSchema,
   MarkdownImportOptionsSchema,
+  buildImportTags,
+  mapCardFields,
   parseMarkdownCards,
   processJsonCards,
   processRows,
@@ -215,30 +217,8 @@ router.post(
             continue;
           }
 
-          // Prepare fields based on model
-          const fields: Record<string, string> = {};
-          if (card.model === 'Basic') {
-            fields['Front'] = card.front;
-            fields['Back'] = card.back;
-          } else if (card.model === 'Cloze') {
-            fields['Text'] = `${card.front}\n\n${card.back}`;
-          } else {
-            // Default fallback
-            fields['Front'] = card.front;
-            fields['Back'] = card.back;
-          }
-
-          // Add import metadata tags
-          const allTags = [
-            ...card.tags,
-            'csv-import',
-            `imported-${new Date().toISOString().split('T')[0]}`,
-          ];
-
-          // Add difficulty tag if specified
-          if (card.difficulty) {
-            allTags.push(`difficulty-${card.difficulty}`);
-          }
+          const fields = mapCardFields(card.front, card.back, card.model);
+          const allTags = buildImportTags(card.tags, 'csv', card.difficulty);
 
           const noteId = await ankiConnect.addNote(
             card.deck,
@@ -522,30 +502,8 @@ router.post(
             continue;
           }
 
-          // Prepare fields based on model
-          const fields: Record<string, string> = {};
-          if (card.model === 'Basic') {
-            fields['Front'] = card.front;
-            fields['Back'] = card.back;
-          } else if (card.model === 'Cloze') {
-            fields['Text'] = `${card.front}\n\n${card.back}`;
-          } else {
-            // Default fallback
-            fields['Front'] = card.front;
-            fields['Back'] = card.back;
-          }
-
-          // Add import metadata tags
-          const allTags = [
-            ...card.tags,
-            'json-import',
-            `imported-${new Date().toISOString().split('T')[0]}`,
-          ];
-
-          // Add difficulty tag if specified
-          if (card.difficulty) {
-            allTags.push(`difficulty-${card.difficulty}`);
-          }
+          const fields = mapCardFields(card.front, card.back, card.model);
+          const allTags = buildImportTags(card.tags, 'json', card.difficulty);
 
           const noteId = await ankiConnect.addNote(
             card.deck,
@@ -803,16 +761,8 @@ router.post(
             continue;
           }
 
-          const fields: Record<string, string> =
-            card.model === 'Cloze'
-              ? { Text: `${card.front}\n\n${card.back}` }
-              : { Front: card.front, Back: card.back };
-
-          const allTags = [
-            ...card.tags,
-            'markdown-import',
-            `imported-${new Date().toISOString().split('T')[0]}`,
-          ];
+          const fields = mapCardFields(card.front, card.back, card.model);
+          const allTags = buildImportTags(card.tags, 'markdown');
 
           const noteId = await ankiConnect.addNote(
             card.deck,
@@ -985,16 +935,12 @@ router.post('/json/body', async (req: Request, res: Response) => {
           continue;
         }
 
-        const fields: Record<string, string> =
-          card.model === 'Cloze'
-            ? { Text: `${card.front}\n\n${card.back}` }
-            : { Front: card.front, Back: card.back };
-
-        const allTags = [
-          ...card.tags,
-          'json-import',
-          `imported-${new Date().toISOString().split('T')[0]}`,
-        ];
+        const fields = mapCardFields(card.front, card.back, card.model);
+        const allTags = buildImportTags(
+          card.tags,
+          'json-body',
+          card.difficulty
+        );
 
         const noteId = await ankiConnect.addNote(
           card.deck,

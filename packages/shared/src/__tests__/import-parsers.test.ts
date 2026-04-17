@@ -5,6 +5,8 @@ import {
   processRows,
   validateCards,
   processJsonCards,
+  mapCardFields,
+  buildImportTags,
   CsvImportOptionsSchema,
   JsonImportOptionsSchema,
   MarkdownImportOptionsSchema,
@@ -258,5 +260,52 @@ describe('processJsonCards', () => {
     const cards = processJsonCards(data, defaultJsonOptions);
     expect(cards[0].rowNumber).toBe(1);
     expect(cards[1].rowNumber).toBe(2);
+  });
+});
+
+// ─── mapCardFields ────────────────────────────────────────────────────────────
+
+describe('mapCardFields', () => {
+  it('maps Basic model to Front/Back fields', () => {
+    expect(mapCardFields('Q', 'A', 'Basic')).toEqual({ Front: 'Q', Back: 'A' });
+  });
+
+  it('maps Cloze model to Text field', () => {
+    expect(mapCardFields('Q', 'A', 'Cloze')).toEqual({ Text: 'Q\n\nA' });
+  });
+
+  it('falls back to Front/Back for unknown models', () => {
+    expect(mapCardFields('Q', 'A', 'BasicAndReversed')).toEqual({
+      Front: 'Q',
+      Back: 'A',
+    });
+  });
+});
+
+// ─── buildImportTags ──────────────────────────────────────────────────────────
+
+describe('buildImportTags', () => {
+  it('includes card tags, source tag, and dated import tag', () => {
+    const tags = buildImportTags(['existing'], 'csv');
+    expect(tags).toContain('existing');
+    expect(tags).toContain('csv-import');
+    expect(tags.some(t => t.startsWith('imported-'))).toBe(true);
+  });
+
+  it('appends difficulty tag when provided', () => {
+    const tags = buildImportTags([], 'json', 'hard');
+    expect(tags).toContain('difficulty-hard');
+  });
+
+  it('omits difficulty tag when not provided', () => {
+    const tags = buildImportTags([], 'markdown');
+    expect(tags.some(t => t.startsWith('difficulty-'))).toBe(false);
+  });
+
+  it('uses correct source prefix for each import type', () => {
+    expect(buildImportTags([], 'csv')).toContain('csv-import');
+    expect(buildImportTags([], 'json')).toContain('json-import');
+    expect(buildImportTags([], 'markdown')).toContain('markdown-import');
+    expect(buildImportTags([], 'json-body')).toContain('json-body-import');
   });
 });

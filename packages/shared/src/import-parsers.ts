@@ -267,3 +267,42 @@ export function parseMarkdownCards(
 
   return cards;
 }
+
+// ─── Shared card creation helpers ─────────────────────────────────────────────
+
+export type ImportSource = 'csv' | 'json' | 'markdown' | 'json-body';
+
+/**
+ * Map front/back content to AnkiConnect fields based on note model.
+ * Basic and unknown models use Front/Back fields; Cloze uses Text.
+ */
+export function mapCardFields(
+  front: string,
+  back: string,
+  model: string
+): Record<string, string> {
+  if (model === 'Cloze') {
+    return { Text: `${front}\n\n${back}` };
+  }
+  return { Front: front, Back: back };
+}
+
+/**
+ * Build the full tag list for an imported card.
+ * Combines card tags, a source tag, a dated import tag, and an optional difficulty tag.
+ */
+export function buildImportTags(
+  cardTags: string[],
+  source: ImportSource,
+  difficulty?: string
+): string[] {
+  const tags = [
+    ...cardTags,
+    `${source}-import`,
+    `imported-${new Date().toISOString().split('T')[0]}`,
+  ];
+  if (difficulty) {
+    tags.push(`difficulty-${difficulty}`);
+  }
+  return tags;
+}
