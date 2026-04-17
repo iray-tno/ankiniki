@@ -1,0 +1,11 @@
+# Enforce LF line endings in the repository
+* text=auto eol=lf
+
+# Binaries — no line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.apkg binary
+*.db binary
