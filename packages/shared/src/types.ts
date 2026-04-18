@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ANKI_CONNECT } from './constants';
 
 // Card types
 export const CardSchema = z.object({
@@ -74,8 +75,8 @@ export type ApiResponse<T = unknown> = OkResponse<T> | ProblemDetails;
 
 // Configuration types
 export const ConfigSchema = z.object({
-  ankiConnectUrl: z.string().default('http://localhost:8765'),
-  ankiConnectTimeout: z.number().default(5000),
+  ankiConnectUrl: z.string().default(ANKI_CONNECT.DEFAULT_URL),
+  ankiConnectTimeout: z.number().default(ANKI_CONNECT.DEFAULT_TIMEOUT),
   autoSync: z.boolean().default(true),
   theme: z.enum(['light', 'dark', 'system']).default('system'),
 });
