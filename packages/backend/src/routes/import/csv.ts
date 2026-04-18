@@ -11,6 +11,7 @@ import {
 import { logger } from '../../utils/logger';
 import { ok, sendProblem, PROBLEM_TYPES } from '../../utils/response';
 import { upload, createCards } from './shared';
+import { asyncHandler } from '../../utils/asyncHandler';
 
 const router = Router();
 
@@ -42,7 +43,7 @@ function parseCsvContent(
 router.post(
   '/',
   upload.single('file'),
-  async (req: MulterRequest, res: Response) => {
+  asyncHandler(async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
         return sendProblem(res, 400, 'No CSV file uploaded', {
@@ -138,7 +139,7 @@ router.post(
         }
       );
     }
-  }
+  })
 );
 
 /**
@@ -151,7 +152,7 @@ router.post(
 router.post(
   '/preview',
   upload.single('file'),
-  async (req: MulterRequest, res: Response) => {
+  asyncHandler(async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
         return sendProblem(res, 400, 'No CSV file uploaded', {
@@ -204,7 +205,7 @@ router.post(
         }
       );
     }
-  }
+  })
 );
 
 export default router;
