@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import { AnkinikiError, ApiResponse } from '@ankiniki/shared';
+import { AnkinikiError } from '@ankiniki/shared';
 import { logger } from '../utils/logger';
+import { sendProblem, PROBLEM_TYPES } from '../utils/response';
+
+const ERROR_CODE_TO_PROBLEM_TYPE: Record<string, string> = {
+  VALIDATION_ERROR: PROBLEM_TYPES.VALIDATION,
+  ANKI_CONNECT_ERROR: PROBLEM_TYPES.ANKI_CONNECT,
+};
 
 export function errorHandler(
   error: Error,
   req: Request,
-  res: Response<ApiResponse>,
+  res: Response,
   _next: NextFunction
 ) {
   logger.error('Request error', {
@@ -16,29 +22,27 @@ export function errorHandler(
   });
 
   if (error instanceof AnkinikiError) {
-    return res.status(error.statusCode).json({
-      success: false,
-      error: error.message,
-      message: error.message,
+    const type =
+      ERROR_CODE_TO_PROBLEM_TYPE[error.code] ?? PROBLEM_TYPES.INTERNAL;
+    return sendProblem(res, error.statusCode, error.message, {
+      type,
+      instance: req.path,
     });
   }
 
-  // Default error response
-  res.status(500).json({
-    success: false,
-    error: 'Internal Server Error',
-    message: 'An unexpected error occurred',
+  sendProblem(res, 500, 'An unexpected error occurred', {
+    type: PROBLEM_TYPES.INTERNAL,
+    instance: req.path,
   });
 }
 
 export function notFoundHandler(
   req: Request,
-  res: Response<ApiResponse>,
+  res: Response,
   _next: NextFunction
 ) {
-  res.status(404).json({
-    success: false,
-    error: 'Not Found',
-    message: `Route ${req.method} ${req.path} not found`,
+  sendProblem(res, 404, `Route ${req.method} ${req.path} not found`, {
+    type: PROBLEM_TYPES.NOT_FOUND,
+    instance: req.path,
   });
 }

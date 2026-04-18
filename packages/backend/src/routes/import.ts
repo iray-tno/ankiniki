@@ -24,6 +24,7 @@ import {
 } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import { logger } from '../utils/logger';
+import { ok, sendProblem, PROBLEM_TYPES } from '../utils/response';
 
 // Extend Request interface for multer
 interface MulterRequest extends Request {
@@ -124,9 +125,8 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          error: 'No CSV file uploaded',
+        return sendProblem(res, 400, 'No CSV file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
         });
       }
 
@@ -136,9 +136,8 @@ router.post(
         try {
           options = JSON.parse(req.body.options);
         } catch (error) {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid options JSON format',
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
           });
         }
       }
@@ -171,17 +170,16 @@ router.post(
 
       // If dry run, return preview without creating cards
       if (validatedOptions.dryRun) {
-        return res.json({
-          success: true,
-          data: {
+        return res.json(
+          ok({
             dryRun: true,
             totalRows: rows.length,
             validCards: validCards.length,
             invalidCards: invalidCards.length,
-            preview: validCards.slice(0, 5), // Show first 5 valid cards
+            preview: validCards.slice(0, 5),
             errors: invalidCards,
-          },
-        });
+          })
+        );
       }
 
       // Check if decks exist and models are valid
@@ -254,9 +252,8 @@ router.post(
         failed: failedCards + invalidCards.length,
       });
 
-      res.json({
-        success: true,
-        data: {
+      res.json(
+        ok({
           totalRows: rows.length,
           processedCards: processedCards.length,
           successfulCards,
@@ -267,22 +264,23 @@ router.post(
             failed: failedCards,
             invalid: invalidCards.length,
           },
-        },
-      });
+        })
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid import options',
-          details: error.errors,
+        return sendProblem(res, 400, 'Invalid import options', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
         });
       }
 
       logger.error('CSV import error:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      });
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -316,9 +314,8 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          error: 'No CSV file uploaded',
+        return sendProblem(res, 400, 'No CSV file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
         });
       }
 
@@ -331,9 +328,8 @@ router.post(
           const parsed = JSON.parse(req.body.options);
           options = { ...parsed, dryRun: true };
         } catch (error) {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid options JSON format',
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
           });
         }
       }
@@ -349,25 +345,26 @@ router.post(
       const { valid: validCards, errors: invalidCards } =
         validateCards(processedCards);
 
-      res.json({
-        success: true,
-        data: {
+      res.json(
+        ok({
           preview: true,
           totalRows: rows.length,
           validCards: validCards.length,
           invalidCards: invalidCards.length,
-          sampleCards: validCards.slice(0, 10), // Show first 10 valid cards
-          errors: invalidCards.slice(0, 10), // Show first 10 errors
+          sampleCards: validCards.slice(0, 10),
+          errors: invalidCards.slice(0, 10),
           columnMapping: validatedOptions.columnMapping,
           detectedColumns: rows.length > 0 ? Object.keys(rows[0]) : [],
-        },
-      });
+        })
+      );
     } catch (error) {
       logger.error('CSV preview error:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      });
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -401,9 +398,8 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          error: 'No JSON file uploaded',
+        return sendProblem(res, 400, 'No JSON file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
         });
       }
 
@@ -413,9 +409,8 @@ router.post(
         try {
           options = JSON.parse(req.body.options);
         } catch (error) {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid options JSON format',
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
           });
         }
       }
@@ -435,9 +430,8 @@ router.post(
         const jsonContent = req.file.buffer.toString('utf-8');
         jsonData = JSON.parse(jsonContent);
       } catch (error) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid JSON format in uploaded file',
+        return sendProblem(res, 400, 'Invalid JSON format in uploaded file', {
+          type: PROBLEM_TYPES.VALIDATION,
         });
       }
 
@@ -456,17 +450,16 @@ router.post(
 
       // If dry run, return preview without creating cards
       if (validatedOptions.dryRun) {
-        return res.json({
-          success: true,
-          data: {
+        return res.json(
+          ok({
             dryRun: true,
             totalCards: processedCards.length,
             validCards: validCards.length,
             invalidCards: invalidCards.length,
-            preview: validCards.slice(0, 5), // Show first 5 valid cards
+            preview: validCards.slice(0, 5),
             errors: invalidCards,
-          },
-        });
+          })
+        );
       }
 
       // Check if decks exist and models are valid
@@ -539,9 +532,8 @@ router.post(
         failed: failedCards + invalidCards.length,
       });
 
-      res.json({
-        success: true,
-        data: {
+      res.json(
+        ok({
           totalCards: processedCards.length,
           successfulCards,
           failedCards: failedCards + invalidCards.length,
@@ -551,25 +543,25 @@ router.post(
             failed: failedCards,
             invalid: invalidCards.length,
           },
-        },
-      });
+        })
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid import options',
-          details: error.errors,
+        return sendProblem(res, 400, 'Invalid import options', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
         });
       }
 
       logger.error('JSON import error:', error);
-      res.status(500).json({
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : String(error) || 'Internal server error',
-      });
+      sendProblem(
+        res,
+        500,
+        error instanceof Error
+          ? error.message
+          : String(error) || 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -603,9 +595,8 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          error: 'No JSON file uploaded',
+        return sendProblem(res, 400, 'No JSON file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
         });
       }
 
@@ -618,9 +609,8 @@ router.post(
           const parsed = JSON.parse(req.body.options);
           options = { ...parsed, dryRun: true };
         } catch (error) {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid options JSON format',
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
           });
         }
       }
@@ -633,9 +623,8 @@ router.post(
         const jsonContent = req.file.buffer.toString('utf-8');
         jsonData = JSON.parse(jsonContent);
       } catch (error) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid JSON format in uploaded file',
+        return sendProblem(res, 400, 'Invalid JSON format in uploaded file', {
+          type: PROBLEM_TYPES.VALIDATION,
         });
       }
 
@@ -652,15 +641,14 @@ router.post(
         formatType = 'object_with_cards';
       }
 
-      res.json({
-        success: true,
-        data: {
+      res.json(
+        ok({
           preview: true,
           totalCards: processedCards.length,
           validCards: validCards.length,
           invalidCards: invalidCards.length,
-          sampleCards: validCards.slice(0, 10), // Show first 10 valid cards
-          errors: invalidCards.slice(0, 10), // Show first 10 errors
+          sampleCards: validCards.slice(0, 10),
+          errors: invalidCards.slice(0, 10),
           formatType,
           detectedStructure: {
             hasCards: Array.isArray(jsonData) || Boolean(jsonData.cards),
@@ -671,14 +659,16 @@ router.post(
             hasDefaultModel:
               !Array.isArray(jsonData) && Boolean(jsonData.default_model),
           },
-        },
-      });
+        })
+      );
     } catch (error) {
       logger.error('JSON preview error:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      });
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -691,9 +681,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res
-          .status(400)
-          .json({ success: false, error: 'No file uploaded' });
+        return sendProblem(res, 400, 'No file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       let options: Partial<z.infer<typeof MarkdownImportOptionsSchema>> = {};
@@ -701,9 +691,9 @@ router.post(
         try {
           options = JSON.parse(req.body.options);
         } catch {
-          return res
-            .status(400)
-            .json({ success: false, error: 'Invalid options JSON format' });
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
       const validatedOptions = MarkdownImportOptionsSchema.parse(options);
@@ -719,17 +709,16 @@ router.post(
       });
 
       if (validatedOptions.dryRun) {
-        return res.json({
-          success: true,
-          data: {
+        return res.json(
+          ok({
             dryRun: true,
             totalCards: processedCards.length,
             validCards: validCards.length,
             invalidCards: invalidCards.length,
             preview: validCards.slice(0, 5),
             errors: invalidCards,
-          },
-        });
+          })
+        );
       }
 
       const existingDecks = new Set(await ankiConnect.getDeckNames());
@@ -783,9 +772,8 @@ router.post(
       const successfulCards = results.filter(c => c.success).length;
       const failedCards = results.filter(c => !c.success).length;
 
-      res.json({
-        success: true,
-        data: {
+      res.json(
+        ok({
           totalCards: processedCards.length,
           successfulCards,
           failedCards: failedCards + invalidCards.length,
@@ -795,21 +783,22 @@ router.post(
             failed: failedCards,
             invalid: invalidCards.length,
           },
-        },
-      });
+        })
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid import options',
-          details: error.errors,
+        return sendProblem(res, 400, 'Invalid import options', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
         });
       }
       logger.error('Markdown import error:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      });
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -820,9 +809,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res
-          .status(400)
-          .json({ success: false, error: 'No file uploaded' });
+        return sendProblem(res, 400, 'No file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       let options: Partial<z.infer<typeof MarkdownImportOptionsSchema>> = {
@@ -832,9 +821,9 @@ router.post(
         try {
           options = { ...JSON.parse(req.body.options), dryRun: true };
         } catch {
-          return res
-            .status(400)
-            .json({ success: false, error: 'Invalid options JSON format' });
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
       const validatedOptions = MarkdownImportOptionsSchema.parse(options);
@@ -844,23 +833,24 @@ router.post(
       const { valid: validCards, errors: invalidCards } =
         validateCards(processedCards);
 
-      res.json({
-        success: true,
-        data: {
+      res.json(
+        ok({
           preview: true,
           totalCards: processedCards.length,
           validCards: validCards.length,
           invalidCards: invalidCards.length,
           sampleCards: validCards.slice(0, 10),
           errors: invalidCards.slice(0, 10),
-        },
-      });
+        })
+      );
     } catch (error) {
       logger.error('Markdown preview error:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      });
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -875,9 +865,8 @@ router.post('/json/body', async (req: Request, res: Response) => {
     };
 
     if (!cards) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing "cards" field in request body',
+      return sendProblem(res, 400, 'Missing "cards" field in request body', {
+        type: PROBLEM_TYPES.VALIDATION,
       });
     }
 
@@ -893,17 +882,16 @@ router.post('/json/body', async (req: Request, res: Response) => {
     logger.info('JSON body import started', { cards: processedCards.length });
 
     if (validatedOptions.dryRun) {
-      return res.json({
-        success: true,
-        data: {
+      return res.json(
+        ok({
           dryRun: true,
           totalCards: processedCards.length,
           validCards: validCards.length,
           invalidCards: invalidCards.length,
           preview: validCards.slice(0, 5),
           errors: invalidCards,
-        },
-      });
+        })
+      );
     }
 
     const existingDecks = new Set(await ankiConnect.getDeckNames());
@@ -961,9 +949,8 @@ router.post('/json/body', async (req: Request, res: Response) => {
     const successfulCards = results.filter(c => c.success).length;
     const failedCards = results.filter(c => !c.success).length;
 
-    res.json({
-      success: true,
-      data: {
+    res.json(
+      ok({
         totalCards: processedCards.length,
         successfulCards,
         failedCards: failedCards + invalidCards.length,
@@ -973,21 +960,22 @@ router.post('/json/body', async (req: Request, res: Response) => {
           failed: failedCards,
           invalid: invalidCards.length,
         },
-      },
-    });
+      })
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid import options',
-        details: error.errors,
+      return sendProblem(res, 400, 'Invalid import options', {
+        type: PROBLEM_TYPES.VALIDATION,
+        errors: error.errors,
       });
     }
     logger.error('JSON body import error:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error',
-    });
+    sendProblem(
+      res,
+      500,
+      error instanceof Error ? error.message : 'Internal server error',
+      { type: PROBLEM_TYPES.INTERNAL }
+    );
   }
 });
 

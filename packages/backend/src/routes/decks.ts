@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ApiResponse, ValidationError } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import { logger } from '../utils/logger';
+import { ok } from '../utils/response';
 
 const router = Router();
 
@@ -10,10 +11,7 @@ const router = Router();
 router.get('/', async (req, res: Response<ApiResponse<string[]>>) => {
   try {
     const deckNames = await ankiConnect.getDeckNames();
-    res.json({
-      success: true,
-      data: deckNames,
-    });
+    res.json(ok(deckNames));
   } catch (error) {
     logger.error('Failed to get decks', error);
     throw error;
@@ -37,11 +35,9 @@ router.post('/', async (req, res: Response<ApiResponse<{ id: number }>>) => {
 
     const deckId = await ankiConnect.createDeck(name);
 
-    res.status(201).json({
-      success: true,
-      data: { id: deckId },
-      message: `Deck '${name}' created successfully`,
-    });
+    res
+      .status(201)
+      .json(ok({ id: deckId }, `Deck '${name}' created successfully`));
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(`Invalid deck data: ${error.message}`);
@@ -69,10 +65,7 @@ router.delete('/:name', async (req, res: Response<ApiResponse>) => {
 
     await ankiConnect.deleteDeck(name, deleteCards);
 
-    res.json({
-      success: true,
-      message: `Deck '${name}' deleted successfully`,
-    });
+    res.json(ok(null, `Deck '${name}' deleted successfully`));
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(`Invalid delete request: ${error.message}`);

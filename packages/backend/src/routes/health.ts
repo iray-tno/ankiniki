@@ -1,7 +1,7 @@
-import { Router, Response } from 'express';
-import { ApiResponse } from '@ankiniki/shared';
+import { Router } from 'express';
 import { ankiConnect } from '../services/ankiConnect';
 import { config } from '../config';
+import { ok, sendProblem, PROBLEM_TYPES } from '../utils/response';
 
 const router = Router();
 
@@ -15,7 +15,7 @@ interface HealthStatus {
   };
 }
 
-router.get('/', async (req, res: Response<ApiResponse<HealthStatus>>) => {
+router.get('/', async (req, res) => {
   const ankiConnected = await ankiConnect.ping();
 
   const healthData: HealthStatus = {
@@ -28,13 +28,15 @@ router.get('/', async (req, res: Response<ApiResponse<HealthStatus>>) => {
     },
   };
 
-  res.status(ankiConnected ? 200 : 503).json({
-    success: ankiConnected,
-    data: healthData,
-    message: ankiConnected
-      ? 'All services are healthy'
-      : 'AnkiConnect is not available',
-  });
+  if (ankiConnected) {
+    res.status(200).json(ok(healthData, 'All services are healthy'));
+  } else {
+    sendProblem(res, 503, 'AnkiConnect is not available', {
+      type: PROBLEM_TYPES.ANKI_CONNECT,
+      instance: req.path,
+      ankiConnect: healthData.ankiConnect,
+    });
+  }
 });
 
 export default router;
