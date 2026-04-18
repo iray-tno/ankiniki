@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
+import { shuffleArray } from '@ankiniki/shared';
 import { AnkiClient } from '../anki-client';
 
 export function createStudyCommand(): Command {
@@ -156,13 +157,4 @@ function formatText(text: string): string {
   // Simple formatting for terminal
   const lines = text.split('\n');
   return lines.map(line => `   ${line}`).join('\n');
-}
-
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
 }

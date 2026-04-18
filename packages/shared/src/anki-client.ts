@@ -5,6 +5,14 @@ import {
   ANKI_CONNECT,
 } from './index';
 
+export interface NoteInfo {
+  noteId: number;
+  modelName: string;
+  tags: string[];
+  fields: Record<string, { value: string; order: number }>;
+  cards: number[];
+}
+
 export interface AnkiConnectClientOptions {
   baseURL?: string;
   timeout?: number;
@@ -148,8 +156,8 @@ export class AnkiConnectClient {
     return this.request<number[]>('findNotes', { query });
   }
 
-  async notesInfo(noteIds: number[]): Promise<unknown[]> {
-    return this.request<unknown[]>('notesInfo', { notes: noteIds });
+  async notesInfo(noteIds: number[]): Promise<NoteInfo[]> {
+    return this.request<NoteInfo[]>('notesInfo', { notes: noteIds });
   }
 
   // Model operations
