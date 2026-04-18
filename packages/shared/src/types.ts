@@ -52,16 +52,25 @@ export const AnkiConnectResponseSchema = z.object({
 export type AnkiConnectResponse = z.infer<typeof AnkiConnectResponseSchema>;
 
 // API Response types
-export const ApiResponseSchema = z.object({
-  success: z.boolean(),
-  data: z.any().optional(),
-  error: z.string().optional(),
-  message: z.string().optional(),
-});
 
-export type ApiResponse<T = any> = z.infer<typeof ApiResponseSchema> & {
-  data?: T;
-};
+/** RFC 7807 Problem Details for HTTP APIs */
+export interface ProblemDetails {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  instance?: string;
+  [key: string]: unknown;
+}
+
+export interface OkResponse<T = unknown> {
+  success: true;
+  data: T;
+  message?: string;
+}
+
+/** Discriminated union: success carries data, error carries Problem Details */
+export type ApiResponse<T = unknown> = OkResponse<T> | ProblemDetails;
 
 // Configuration types
 export const ConfigSchema = z.object({
