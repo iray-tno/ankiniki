@@ -4,47 +4,54 @@ import { ApiResponse, ValidationError } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import { logger } from '../utils/logger';
 import { ok } from '../utils/response';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = Router();
 
 // Get all decks
-router.get('/', async (req, res: Response<ApiResponse<string[]>>) => {
-  try {
-    const deckNames = await ankiConnect.getDeckNames();
-    res.json(ok(deckNames));
-  } catch (error) {
-    logger.error('Failed to get decks', error);
-    throw error;
-  }
-});
+router.get(
+  '/',
+  asyncHandler(async (req, res: Response<ApiResponse<string[]>>) => {
+    try {
+      const deckNames = await ankiConnect.getDeckNames();
+      res.json(ok(deckNames));
+    } catch (error) {
+      logger.error('Failed to get decks', error);
+      throw error;
+    }
+  })
+);
 
 // Create deck
 const CreateDeckSchema = z.object({
   name: z.string().min(1).max(100),
 });
 
-router.post('/', async (req, res: Response<ApiResponse<{ id: number }>>) => {
-  try {
-    const { name } = CreateDeckSchema.parse(req.body);
+router.post(
+  '/',
+  asyncHandler(async (req, res: Response<ApiResponse<{ id: number }>>) => {
+    try {
+      const { name } = CreateDeckSchema.parse(req.body);
 
-    // Check if deck already exists
-    const existingDecks = await ankiConnect.getDeckNames();
-    if (existingDecks.includes(name)) {
-      throw new ValidationError(`Deck '${name}' already exists`);
+      // Check if deck already exists
+      const existingDecks = await ankiConnect.getDeckNames();
+      if (existingDecks.includes(name)) {
+        throw new ValidationError(`Deck '${name}' already exists`);
+      }
+
+      const deckId = await ankiConnect.createDeck(name);
+
+      res
+        .status(201)
+        .json(ok({ id: deckId }, `Deck '${name}' created successfully`));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new ValidationError(`Invalid deck data: ${error.message}`);
+      }
+      throw error;
     }
-
-    const deckId = await ankiConnect.createDeck(name);
-
-    res
-      .status(201)
-      .json(ok({ id: deckId }, `Deck '${name}' created successfully`));
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError(`Invalid deck data: ${error.message}`);
-    }
-    throw error;
-  }
-});
+  })
+);
 
 // Delete deck
 const DeleteDeckSchema = z.object({
@@ -52,26 +59,29 @@ const DeleteDeckSchema = z.object({
   deleteCards: z.boolean().default(false),
 });
 
-router.delete('/:name', async (req, res: Response<ApiResponse>) => {
-  try {
-    const { name } = req.params;
-    const { deleteCards } = DeleteDeckSchema.parse(req.body);
+router.delete(
+  '/:name',
+  asyncHandler(async (req, res: Response<ApiResponse>) => {
+    try {
+      const { name } = req.params;
+      const { deleteCards } = DeleteDeckSchema.parse(req.body);
 
-    // Check if deck exists
-    const existingDecks = await ankiConnect.getDeckNames();
-    if (!existingDecks.includes(name)) {
-      throw new ValidationError(`Deck '${name}' does not exist`);
+      // Check if deck exists
+      const existingDecks = await ankiConnect.getDeckNames();
+      if (!existingDecks.includes(name)) {
+        throw new ValidationError(`Deck '${name}' does not exist`);
+      }
+
+      await ankiConnect.deleteDeck(name, deleteCards);
+
+      res.json(ok(null, `Deck '${name}' deleted successfully`));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new ValidationError(`Invalid delete request: ${error.message}`);
+      }
+      throw error;
     }
-
-    await ankiConnect.deleteDeck(name, deleteCards);
-
-    res.json(ok(null, `Deck '${name}' deleted successfully`));
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError(`Invalid delete request: ${error.message}`);
-    }
-    throw error;
-  }
-});
+  })
+);
 
 export default router;

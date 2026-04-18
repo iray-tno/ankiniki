@@ -10,6 +10,7 @@ import {
 import { logger } from '../../utils/logger';
 import { ok, sendProblem, PROBLEM_TYPES } from '../../utils/response';
 import { upload, createCards } from './shared';
+import { asyncHandler } from '../../utils/asyncHandler';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ interface MulterRequest extends Request {
 router.post(
   '/',
   upload.single('file'),
-  async (req: MulterRequest, res: Response) => {
+  asyncHandler(async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
         return sendProblem(res, 400, 'No JSON file uploaded', {
@@ -127,7 +128,7 @@ router.post(
         }
       );
     }
-  }
+  })
 );
 
 /**
@@ -140,7 +141,7 @@ router.post(
 router.post(
   '/preview',
   upload.single('file'),
-  async (req: MulterRequest, res: Response) => {
+  asyncHandler(async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
         return sendProblem(res, 400, 'No JSON file uploaded', {
@@ -214,86 +215,89 @@ router.post(
         }
       );
     }
-  }
+  })
 );
 
 /**
  * POST /api/import/json/body
  * Programmatic JSON import — accepts cards directly in the request body.
  */
-router.post('/body', async (req: Request, res: Response) => {
-  try {
-    const { cards, options: rawOptions } = req.body as {
-      cards?: unknown;
-      options?: unknown;
-    };
+router.post(
+  '/body',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { cards, options: rawOptions } = req.body as {
+        cards?: unknown;
+        options?: unknown;
+      };
 
-    if (!cards) {
-      return sendProblem(res, 400, 'Missing "cards" field in request body', {
-        type: PROBLEM_TYPES.VALIDATION,
-      });
-    }
+      if (!cards) {
+        return sendProblem(res, 400, 'Missing "cards" field in request body', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
+      }
 
-    const validatedOptions = JsonImportOptionsSchema.parse(rawOptions ?? {});
-    const jsonData: JsonImportFormat | JsonCard[] = Array.isArray(cards)
-      ? (cards as JsonCard[])
-      : { cards: cards as JsonCard[] };
+      const validatedOptions = JsonImportOptionsSchema.parse(rawOptions ?? {});
+      const jsonData: JsonImportFormat | JsonCard[] = Array.isArray(cards)
+        ? (cards as JsonCard[])
+        : { cards: cards as JsonCard[] };
 
-    const processedCards = processJsonCards(jsonData, validatedOptions);
-    const { valid: validCards, errors: invalidCards } =
-      validateCards(processedCards);
+      const processedCards = processJsonCards(jsonData, validatedOptions);
+      const { valid: validCards, errors: invalidCards } =
+        validateCards(processedCards);
 
-    logger.info('JSON body import started', { cards: processedCards.length });
+      logger.info('JSON body import started', { cards: processedCards.length });
 
-    if (validatedOptions.dryRun) {
-      return res.json(
+      if (validatedOptions.dryRun) {
+        return res.json(
+          ok({
+            dryRun: true,
+            totalCards: processedCards.length,
+            validCards: validCards.length,
+            invalidCards: invalidCards.length,
+            preview: validCards.slice(0, 5),
+            errors: invalidCards,
+          })
+        );
+      }
+
+      const { results, successfulCards, failedCards } = await createCards(
+        validCards,
+        invalidCards,
+        'json-body'
+      );
+
+      res.json(
         ok({
-          dryRun: true,
           totalCards: processedCards.length,
-          validCards: validCards.length,
-          invalidCards: invalidCards.length,
-          preview: validCards.slice(0, 5),
-          errors: invalidCards,
+          successfulCards,
+          failedCards: failedCards + invalidCards.length,
+          results: [...results, ...invalidCards],
+          summary: {
+            imported: successfulCards,
+            failed: failedCards,
+            invalid: invalidCards.length,
+          },
         })
       );
-    }
-
-    const { results, successfulCards, failedCards } = await createCards(
-      validCards,
-      invalidCards,
-      'json-body'
-    );
-
-    res.json(
-      ok({
-        totalCards: processedCards.length,
-        successfulCards,
-        failedCards: failedCards + invalidCards.length,
-        results: [...results, ...invalidCards],
-        summary: {
-          imported: successfulCards,
-          failed: failedCards,
-          invalid: invalidCards.length,
-        },
-      })
-    );
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return sendProblem(res, 400, 'Invalid import options', {
-        type: PROBLEM_TYPES.VALIDATION,
-        errors: error.errors,
-      });
-    }
-    logger.error('JSON body import error:', error);
-    sendProblem(
-      res,
-      500,
-      error instanceof Error ? error.message : 'Internal server error',
-      {
-        type: PROBLEM_TYPES.INTERNAL,
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return sendProblem(res, 400, 'Invalid import options', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
+        });
       }
-    );
-  }
-});
+      logger.error('JSON body import error:', error);
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        {
+          type: PROBLEM_TYPES.INTERNAL,
+        }
+      );
+    }
+  })
+);
 
 export default router;

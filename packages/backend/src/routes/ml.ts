@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { logger } from '../utils/logger';
 import mlService from '../services/mlService';
 import { ok, sendProblem, PROBLEM_TYPES } from '../utils/response';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = Router();
 
@@ -100,21 +101,24 @@ const enhanceQuestionSchema = z.object({
  *       200:
  *         description: ML service status
  */
-router.get('/health', async (req: Request, res: Response) => {
-  try {
-    const isAvailable = await mlService.checkHealth();
-    const models = await mlService.getAvailableModels();
+router.get(
+  '/health',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const isAvailable = await mlService.checkHealth();
+      const models = await mlService.getAvailableModels();
 
-    res.json(
-      ok({ available: isAvailable, base_url: mlService.getBaseURL(), models })
-    );
-  } catch (error) {
-    logger.error('Error checking ML service health:', error);
-    sendProblem(res, 500, 'Failed to check ML service health', {
-      type: PROBLEM_TYPES.INTERNAL,
-    });
-  }
-});
+      res.json(
+        ok({ available: isAvailable, base_url: mlService.getBaseURL(), models })
+      );
+    } catch (error) {
+      logger.error('Error checking ML service health:', error);
+      sendProblem(res, 500, 'Failed to check ML service health', {
+        type: PROBLEM_TYPES.INTERNAL,
+      });
+    }
+  })
+);
 
 /**
  * @swagger
@@ -146,39 +150,42 @@ router.get('/health', async (req: Request, res: Response) => {
  *       200:
  *         description: Generated flashcards
  */
-router.post('/generate/cards', async (req: Request, res: Response) => {
-  try {
-    const validatedData = generateCardsSchema.parse(req.body);
+router.post(
+  '/generate/cards',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const validatedData = generateCardsSchema.parse(req.body);
 
-    logger.info('Generating cards via ML service', {
-      content_type: validatedData.content_type,
-      max_cards: validatedData.max_cards,
-      programming_language: validatedData.programming_language,
-    });
+      logger.info('Generating cards via ML service', {
+        content_type: validatedData.content_type,
+        max_cards: validatedData.max_cards,
+        programming_language: validatedData.programming_language,
+      });
 
-    const result = await mlService.generateCards(validatedData);
+      const result = await mlService.generateCards(validatedData);
 
-    if (result.success) {
-      res.json(ok(result));
-    } else {
-      sendProblem(res, 500, result.error || 'Failed to generate cards', {
+      if (result.success) {
+        res.json(ok(result));
+      } else {
+        sendProblem(res, 500, result.error || 'Failed to generate cards', {
+          type: PROBLEM_TYPES.INTERNAL,
+        });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return sendProblem(res, 400, 'Invalid request data', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
+        });
+      }
+
+      logger.error('Error generating cards:', error);
+      sendProblem(res, 500, 'Internal server error', {
         type: PROBLEM_TYPES.INTERNAL,
       });
     }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return sendProblem(res, 400, 'Invalid request data', {
-        type: PROBLEM_TYPES.VALIDATION,
-        errors: error.errors,
-      });
-    }
-
-    logger.error('Error generating cards:', error);
-    sendProblem(res, 500, 'Internal server error', {
-      type: PROBLEM_TYPES.INTERNAL,
-    });
-  }
-});
+  })
+);
 
 /**
  * @swagger
@@ -203,39 +210,42 @@ router.post('/generate/cards', async (req: Request, res: Response) => {
  *       200:
  *         description: Processed content with extracted materials
  */
-router.post('/process/content', async (req: Request, res: Response) => {
-  try {
-    const validatedData = processContentSchema.parse(req.body);
+router.post(
+  '/process/content',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const validatedData = processContentSchema.parse(req.body);
 
-    logger.info('Processing content via ML service', {
-      content_type: validatedData.content_type,
-      extract_code: validatedData.extract_code,
-      extract_concepts: validatedData.extract_concepts,
-    });
+      logger.info('Processing content via ML service', {
+        content_type: validatedData.content_type,
+        extract_code: validatedData.extract_code,
+        extract_concepts: validatedData.extract_concepts,
+      });
 
-    const result = await mlService.processContent(validatedData);
+      const result = await mlService.processContent(validatedData);
 
-    if (result.success) {
-      res.json(ok(result));
-    } else {
-      sendProblem(res, 500, result.error || 'Failed to process content', {
+      if (result.success) {
+        res.json(ok(result));
+      } else {
+        sendProblem(res, 500, result.error || 'Failed to process content', {
+          type: PROBLEM_TYPES.INTERNAL,
+        });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return sendProblem(res, 400, 'Invalid request data', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
+        });
+      }
+
+      logger.error('Error processing content:', error);
+      sendProblem(res, 500, 'Internal server error', {
         type: PROBLEM_TYPES.INTERNAL,
       });
     }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return sendProblem(res, 400, 'Invalid request data', {
-        type: PROBLEM_TYPES.VALIDATION,
-        errors: error.errors,
-      });
-    }
-
-    logger.error('Error processing content:', error);
-    sendProblem(res, 500, 'Internal server error', {
-      type: PROBLEM_TYPES.INTERNAL,
-    });
-  }
-});
+  })
+);
 
 /**
  * @swagger
@@ -260,7 +270,7 @@ router.post('/process/content', async (req: Request, res: Response) => {
 router.post(
   '/process/file',
   upload.single('file'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return sendProblem(res, 400, 'No file uploaded', {
@@ -299,7 +309,7 @@ router.post(
         { type: PROBLEM_TYPES.INTERNAL }
       );
     }
-  }
+  })
 );
 
 /**
@@ -327,39 +337,42 @@ router.post(
  *       200:
  *         description: Enhanced question
  */
-router.post('/enhance/question', async (req: Request, res: Response) => {
-  try {
-    const validatedData = enhanceQuestionSchema.parse(req.body);
+router.post(
+  '/enhance/question',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const validatedData = enhanceQuestionSchema.parse(req.body);
 
-    logger.info('Enhancing question via ML service', {
-      target_difficulty: validatedData.target_difficulty,
-      question_type: validatedData.question_type,
-      has_context: !!validatedData.context,
-    });
+      logger.info('Enhancing question via ML service', {
+        target_difficulty: validatedData.target_difficulty,
+        question_type: validatedData.question_type,
+        has_context: !!validatedData.context,
+      });
 
-    const result = await mlService.enhanceQuestion(validatedData);
+      const result = await mlService.enhanceQuestion(validatedData);
 
-    if (result.success) {
-      res.json(ok(result));
-    } else {
-      sendProblem(res, 500, result.error || 'Failed to enhance question', {
+      if (result.success) {
+        res.json(ok(result));
+      } else {
+        sendProblem(res, 500, result.error || 'Failed to enhance question', {
+          type: PROBLEM_TYPES.INTERNAL,
+        });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return sendProblem(res, 400, 'Invalid request data', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
+        });
+      }
+
+      logger.error('Error enhancing question:', error);
+      sendProblem(res, 500, 'Internal server error', {
         type: PROBLEM_TYPES.INTERNAL,
       });
     }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return sendProblem(res, 400, 'Invalid request data', {
-        type: PROBLEM_TYPES.VALIDATION,
-        errors: error.errors,
-      });
-    }
-
-    logger.error('Error enhancing question:', error);
-    sendProblem(res, 500, 'Internal server error', {
-      type: PROBLEM_TYPES.INTERNAL,
-    });
-  }
-});
+  })
+);
 
 /**
  * @swagger
@@ -371,17 +384,20 @@ router.post('/enhance/question', async (req: Request, res: Response) => {
  *       200:
  *         description: List of available AI models and capabilities
  */
-router.get('/models', async (req: Request, res: Response) => {
-  try {
-    const models = await mlService.getAvailableModels();
+router.get(
+  '/models',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const models = await mlService.getAvailableModels();
 
-    res.json(ok(models));
-  } catch (error) {
-    logger.error('Error getting available models:', error);
-    sendProblem(res, 500, 'Failed to get available models', {
-      type: PROBLEM_TYPES.INTERNAL,
-    });
-  }
-});
+      res.json(ok(models));
+    } catch (error) {
+      logger.error('Error getting available models:', error);
+      sendProblem(res, 500, 'Failed to get available models', {
+        type: PROBLEM_TYPES.INTERNAL,
+      });
+    }
+  })
+);
 
 export default router;

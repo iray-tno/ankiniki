@@ -5,6 +5,7 @@ import { ankiConnect } from '../services/ankiConnect';
 import mlService from '../services/mlService';
 import { logger } from '../utils/logger';
 import { ok } from '../utils/response';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = Router();
 
@@ -18,7 +19,7 @@ const AddNoteSchema = z.object({
 
 router.post(
   '/',
-  async (req, res: Response<ApiResponse<{ noteId: number }>>) => {
+  asyncHandler(async (req, res: Response<ApiResponse<{ noteId: number }>>) => {
     try {
       const { deckName, modelName, fields, tags } = AddNoteSchema.parse(
         req.body
@@ -50,7 +51,7 @@ router.post(
       }
       throw error;
     }
-  }
+  })
 );
 
 // Update note fields
@@ -59,57 +60,66 @@ const UpdateNoteSchema = z.object({
   fields: z.record(z.string()),
 });
 
-router.put('/', async (req, res: Response<ApiResponse>) => {
-  try {
-    const { noteId, fields } = UpdateNoteSchema.parse(req.body);
+router.put(
+  '/',
+  asyncHandler(async (req, res: Response<ApiResponse>) => {
+    try {
+      const { noteId, fields } = UpdateNoteSchema.parse(req.body);
 
-    await ankiConnect.updateNoteFields(noteId, fields);
+      await ankiConnect.updateNoteFields(noteId, fields);
 
-    res.json(ok(null, 'Card updated successfully'));
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError(`Invalid update data: ${error.message}`);
+      res.json(ok(null, 'Card updated successfully'));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new ValidationError(`Invalid update data: ${error.message}`);
+      }
+      throw error;
     }
-    throw error;
-  }
-});
+  })
+);
 
 // Delete notes
 const DeleteNotesSchema = z.object({
   noteIds: z.array(z.number()),
 });
 
-router.delete('/', async (req, res: Response<ApiResponse>) => {
-  try {
-    const { noteIds } = DeleteNotesSchema.parse(req.body);
+router.delete(
+  '/',
+  asyncHandler(async (req, res: Response<ApiResponse>) => {
+    try {
+      const { noteIds } = DeleteNotesSchema.parse(req.body);
 
-    await ankiConnect.deleteNotes(noteIds);
+      await ankiConnect.deleteNotes(noteIds);
 
-    res.json(ok(null, `${noteIds.length} card(s) deleted successfully`));
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError(`Invalid delete data: ${error.message}`);
+      res.json(ok(null, `${noteIds.length} card(s) deleted successfully`));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new ValidationError(`Invalid delete data: ${error.message}`);
+      }
+      throw error;
     }
-    throw error;
-  }
-});
+  })
+);
 
 // Search notes
-router.get('/search', async (req, res: Response<ApiResponse<unknown[]>>) => {
-  try {
-    const query = z.string().parse(req.query.q);
+router.get(
+  '/search',
+  asyncHandler(async (req, res: Response<ApiResponse<unknown[]>>) => {
+    try {
+      const query = z.string().parse(req.query.q);
 
-    const noteIds = await ankiConnect.findNotes(query);
-    const notesInfo = await ankiConnect.notesInfo(noteIds);
+      const noteIds = await ankiConnect.findNotes(query);
+      const notesInfo = await ankiConnect.notesInfo(noteIds);
 
-    res.json(ok(notesInfo));
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError('Invalid search query');
+      res.json(ok(notesInfo));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new ValidationError('Invalid search query');
+      }
+      throw error;
     }
-    throw error;
-  }
-});
+  })
+);
 
 // AI-powered card generation with automatic Anki creation
 const GenerateAndCreateSchema = z.object({
@@ -130,165 +140,169 @@ const GenerateAndCreateSchema = z.object({
 
 router.post(
   '/generate-and-create',
-  async (
-    req,
-    res: Response<
-      ApiResponse<{
-        generated_cards: number;
-        created_notes: Array<{
+  asyncHandler(
+    async (
+      req,
+      res: Response<
+        ApiResponse<{
+          generated_cards: number;
+          created_notes: Array<{
+            noteId: number;
+            front: string;
+            success: boolean;
+            error?: string;
+          }>;
+          ml_available: boolean;
+        }>
+      >
+    ) => {
+      try {
+        const validatedData = GenerateAndCreateSchema.parse(req.body);
+
+        logger.info('AI-powered card generation and creation requested', {
+          content_type: validatedData.content_type,
+          deck: validatedData.deckName,
+          max_cards: validatedData.max_cards,
+          programming_language: validatedData.programming_language,
+        });
+
+        // Validate deck exists
+        const existingDecks = await ankiConnect.getDeckNames();
+        if (!existingDecks.includes(validatedData.deckName)) {
+          throw new ValidationError(
+            `Deck '${validatedData.deckName}' does not exist`
+          );
+        }
+
+        // Validate model exists
+        const existingModels = await ankiConnect.modelNames();
+        if (!existingModels.includes(validatedData.modelName)) {
+          throw new ValidationError(
+            `Model '${validatedData.modelName}' does not exist`
+          );
+        }
+
+        // Generate cards using ML service
+        const mlResult = await mlService.generateCards({
+          content: validatedData.content,
+          content_type: validatedData.content_type,
+          difficulty_level: validatedData.difficulty_level,
+          max_cards: validatedData.max_cards,
+          focus_areas: validatedData.focus_areas,
+          programming_language: validatedData.programming_language,
+          tags: validatedData.additional_tags,
+        });
+
+        if (!mlResult.success) {
+          throw new ValidationError(
+            `Failed to generate cards: ${mlResult.error}`
+          );
+        }
+
+        const createdNotes: Array<{
           noteId: number;
           front: string;
           success: boolean;
           error?: string;
-        }>;
-        ml_available: boolean;
-      }>
-    >
-  ): Promise<void> => {
-    try {
-      const validatedData = GenerateAndCreateSchema.parse(req.body);
+        }> = [];
 
-      logger.info('AI-powered card generation and creation requested', {
-        content_type: validatedData.content_type,
-        deck: validatedData.deckName,
-        max_cards: validatedData.max_cards,
-        programming_language: validatedData.programming_language,
-      });
+        // Create cards in Anki
+        for (const card of mlResult.cards) {
+          try {
+            // Enhance question if requested
+            let front = card.front;
+            if (validatedData.auto_enhance_questions && card.front) {
+              const enhanceResult = await mlService.enhanceQuestion({
+                original_question: card.front,
+                context: card.back,
+                target_difficulty: validatedData.difficulty_level,
+                question_type: 'concept',
+                programming_language: validatedData.programming_language,
+              });
 
-      // Validate deck exists
-      const existingDecks = await ankiConnect.getDeckNames();
-      if (!existingDecks.includes(validatedData.deckName)) {
-        throw new ValidationError(
-          `Deck '${validatedData.deckName}' does not exist`
-        );
-      }
+              if (enhanceResult.success) {
+                front = enhanceResult.enhanced_question.enhanced_question;
+              }
+            }
 
-      // Validate model exists
-      const existingModels = await ankiConnect.modelNames();
-      if (!existingModels.includes(validatedData.modelName)) {
-        throw new ValidationError(
-          `Model '${validatedData.modelName}' does not exist`
-        );
-      }
+            // Prepare fields based on model
+            const fields: Record<string, string> = {};
+            if (validatedData.modelName === 'Basic') {
+              fields['Front'] = front;
+              fields['Back'] = card.back;
+            } else if (validatedData.modelName === 'Cloze') {
+              // For cloze, put everything in Text field
+              fields['Text'] = `${front}\n\n${card.back}`;
+            } else {
+              // Default fallback
+              fields['Front'] = front;
+              fields['Back'] = card.back;
+            }
 
-      // Generate cards using ML service
-      const mlResult = await mlService.generateCards({
-        content: validatedData.content,
-        content_type: validatedData.content_type,
-        difficulty_level: validatedData.difficulty_level,
-        max_cards: validatedData.max_cards,
-        focus_areas: validatedData.focus_areas,
-        programming_language: validatedData.programming_language,
-        tags: validatedData.additional_tags,
-      });
+            // Combine ML-generated tags with user tags
+            const allTags = [
+              ...card.tags,
+              ...validatedData.additional_tags,
+              'ai-generated',
+              `difficulty-${card.difficulty}`,
+              `confidence-${Math.round(card.confidence_score * 100)}`,
+            ];
 
-      if (!mlResult.success) {
-        throw new ValidationError(
-          `Failed to generate cards: ${mlResult.error}`
-        );
-      }
+            // Add programming language tag if available
+            if (validatedData.programming_language) {
+              allTags.push(validatedData.programming_language);
+            }
 
-      const createdNotes: Array<{
-        noteId: number;
-        front: string;
-        success: boolean;
-        error?: string;
-      }> = [];
+            const noteId = await ankiConnect.addNote(
+              validatedData.deckName,
+              validatedData.modelName,
+              fields,
+              allTags
+            );
 
-      // Create cards in Anki
-      for (const card of mlResult.cards) {
-        try {
-          // Enhance question if requested
-          let front = card.front;
-          if (validatedData.auto_enhance_questions && card.front) {
-            const enhanceResult = await mlService.enhanceQuestion({
-              original_question: card.front,
-              context: card.back,
-              target_difficulty: validatedData.difficulty_level,
-              question_type: 'concept',
-              programming_language: validatedData.programming_language,
+            createdNotes.push({
+              noteId,
+              front,
+              success: true,
             });
 
-            if (enhanceResult.success) {
-              front = enhanceResult.enhanced_question.enhanced_question;
-            }
+            logger.info('Successfully created AI-generated card', {
+              noteId,
+              confidence: card.confidence_score,
+            });
+          } catch (error) {
+            logger.error('Failed to create AI-generated card', error);
+            createdNotes.push({
+              noteId: -1,
+              front: card.front,
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            });
           }
-
-          // Prepare fields based on model
-          const fields: Record<string, string> = {};
-          if (validatedData.modelName === 'Basic') {
-            fields['Front'] = front;
-            fields['Back'] = card.back;
-          } else if (validatedData.modelName === 'Cloze') {
-            // For cloze, put everything in Text field
-            fields['Text'] = `${front}\n\n${card.back}`;
-          } else {
-            // Default fallback
-            fields['Front'] = front;
-            fields['Back'] = card.back;
-          }
-
-          // Combine ML-generated tags with user tags
-          const allTags = [
-            ...card.tags,
-            ...validatedData.additional_tags,
-            'ai-generated',
-            `difficulty-${card.difficulty}`,
-            `confidence-${Math.round(card.confidence_score * 100)}`,
-          ];
-
-          // Add programming language tag if available
-          if (validatedData.programming_language) {
-            allTags.push(validatedData.programming_language);
-          }
-
-          const noteId = await ankiConnect.addNote(
-            validatedData.deckName,
-            validatedData.modelName,
-            fields,
-            allTags
-          );
-
-          createdNotes.push({
-            noteId,
-            front,
-            success: true,
-          });
-
-          logger.info('Successfully created AI-generated card', {
-            noteId,
-            confidence: card.confidence_score,
-          });
-        } catch (error) {
-          logger.error('Failed to create AI-generated card', error);
-          createdNotes.push({
-            noteId: -1,
-            front: card.front,
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          });
         }
-      }
 
-      const successfulCards = createdNotes.filter(note => note.success).length;
+        const successfulCards = createdNotes.filter(
+          note => note.success
+        ).length;
 
-      res.status(201).json(
-        ok(
-          {
-            generated_cards: mlResult.cards.length,
-            created_notes: createdNotes,
-            ml_available: mlService.getAvailability(),
-          },
-          `Successfully generated ${mlResult.cards.length} cards and created ${successfulCards} in Anki`
-        )
-      );
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        throw new ValidationError(`Invalid request data: ${error.message}`);
+        res.status(201).json(
+          ok(
+            {
+              generated_cards: mlResult.cards.length,
+              created_notes: createdNotes,
+              ml_available: mlService.getAvailability(),
+            },
+            `Successfully generated ${mlResult.cards.length} cards and created ${successfulCards} in Anki`
+          )
+        );
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new ValidationError(`Invalid request data: ${error.message}`);
+        }
+        throw error;
       }
-      throw error;
     }
-  }
+  )
 );
 
 export default router;
