@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ANKI_CONNECT } from '@ankiniki/shared';
 
 export interface AnkinikiConfig {
   ankiConnectUrl: string;
@@ -21,7 +22,7 @@ export class ConfigurationManager {
   getAnkiConnectUrl(): string {
     return this.getConfiguration().get(
       'ankiConnectUrl',
-      'http://localhost:8765'
+      ANKI_CONNECT.DEFAULT_URL
     );
   }
 

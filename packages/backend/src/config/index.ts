@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
-import { SERVER } from '@ankiniki/shared';
+import { ANKI_CONNECT, SERVER } from '@ankiniki/shared';
 
 dotenv.config();
 
@@ -9,8 +9,10 @@ const ConfigSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
-  ANKI_CONNECT_URL: z.string().default('http://localhost:8765'),
-  ANKI_CONNECT_TIMEOUT: z.string().default('5000'),
+  ANKI_CONNECT_URL: z.string().default(ANKI_CONNECT.DEFAULT_URL),
+  ANKI_CONNECT_TIMEOUT: z
+    .string()
+    .default(String(ANKI_CONNECT.DEFAULT_TIMEOUT)),
   ML_SERVICE_URL: z.string().default('http://localhost:8000'),
   ML_SERVICE_TIMEOUT: z.string().default('30000'),
   LOG_LEVEL: z.string().default('info'),
