@@ -4,6 +4,7 @@ import { ApiResponse, ValidationError } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import mlService from '../services/mlService';
 import { logger } from '../utils/logger';
+import { ok } from '../utils/response';
 
 const router = Router();
 
@@ -42,11 +43,7 @@ router.post(
         tags
       );
 
-      res.status(201).json({
-        success: true,
-        data: { noteId },
-        message: 'Card created successfully',
-      });
+      res.status(201).json(ok({ noteId }, 'Card created successfully'));
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new ValidationError(`Invalid card data: ${error.message}`);
@@ -68,10 +65,7 @@ router.put('/', async (req, res: Response<ApiResponse>) => {
 
     await ankiConnect.updateNoteFields(noteId, fields);
 
-    res.json({
-      success: true,
-      message: 'Card updated successfully',
-    });
+    res.json(ok(null, 'Card updated successfully'));
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(`Invalid update data: ${error.message}`);
@@ -91,10 +85,7 @@ router.delete('/', async (req, res: Response<ApiResponse>) => {
 
     await ankiConnect.deleteNotes(noteIds);
 
-    res.json({
-      success: true,
-      message: `${noteIds.length} card(s) deleted successfully`,
-    });
+    res.json(ok(null, `${noteIds.length} card(s) deleted successfully`));
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(`Invalid delete data: ${error.message}`);
@@ -111,10 +102,7 @@ router.get('/search', async (req, res: Response<ApiResponse<unknown[]>>) => {
     const noteIds = await ankiConnect.findNotes(query);
     const notesInfo = await ankiConnect.notesInfo(noteIds);
 
-    res.json({
-      success: true,
-      data: notesInfo,
-    });
+    res.json(ok(notesInfo));
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError('Invalid search query');
@@ -284,15 +272,16 @@ router.post(
 
       const successfulCards = createdNotes.filter(note => note.success).length;
 
-      res.status(201).json({
-        success: true,
-        data: {
-          generated_cards: mlResult.cards.length,
-          created_notes: createdNotes,
-          ml_available: mlService.getAvailability(),
-        },
-        message: `Successfully generated ${mlResult.cards.length} cards and created ${successfulCards} in Anki`,
-      });
+      res.status(201).json(
+        ok(
+          {
+            generated_cards: mlResult.cards.length,
+            created_notes: createdNotes,
+            ml_available: mlService.getAvailability(),
+          },
+          `Successfully generated ${mlResult.cards.length} cards and created ${successfulCards} in Anki`
+        )
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new ValidationError(`Invalid request data: ${error.message}`);

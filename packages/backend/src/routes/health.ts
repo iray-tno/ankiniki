@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { ApiResponse } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import { config } from '../config';
+import { ok, fail } from '../utils/response';
 
 const router = Router();
 
@@ -28,13 +29,11 @@ router.get('/', async (req, res: Response<ApiResponse<HealthStatus>>) => {
     },
   };
 
-  res.status(ankiConnected ? 200 : 503).json({
-    success: ankiConnected,
-    data: healthData,
-    message: ankiConnected
-      ? 'All services are healthy'
-      : 'AnkiConnect is not available',
-  });
+  if (ankiConnected) {
+    res.status(200).json(ok(healthData, 'All services are healthy'));
+  } else {
+    res.status(503).json(fail('AnkiConnect is not available', healthData));
+  }
 });
 
 export default router;

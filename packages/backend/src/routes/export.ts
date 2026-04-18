@@ -8,6 +8,7 @@ import os from 'os';
 import path from 'path';
 import { ankiConnect } from '../services/ankiConnect';
 import { logger } from '../utils/logger';
+import { fail } from '../utils/response';
 
 const router = Router();
 
@@ -32,27 +33,24 @@ router.get('/deck/:name', async (req: Request, res: Response) => {
     // Verify deck exists
     const decks = await ankiConnect.getDeckNames();
     if (!decks.includes(deckName)) {
-      return res.status(404).json({
-        success: false,
-        error: `Deck "${deckName}" not found`,
-      });
+      return res.status(404).json(fail(`Deck "${deckName}" not found`));
     }
 
     logger.info('Exporting deck', { deckName, includeSched, tmpFile });
 
-    const ok = await ankiConnect.exportPackage(deckName, tmpFile, includeSched);
-    if (!ok) {
-      return res.status(500).json({
-        success: false,
-        error: 'AnkiConnect failed to export the deck',
-      });
+    const exported = await ankiConnect.exportPackage(
+      deckName,
+      tmpFile,
+      includeSched
+    );
+    if (!exported) {
+      return res
+        .status(500)
+        .json(fail('AnkiConnect failed to export the deck'));
     }
 
     if (!fs.existsSync(tmpFile)) {
-      return res.status(500).json({
-        success: false,
-        error: 'Export file was not created',
-      });
+      return res.status(500).json(fail('Export file was not created'));
     }
 
     const stat = fs.statSync(tmpFile);
@@ -86,18 +84,17 @@ router.get('/deck/:name', async (req: Request, res: Response) => {
       logger.error('Error streaming export file', err);
       fs.unlink(tmpFile, () => {});
       if (!res.headersSent) {
-        res
-          .status(500)
-          .json({ success: false, error: 'Failed to stream file' });
+        res.status(500).json(fail('Failed to stream file'));
       }
     });
   } catch (error) {
     fs.unlink(tmpFile, () => {});
     logger.error('Deck export error', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error',
-    });
+    res
+      .status(500)
+      .json(
+        fail(error instanceof Error ? error.message : 'Internal server error')
+      );
   }
 });
 
