@@ -8,7 +8,7 @@ import os from 'os';
 import path from 'path';
 import { ankiConnect } from '../services/ankiConnect';
 import { logger } from '../utils/logger';
-import { fail } from '../utils/response';
+import { sendProblem, PROBLEM_TYPES } from '../utils/response';
 
 const router = Router();
 
@@ -33,7 +33,10 @@ router.get('/deck/:name', async (req: Request, res: Response) => {
     // Verify deck exists
     const decks = await ankiConnect.getDeckNames();
     if (!decks.includes(deckName)) {
-      return res.status(404).json(fail(`Deck "${deckName}" not found`));
+      return sendProblem(res, 404, `Deck "${deckName}" not found`, {
+        type: PROBLEM_TYPES.NOT_FOUND,
+        instance: req.path,
+      });
     }
 
     logger.info('Exporting deck', { deckName, includeSched, tmpFile });
@@ -44,13 +47,17 @@ router.get('/deck/:name', async (req: Request, res: Response) => {
       includeSched
     );
     if (!exported) {
-      return res
-        .status(500)
-        .json(fail('AnkiConnect failed to export the deck'));
+      return sendProblem(res, 500, 'AnkiConnect failed to export the deck', {
+        type: PROBLEM_TYPES.ANKI_CONNECT,
+        instance: req.path,
+      });
     }
 
     if (!fs.existsSync(tmpFile)) {
-      return res.status(500).json(fail('Export file was not created'));
+      return sendProblem(res, 500, 'Export file was not created', {
+        type: PROBLEM_TYPES.INTERNAL,
+        instance: req.path,
+      });
     }
 
     const stat = fs.statSync(tmpFile);
@@ -84,17 +91,21 @@ router.get('/deck/:name', async (req: Request, res: Response) => {
       logger.error('Error streaming export file', err);
       fs.unlink(tmpFile, () => {});
       if (!res.headersSent) {
-        res.status(500).json(fail('Failed to stream file'));
+        sendProblem(res, 500, 'Failed to stream file', {
+          type: PROBLEM_TYPES.INTERNAL,
+          instance: req.path,
+        });
       }
     });
   } catch (error) {
     fs.unlink(tmpFile, () => {});
     logger.error('Deck export error', error);
-    res
-      .status(500)
-      .json(
-        fail(error instanceof Error ? error.message : 'Internal server error')
-      );
+    sendProblem(
+      res,
+      500,
+      error instanceof Error ? error.message : 'Internal server error',
+      { type: PROBLEM_TYPES.INTERNAL, instance: req.path }
+    );
   }
 });
 

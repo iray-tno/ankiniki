@@ -24,7 +24,7 @@ import {
 } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import { logger } from '../utils/logger';
-import { ok, fail } from '../utils/response';
+import { ok, sendProblem, PROBLEM_TYPES } from '../utils/response';
 
 // Extend Request interface for multer
 interface MulterRequest extends Request {
@@ -125,7 +125,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json(fail('No CSV file uploaded'));
+        return sendProblem(res, 400, 'No CSV file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       // Parse options from form data
@@ -134,7 +136,9 @@ router.post(
         try {
           options = JSON.parse(req.body.options);
         } catch (error) {
-          return res.status(400).json(fail('Invalid options JSON format'));
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
 
@@ -264,17 +268,19 @@ router.post(
       );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res
-          .status(400)
-          .json(fail('Invalid import options', error.errors));
+        return sendProblem(res, 400, 'Invalid import options', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
+        });
       }
 
       logger.error('CSV import error:', error);
-      res
-        .status(500)
-        .json(
-          fail(error instanceof Error ? error.message : 'Internal server error')
-        );
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -308,7 +314,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json(fail('No CSV file uploaded'));
+        return sendProblem(res, 400, 'No CSV file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       // Parse options with dryRun forced to true
@@ -320,7 +328,9 @@ router.post(
           const parsed = JSON.parse(req.body.options);
           options = { ...parsed, dryRun: true };
         } catch (error) {
-          return res.status(400).json(fail('Invalid options JSON format'));
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
 
@@ -349,11 +359,12 @@ router.post(
       );
     } catch (error) {
       logger.error('CSV preview error:', error);
-      res
-        .status(500)
-        .json(
-          fail(error instanceof Error ? error.message : 'Internal server error')
-        );
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -387,7 +398,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json(fail('No JSON file uploaded'));
+        return sendProblem(res, 400, 'No JSON file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       // Parse options from form data
@@ -396,7 +409,9 @@ router.post(
         try {
           options = JSON.parse(req.body.options);
         } catch (error) {
-          return res.status(400).json(fail('Invalid options JSON format'));
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
 
@@ -415,9 +430,9 @@ router.post(
         const jsonContent = req.file.buffer.toString('utf-8');
         jsonData = JSON.parse(jsonContent);
       } catch (error) {
-        return res
-          .status(400)
-          .json(fail('Invalid JSON format in uploaded file'));
+        return sendProblem(res, 400, 'Invalid JSON format in uploaded file', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       // Process JSON into cards
@@ -532,21 +547,21 @@ router.post(
       );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res
-          .status(400)
-          .json(fail('Invalid import options', error.errors));
+        return sendProblem(res, 400, 'Invalid import options', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
+        });
       }
 
       logger.error('JSON import error:', error);
-      res
-        .status(500)
-        .json(
-          fail(
-            error instanceof Error
-              ? error.message
-              : String(error) || 'Internal server error'
-          )
-        );
+      sendProblem(
+        res,
+        500,
+        error instanceof Error
+          ? error.message
+          : String(error) || 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -580,7 +595,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json(fail('No JSON file uploaded'));
+        return sendProblem(res, 400, 'No JSON file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       // Parse options with dryRun forced to true
@@ -592,7 +609,9 @@ router.post(
           const parsed = JSON.parse(req.body.options);
           options = { ...parsed, dryRun: true };
         } catch (error) {
-          return res.status(400).json(fail('Invalid options JSON format'));
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
 
@@ -604,9 +623,9 @@ router.post(
         const jsonContent = req.file.buffer.toString('utf-8');
         jsonData = JSON.parse(jsonContent);
       } catch (error) {
-        return res
-          .status(400)
-          .json(fail('Invalid JSON format in uploaded file'));
+        return sendProblem(res, 400, 'Invalid JSON format in uploaded file', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       // Process and validate
@@ -644,11 +663,12 @@ router.post(
       );
     } catch (error) {
       logger.error('JSON preview error:', error);
-      res
-        .status(500)
-        .json(
-          fail(error instanceof Error ? error.message : 'Internal server error')
-        );
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -661,7 +681,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json(fail('No file uploaded'));
+        return sendProblem(res, 400, 'No file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       let options: Partial<z.infer<typeof MarkdownImportOptionsSchema>> = {};
@@ -669,7 +691,9 @@ router.post(
         try {
           options = JSON.parse(req.body.options);
         } catch {
-          return res.status(400).json(fail('Invalid options JSON format'));
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
       const validatedOptions = MarkdownImportOptionsSchema.parse(options);
@@ -763,16 +787,18 @@ router.post(
       );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res
-          .status(400)
-          .json(fail('Invalid import options', error.errors));
+        return sendProblem(res, 400, 'Invalid import options', {
+          type: PROBLEM_TYPES.VALIDATION,
+          errors: error.errors,
+        });
       }
       logger.error('Markdown import error:', error);
-      res
-        .status(500)
-        .json(
-          fail(error instanceof Error ? error.message : 'Internal server error')
-        );
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -783,7 +809,9 @@ router.post(
   async (req: MulterRequest, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json(fail('No file uploaded'));
+        return sendProblem(res, 400, 'No file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       let options: Partial<z.infer<typeof MarkdownImportOptionsSchema>> = {
@@ -793,7 +821,9 @@ router.post(
         try {
           options = { ...JSON.parse(req.body.options), dryRun: true };
         } catch {
-          return res.status(400).json(fail('Invalid options JSON format'));
+          return sendProblem(res, 400, 'Invalid options JSON format', {
+            type: PROBLEM_TYPES.VALIDATION,
+          });
         }
       }
       const validatedOptions = MarkdownImportOptionsSchema.parse(options);
@@ -815,11 +845,12 @@ router.post(
       );
     } catch (error) {
       logger.error('Markdown preview error:', error);
-      res
-        .status(500)
-        .json(
-          fail(error instanceof Error ? error.message : 'Internal server error')
-        );
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -834,9 +865,9 @@ router.post('/json/body', async (req: Request, res: Response) => {
     };
 
     if (!cards) {
-      return res
-        .status(400)
-        .json(fail('Missing "cards" field in request body'));
+      return sendProblem(res, 400, 'Missing "cards" field in request body', {
+        type: PROBLEM_TYPES.VALIDATION,
+      });
     }
 
     const validatedOptions = JsonImportOptionsSchema.parse(rawOptions ?? {});
@@ -933,14 +964,18 @@ router.post('/json/body', async (req: Request, res: Response) => {
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json(fail('Invalid import options', error.errors));
+      return sendProblem(res, 400, 'Invalid import options', {
+        type: PROBLEM_TYPES.VALIDATION,
+        errors: error.errors,
+      });
     }
     logger.error('JSON body import error:', error);
-    res
-      .status(500)
-      .json(
-        fail(error instanceof Error ? error.message : 'Internal server error')
-      );
+    sendProblem(
+      res,
+      500,
+      error instanceof Error ? error.message : 'Internal server error',
+      { type: PROBLEM_TYPES.INTERNAL }
+    );
   }
 });
 

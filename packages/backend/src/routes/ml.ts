@@ -7,7 +7,7 @@ import multer from 'multer';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 import mlService from '../services/mlService';
-import { ok, fail } from '../utils/response';
+import { ok, sendProblem, PROBLEM_TYPES } from '../utils/response';
 
 const router = Router();
 
@@ -110,7 +110,9 @@ router.get('/health', async (req: Request, res: Response) => {
     );
   } catch (error) {
     logger.error('Error checking ML service health:', error);
-    res.status(500).json(fail('Failed to check ML service health'));
+    sendProblem(res, 500, 'Failed to check ML service health', {
+      type: PROBLEM_TYPES.INTERNAL,
+    });
   }
 });
 
@@ -159,15 +161,22 @@ router.post('/generate/cards', async (req: Request, res: Response) => {
     if (result.success) {
       res.json(ok(result));
     } else {
-      res.status(500).json(fail(result.error || 'Failed to generate cards'));
+      sendProblem(res, 500, result.error || 'Failed to generate cards', {
+        type: PROBLEM_TYPES.INTERNAL,
+      });
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json(fail('Invalid request data', error.errors));
+      return sendProblem(res, 400, 'Invalid request data', {
+        type: PROBLEM_TYPES.VALIDATION,
+        errors: error.errors,
+      });
     }
 
     logger.error('Error generating cards:', error);
-    res.status(500).json(fail('Internal server error'));
+    sendProblem(res, 500, 'Internal server error', {
+      type: PROBLEM_TYPES.INTERNAL,
+    });
   }
 });
 
@@ -209,15 +218,22 @@ router.post('/process/content', async (req: Request, res: Response) => {
     if (result.success) {
       res.json(ok(result));
     } else {
-      res.status(500).json(fail(result.error || 'Failed to process content'));
+      sendProblem(res, 500, result.error || 'Failed to process content', {
+        type: PROBLEM_TYPES.INTERNAL,
+      });
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json(fail('Invalid request data', error.errors));
+      return sendProblem(res, 400, 'Invalid request data', {
+        type: PROBLEM_TYPES.VALIDATION,
+        errors: error.errors,
+      });
     }
 
     logger.error('Error processing content:', error);
-    res.status(500).json(fail('Internal server error'));
+    sendProblem(res, 500, 'Internal server error', {
+      type: PROBLEM_TYPES.INTERNAL,
+    });
   }
 });
 
@@ -247,7 +263,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json(fail('No file uploaded'));
+        return sendProblem(res, 400, 'No file uploaded', {
+          type: PROBLEM_TYPES.VALIDATION,
+        });
       }
 
       const { buffer, originalname, mimetype } = req.file;
@@ -267,19 +285,19 @@ router.post(
       if (result.success) {
         res.json(ok({ ...result, filename: originalname }));
       } else {
-        res.status(500).json(
-          fail(result.error || 'Failed to process file', {
-            filename: originalname,
-          })
-        );
+        sendProblem(res, 500, result.error || 'Failed to process file', {
+          type: PROBLEM_TYPES.INTERNAL,
+          filename: originalname,
+        });
       }
     } catch (error) {
       logger.error('Error processing file:', error);
-      res
-        .status(500)
-        .json(
-          fail(error instanceof Error ? error.message : 'Internal server error')
-        );
+      sendProblem(
+        res,
+        500,
+        error instanceof Error ? error.message : 'Internal server error',
+        { type: PROBLEM_TYPES.INTERNAL }
+      );
     }
   }
 );
@@ -324,15 +342,22 @@ router.post('/enhance/question', async (req: Request, res: Response) => {
     if (result.success) {
       res.json(ok(result));
     } else {
-      res.status(500).json(fail(result.error || 'Failed to enhance question'));
+      sendProblem(res, 500, result.error || 'Failed to enhance question', {
+        type: PROBLEM_TYPES.INTERNAL,
+      });
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json(fail('Invalid request data', error.errors));
+      return sendProblem(res, 400, 'Invalid request data', {
+        type: PROBLEM_TYPES.VALIDATION,
+        errors: error.errors,
+      });
     }
 
     logger.error('Error enhancing question:', error);
-    res.status(500).json(fail('Internal server error'));
+    sendProblem(res, 500, 'Internal server error', {
+      type: PROBLEM_TYPES.INTERNAL,
+    });
   }
 });
 
@@ -353,7 +378,9 @@ router.get('/models', async (req: Request, res: Response) => {
     res.json(ok(models));
   } catch (error) {
     logger.error('Error getting available models:', error);
-    res.status(500).json(fail('Failed to get available models'));
+    sendProblem(res, 500, 'Failed to get available models', {
+      type: PROBLEM_TYPES.INTERNAL,
+    });
   }
 });
 
