@@ -11,6 +11,7 @@ import { createDeckCommand } from './commands/deck';
 import { createDeleteCommand } from './commands/delete';
 import { createExportCommand } from './commands/export';
 import { createBundleCommand } from './commands/bundle';
+import { createGenerateCommand } from './commands/generate';
 import { APP_CONFIG } from '@ankiniki/shared';
 
 const program = new Command();
@@ -30,6 +31,7 @@ program.addCommand(createDeckCommand());
 program.addCommand(createDeleteCommand());
 program.addCommand(createExportCommand());
 program.addCommand(createBundleCommand());
+program.addCommand(createGenerateCommand());
 
 // Global error handling
 process.on('unhandledRejection', error => {
