@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import { ANKI_MESSAGES } from '@ankiniki/shared';
 import { AnkiClient } from '../anki-client';
 
 export function createExportCommand(): Command {
@@ -29,12 +30,12 @@ export function createExportCommand(): Command {
         const client = new AnkiClient();
 
         try {
-          const spinner = ora('Connecting to Anki...').start();
+          const spinner = ora(ANKI_MESSAGES.CONNECTING).start();
           if (!(await client.ping())) {
-            spinner.fail('Cannot connect to Anki');
+            spinner.fail(ANKI_MESSAGES.CANNOT_CONNECT);
             process.exit(1);
           }
-          spinner.succeed('Connected to Anki');
+          spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
           // Verify deck exists
           const decks = await client.getDeckNames();

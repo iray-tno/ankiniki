@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { ANKI_MESSAGES } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import { config } from '../config';
 import { ok, sendProblem, PROBLEM_TYPES } from '../utils/response';
@@ -34,7 +35,7 @@ router.get(
     if (ankiConnected) {
       res.status(200).json(ok(healthData, 'All services are healthy'));
     } else {
-      sendProblem(res, 503, 'AnkiConnect is not available', {
+      sendProblem(res, 503, ANKI_MESSAGES.NOT_AVAILABLE, {
         type: PROBLEM_TYPES.ANKI_CONNECT,
         instance: req.path,
         ankiConnect: healthData.ankiConnect,

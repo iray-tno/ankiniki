@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
+import { ANKI_MESSAGES } from '@ankiniki/shared';
 import { AnkiClient } from '../anki-client';
 import { loadConfig } from '../config';
 
@@ -22,16 +23,14 @@ export function createAddCommand(): Command {
 
       try {
         // Check connection first
-        const spinner = ora('Connecting to Anki...').start();
+        const spinner = ora(ANKI_MESSAGES.CONNECTING).start();
         const isConnected = await client.ping();
 
         if (!isConnected) {
-          spinner.fail(
-            'Cannot connect to Anki. Make sure Anki is running with AnkiConnect.'
-          );
+          spinner.fail(ANKI_MESSAGES.CANNOT_CONNECT_HINT);
           return;
         }
-        spinner.succeed('Connected to Anki');
+        spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
         let cardData = {
           deck: deck || config.defaultDeck,

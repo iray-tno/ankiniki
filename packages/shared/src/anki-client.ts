@@ -3,6 +3,7 @@ import {
   AnkiConnectResponse,
   AnkiConnectError,
   ANKI_CONNECT,
+  ANKI_MESSAGES,
 } from './index';
 
 export interface NoteInfo {
@@ -75,7 +76,7 @@ export class AnkiConnectClient {
       }
 
       if (error instanceof DOMException && error.name === 'AbortError') {
-        const msg = 'AnkiConnect request timed out';
+        const msg = ANKI_MESSAGES.REQUEST_TIMEOUT;
         this.logger?.error(msg, { action });
         throw new AnkiConnectError(msg);
       }
@@ -88,8 +89,7 @@ export class AnkiConnectClient {
           cause?.code === 'ECONNREFUSED' ||
           error.message.includes('ECONNREFUSED')
         ) {
-          const msg =
-            'Cannot connect to Anki. Make sure Anki is running and AnkiConnect addon is installed.';
+          const msg = ANKI_MESSAGES.CANNOT_CONNECT_HINT;
           this.logger?.error(msg, { action });
           throw new AnkiConnectError(msg);
         }

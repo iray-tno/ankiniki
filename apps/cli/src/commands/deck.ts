@@ -6,6 +6,7 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
+import { ANKI_MESSAGES } from '@ankiniki/shared';
 import { AnkiClient } from '../anki-client';
 
 export function createDeckCommand(): Command {
@@ -19,12 +20,12 @@ export function createDeckCommand(): Command {
     .action(async () => {
       const client = new AnkiClient();
       try {
-        const spinner = ora('Connecting to Anki...').start();
+        const spinner = ora(ANKI_MESSAGES.CONNECTING).start();
         if (!(await client.ping())) {
-          spinner.fail('Cannot connect to Anki');
+          spinner.fail(ANKI_MESSAGES.CANNOT_CONNECT);
           process.exit(1);
         }
-        spinner.succeed('Connected to Anki');
+        spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
         const loadSpinner = ora('Loading decks...').start();
         const deckNames = await client.getDeckNames();
@@ -50,12 +51,12 @@ export function createDeckCommand(): Command {
     .action(async (name: string) => {
       const client = new AnkiClient();
       try {
-        const spinner = ora('Connecting to Anki...').start();
+        const spinner = ora(ANKI_MESSAGES.CONNECTING).start();
         if (!(await client.ping())) {
-          spinner.fail('Cannot connect to Anki');
+          spinner.fail(ANKI_MESSAGES.CANNOT_CONNECT);
           process.exit(1);
         }
-        spinner.succeed('Connected to Anki');
+        spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
         const createSpinner = ora(`Creating deck "${name}"...`).start();
         await client.createDeck(name);
@@ -74,12 +75,12 @@ export function createDeckCommand(): Command {
     .action(async (name: string, options: { force?: boolean }) => {
       const client = new AnkiClient();
       try {
-        const spinner = ora('Connecting to Anki...').start();
+        const spinner = ora(ANKI_MESSAGES.CONNECTING).start();
         if (!(await client.ping())) {
-          spinner.fail('Cannot connect to Anki');
+          spinner.fail(ANKI_MESSAGES.CANNOT_CONNECT);
           process.exit(1);
         }
-        spinner.succeed('Connected to Anki');
+        spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
         // Verify deck exists
         const decks = await client.getDeckNames();

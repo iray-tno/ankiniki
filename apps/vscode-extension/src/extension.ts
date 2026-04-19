@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ANKI_MESSAGES } from '@ankiniki/shared';
 import { AnkiConnectClient } from './services/ankiConnect';
 import { ConfigurationManager } from './services/configuration';
 import { NotificationManager } from './services/notifications';
@@ -155,17 +156,15 @@ async function testAnkiConnection() {
   try {
     const isConnected = await ankiClient.ping();
     if (isConnected) {
-      notificationManager.showInfo('✅ Connected to Anki');
+      notificationManager.showInfo(`✅ ${ANKI_MESSAGES.CONNECTED}`);
     } else {
       notificationManager.showWarning(
-        '⚠️ Cannot connect to Anki. Make sure Anki is running with AnkiConnect addon.'
+        `⚠️ ${ANKI_MESSAGES.CANNOT_CONNECT_HINT}`
       );
     }
   } catch (error) {
     console.error('Failed to test Anki connection:', error);
-    notificationManager.showWarning(
-      '⚠️ Cannot connect to Anki. Make sure Anki is running with AnkiConnect addon.'
-    );
+    notificationManager.showWarning(`⚠️ ${ANKI_MESSAGES.CANNOT_CONNECT_HINT}`);
   }
 }
 

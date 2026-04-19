@@ -72,6 +72,19 @@ export const CLI = {
   CONFIG_FILE: '.ankiniki.json',
 } as const;
 
+// User-facing messages for AnkiConnect connectivity
+export const ANKI_MESSAGES = {
+  CONNECTING: 'Connecting to Anki...',
+  CONNECTED: 'Connected to Anki',
+  CANNOT_CONNECT: 'Cannot connect to Anki',
+  CANNOT_CONNECT_HINT:
+    'Cannot connect to Anki. Make sure Anki is running with AnkiConnect addon installed.',
+  NOT_AVAILABLE: 'AnkiConnect is not available',
+  NOT_AVAILABLE_HINT:
+    'AnkiConnect is not available. Make sure Anki is running with AnkiConnect addon installed.',
+  REQUEST_TIMEOUT: 'AnkiConnect request timed out',
+} as const;
+
 // Error codes
 export const ERROR_CODES = {
   ANKI_CONNECT_ERROR: 'ANKI_CONNECT_ERROR',
