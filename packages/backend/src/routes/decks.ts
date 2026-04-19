@@ -2,6 +2,10 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { ApiResponse, ValidationError } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
+import {
+  assertDeckExists,
+  assertDeckNotExists,
+} from '../services/ankiValidation';
 import { logger } from '../utils/logger';
 import { ok } from '../utils/response';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -33,11 +37,7 @@ router.post(
     try {
       const { name } = CreateDeckSchema.parse(req.body);
 
-      // Check if deck already exists
-      const existingDecks = await ankiConnect.getDeckNames();
-      if (existingDecks.includes(name)) {
-        throw new ValidationError(`Deck '${name}' already exists`);
-      }
+      await assertDeckNotExists(name);
 
       const deckId = await ankiConnect.createDeck(name);
 
@@ -66,11 +66,7 @@ router.delete(
       const { name } = req.params;
       const { deleteCards } = DeleteDeckSchema.parse(req.body);
 
-      // Check if deck exists
-      const existingDecks = await ankiConnect.getDeckNames();
-      if (!existingDecks.includes(name)) {
-        throw new ValidationError(`Deck '${name}' does not exist`);
-      }
+      await assertDeckExists(name);
 
       await ankiConnect.deleteDeck(name, deleteCards);
 

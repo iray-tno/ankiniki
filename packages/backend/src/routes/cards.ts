@@ -2,6 +2,10 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { ApiResponse, ValidationError, ANKI_MODELS } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
+import {
+  assertDeckExists,
+  assertModelExists,
+} from '../services/ankiValidation';
 import mlService from '../services/mlService';
 import { logger } from '../utils/logger';
 import { ok } from '../utils/response';
@@ -25,17 +29,10 @@ router.post(
         req.body
       );
 
-      // Validate deck exists
-      const existingDecks = await ankiConnect.getDeckNames();
-      if (!existingDecks.includes(deckName)) {
-        throw new ValidationError(`Deck '${deckName}' does not exist`);
-      }
-
-      // Validate model exists
-      const existingModels = await ankiConnect.modelNames();
-      if (!existingModels.includes(modelName)) {
-        throw new ValidationError(`Model '${modelName}' does not exist`);
-      }
+      await Promise.all([
+        assertDeckExists(deckName),
+        assertModelExists(modelName),
+      ]);
 
       const noteId = await ankiConnect.addNote(
         deckName,
@@ -166,21 +163,10 @@ router.post(
           programming_language: validatedData.programming_language,
         });
 
-        // Validate deck exists
-        const existingDecks = await ankiConnect.getDeckNames();
-        if (!existingDecks.includes(validatedData.deckName)) {
-          throw new ValidationError(
-            `Deck '${validatedData.deckName}' does not exist`
-          );
-        }
-
-        // Validate model exists
-        const existingModels = await ankiConnect.modelNames();
-        if (!existingModels.includes(validatedData.modelName)) {
-          throw new ValidationError(
-            `Model '${validatedData.modelName}' does not exist`
-          );
-        }
+        await Promise.all([
+          assertDeckExists(validatedData.deckName),
+          assertModelExists(validatedData.modelName),
+        ]);
 
         // Generate cards using ML service
         const mlResult = await mlService.generateCards({
