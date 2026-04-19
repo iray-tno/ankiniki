@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import AnkiExport from 'anki-apkg-export';
 import {
+  ANKI_MODELS,
   parseMarkdownCards,
   processJsonCards,
   processRows,
@@ -44,7 +45,7 @@ export async function bundleFile(
     const jsonData = JSON.parse(content);
     processedCards = processJsonCards(jsonData, {
       defaultDeck: options.deck,
-      defaultModel: options.model || 'Basic',
+      defaultModel: options.model || ANKI_MODELS.BASIC,
       defaultTags: options.tags || [],
       dryRun: false,
       validate: true,
@@ -60,7 +61,7 @@ export async function bundleFile(
     });
     processedCards = processRows(rows, {
       defaultDeck: options.deck,
-      defaultModel: options.model || 'Basic',
+      defaultModel: options.model || ANKI_MODELS.BASIC,
       defaultTags: options.tags || [],
       delimiter: ',',
       skipHeader: true,
@@ -77,7 +78,7 @@ export async function bundleFile(
   } else if (ext === '.md' || ext === '.markdown') {
     processedCards = parseMarkdownCards(content, {
       defaultDeck: options.deck,
-      defaultModel: options.model || 'Basic',
+      defaultModel: options.model || ANKI_MODELS.BASIC,
       defaultTags: options.tags || [],
       dryRun: false,
     });

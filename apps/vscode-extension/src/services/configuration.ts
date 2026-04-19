@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ANKI_CONNECT } from '@ankiniki/shared';
+import { ANKI_CONNECT, ANKI_MODELS } from '@ankiniki/shared';
 
 export interface AnkinikiConfig {
   ankiConnectUrl: string;
@@ -31,7 +31,7 @@ export class ConfigurationManager {
   }
 
   getDefaultModel(): string {
-    return this.getConfiguration().get('defaultModel', 'Basic');
+    return this.getConfiguration().get('defaultModel', ANKI_MODELS.BASIC);
   }
 
   getAutoDetectLanguage(): boolean {

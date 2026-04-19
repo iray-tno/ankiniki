@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { ANKI_MODELS } from './constants';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ export interface ProcessedCard {
 export const CsvImportOptionsSchema = z.object({
   delimiter: z.string().optional().default(','),
   defaultDeck: z.string().optional(),
-  defaultModel: z.string().optional().default('Basic'),
+  defaultModel: z.string().optional().default(ANKI_MODELS.BASIC),
   defaultTags: z.array(z.string()).optional().default([]),
   skipHeader: z.boolean().optional().default(true),
   dryRun: z.boolean().optional().default(false),
@@ -117,7 +118,7 @@ export function validateCards(cards: ProcessedCard[]): {
 
 export const JsonImportOptionsSchema = z.object({
   defaultDeck: z.string().optional(),
-  defaultModel: z.string().optional().default('Basic'),
+  defaultModel: z.string().optional().default(ANKI_MODELS.BASIC),
   defaultTags: z.array(z.string()).optional().default([]),
   dryRun: z.boolean().optional().default(false),
   validate: z.boolean().optional().default(true),
@@ -187,7 +188,7 @@ export function processJsonCards(
 
 export const MarkdownImportOptionsSchema = z.object({
   defaultDeck: z.string().optional(),
-  defaultModel: z.string().optional().default('Basic'),
+  defaultModel: z.string().optional().default(ANKI_MODELS.BASIC),
   defaultTags: z.array(z.string()).optional().default([]),
   dryRun: z.boolean().optional().default(false),
 });
@@ -281,7 +282,7 @@ export function mapCardFields(
   back: string,
   model: string
 ): Record<string, string> {
-  if (model === 'Cloze') {
+  if (model === ANKI_MODELS.CLOZE) {
     return { Text: `${front}\n\n${back}` };
   }
   return { Front: front, Back: back };

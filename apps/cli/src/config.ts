@@ -1,7 +1,7 @@
 import { homedir } from 'os';
 import { join } from 'path';
 import { readFileSync, writeFileSync, existsSync } from 'fs-extra';
-import { CLI, ANKI_CONNECT, SERVER } from '@ankiniki/shared';
+import { CLI, ANKI_CONNECT, ANKI_MODELS, SERVER } from '@ankiniki/shared';
 
 export interface CliConfig {
   ankiConnectUrl: string;
@@ -17,7 +17,7 @@ const DEFAULT_CONFIG: CliConfig = {
   ankiConnectUrl: ANKI_CONNECT.DEFAULT_URL,
   serverUrl: SERVER.DEFAULT_URL,
   defaultDeck: 'Default',
-  defaultModel: 'Basic',
+  defaultModel: ANKI_MODELS.BASIC,
   debugMode: false,
 };
 

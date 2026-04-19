@@ -3,7 +3,7 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { loadConfig, saveConfig, getConfigPath } from '../config';
 import { AnkiClient } from '../anki-client';
-import { ANKI_CONNECT, SERVER } from '@ankiniki/shared';
+import { ANKI_CONNECT, ANKI_MODELS, SERVER } from '@ankiniki/shared';
 
 export function createConfigCommand(): Command {
   const command = new Command('config');
@@ -212,7 +212,7 @@ async function resetConfig(): Promise<void> {
       ankiConnectUrl: ANKI_CONNECT.DEFAULT_URL,
       serverUrl: SERVER.DEFAULT_URL,
       defaultDeck: 'Default',
-      defaultModel: 'Basic',
+      defaultModel: ANKI_MODELS.BASIC,
       debugMode: false,
     });
     console.log(chalk.green('✓ Configuration reset to defaults'));

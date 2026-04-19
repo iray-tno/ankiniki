@@ -5,6 +5,12 @@ export const ANKI_CONNECT = {
   API_VERSION: 6,
 } as const;
 
+// Anki built-in note type names
+export const ANKI_MODELS = {
+  BASIC: 'Basic',
+  CLOZE: 'Cloze',
+} as const;
+
 // Backend Server configuration
 export const SERVER = {
   DEFAULT_PORT: 3001,
