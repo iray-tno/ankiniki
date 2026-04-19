@@ -43,6 +43,10 @@ apps/vscode-extension/out/
 # TypeScript build info
 **/*.tsbuildinfo
 
+# Compiled JS that must not leak into src/ directories
+packages/*/src/*.js
+packages/*/src/*.js.map
+
 # Temporary files
 *.tmp
 *.temp/demo/
