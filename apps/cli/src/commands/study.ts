@@ -2,35 +2,66 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
-import { shuffleArray, ANKI_MESSAGES } from '@ankiniki/shared';
+import { shuffleArray, ANKI_MESSAGES, CardAnswer } from '@ankiniki/shared';
 import { AnkiClient } from '../anki-client';
+
+const EASE_LABELS: Record<string, { label: string; ease: CardAnswer['ease'] }> =
+  {
+    again: { label: "❌ Again (didn't know)", ease: 1 },
+    hard: { label: '🔶 Hard (struggled)', ease: 2 },
+    good: { label: '✅ Good (knew it)', ease: 3 },
+    easy: { label: '🚀 Easy (too easy)', ease: 4 },
+  };
+
+/** Remove HTML tags, entities, and [sound:...] references. */
+function cleanField(html: string): string {
+  return html
+    .replace(/\[sound:[^\]]+\]/g, '') // strip sound tags
+    .replace(/<[^>]*>/g, '') // strip HTML tags
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+function indent(text: string): string {
+  return text
+    .split('\n')
+    .map(l => `   ${l}`)
+    .join('\n');
+}
 
 export function createStudyCommand(): Command {
   const command = new Command('study');
 
   command
-    .description('Quick study session in the terminal')
+    .description('Study flashcards in the terminal')
     .argument('[deck]', 'Deck name to study')
-    .option('-n, --count <number>', 'Number of cards to study', '5')
+    .option('-n, --count <number>', 'Max number of cards per session', '20')
     .option('--random', 'Study cards in random order')
-    .action(async (deck, options) => {
+    .option(
+      '--due',
+      'Study only cards currently due in Anki and report ratings back'
+    )
+    .action(async (deck: string | undefined, options) => {
       const client = new AnkiClient();
 
       try {
-        const spinner = ora(ANKI_MESSAGES.CONNECTING).start();
-        const isConnected = await client.ping();
-
-        if (!isConnected) {
-          spinner.fail(ANKI_MESSAGES.CANNOT_CONNECT);
+        const connSpinner = ora(ANKI_MESSAGES.CONNECTING).start();
+        if (!(await client.ping())) {
+          connSpinner.fail(ANKI_MESSAGES.CANNOT_CONNECT);
           return;
         }
-        spinner.succeed(ANKI_MESSAGES.CONNECTED);
+        connSpinner.succeed(ANKI_MESSAGES.CONNECTED);
 
-        // Select deck if not provided
+        // ── Pick deck ─────────────────────────────────────────────────────
         let selectedDeck = deck;
         if (!selectedDeck) {
           const decks = await client.getDeckNames();
-          const { deckChoice } = await inquirer.prompt([
+          const { deckChoice } = await inquirer.prompt<{ deckChoice: string }>([
             {
               type: 'list',
               name: 'deckChoice',
@@ -41,120 +72,186 @@ export function createStudyCommand(): Command {
           selectedDeck = deckChoice;
         }
 
-        // Get cards from deck
-        const noteIds = await client.findNotes(`deck:"${selectedDeck}"`);
+        const count = Math.max(1, parseInt(options.count, 10) || 20);
+        const dueMode: boolean = options.due === true;
 
-        if (noteIds.length === 0) {
-          console.log(chalk.yellow(`No cards found in deck "${selectedDeck}"`));
+        // ── Fetch cards ───────────────────────────────────────────────────
+        const fetchSpinner = ora('Fetching cards…').start();
+
+        const query = dueMode
+          ? `is:due deck:"${selectedDeck}"`
+          : `deck:"${selectedDeck}"`;
+
+        const cardIds = await client.findCards(query);
+
+        if (cardIds.length === 0) {
+          fetchSpinner.warn(
+            dueMode
+              ? `No due cards in "${selectedDeck}" — nothing to review today!`
+              : `No cards found in "${selectedDeck}"`
+          );
           return;
         }
 
-        // Limit and optionally shuffle
-        let studyIds = noteIds.slice(0, parseInt(options.count));
+        let sessionIds = cardIds.slice(0, count);
         if (options.random) {
-          studyIds = shuffleArray(studyIds);
+          sessionIds = shuffleArray(sessionIds);
         }
 
-        const notesInfo = await client.notesInfo(studyIds);
+        const cards = await client.cardsInfo(sessionIds);
+        fetchSpinner.succeed(
+          `${cards.length} card${cards.length !== 1 ? 's' : ''} loaded${
+            dueMode ? chalk.gray(' (due)') : ''
+          }`
+        );
 
-        console.log(chalk.bold(`\n🎯 Starting study session: ${selectedDeck}`));
-        console.log(chalk.gray(`${studyIds.length} cards to study\n`));
-
-        let correct = 0;
-        let total = 0;
-
-        for (const [index, note] of notesInfo.entries()) {
-          total++;
+        // ── Session header ────────────────────────────────────────────────
+        console.log(
+          chalk.bold(`\n🎯 Study session: ${chalk.cyan(selectedDeck)}`)
+        );
+        if (dueMode) {
           console.log(
-            chalk.cyan(`\n--- Card ${index + 1}/${notesInfo.length} ---`)
+            chalk.gray(
+              '   Ratings will be reported back to Anki for scheduling.\n'
+            )
+          );
+        } else {
+          console.log(
+            chalk.gray(
+              '   Browsing mode — ratings are for tracking only, not sent to Anki.\n'
+            )
+          );
+        }
+
+        // ── Study loop ────────────────────────────────────────────────────
+        const tally = { again: 0, hard: 0, good: 0, easy: 0 };
+        const pendingAnswers: CardAnswer[] = [];
+
+        for (const [index, card] of cards.entries()) {
+          console.log(
+            chalk.cyan(`\n─── Card ${index + 1} / ${cards.length} ───`)
           );
 
-          const fields = note.fields;
-          const fieldNames = Object.keys(fields);
+          // Front: first field value
+          const fieldNames = Object.keys(card.fields);
+          const frontValue =
+            fieldNames[0] !== undefined
+              ? cleanField(card.fields[fieldNames[0]].value)
+              : '(empty)';
+          const backValue =
+            fieldNames[1] !== undefined
+              ? cleanField(card.fields[fieldNames[1]].value)
+              : '(empty)';
 
-          // Show front (question)
-          if (fieldNames[0] && fields[fieldNames[0]].value) {
-            const front = cleanHtml(fields[fieldNames[0]].value);
-            console.log(chalk.white('\n📝 Question:'));
-            console.log(formatText(front));
-          }
+          // Card type badge
+          const typeBadge =
+            card.type === 0
+              ? chalk.blue('[new]')
+              : card.type === 1 || card.type === 3
+                ? chalk.yellow('[learning]')
+                : chalk.green('[review]');
+          const intervalStr =
+            card.type === 2 && card.interval > 0
+              ? chalk.gray(` · ${card.interval}d interval`)
+              : '';
+          console.log(`   ${typeBadge}${intervalStr}`);
 
-          // Wait for user to reveal answer
+          // Question
+          console.log(chalk.white('\n📝 Question:'));
+          console.log(indent(frontValue));
+
+          // Reveal
           await inquirer.prompt([
             {
               type: 'input',
               name: 'reveal',
-              message: 'Press Enter to reveal answer...',
+              message: 'Press Enter to reveal answer…',
             },
           ]);
 
-          // Show back (answer)
-          if (fieldNames[1] && fields[fieldNames[1]].value) {
-            const back = cleanHtml(fields[fieldNames[1]].value);
-            console.log(chalk.green('\n💡 Answer:'));
-            console.log(formatText(back));
+          // Answer
+          console.log(chalk.green('\n💡 Answer:'));
+          console.log(indent(backValue));
+
+          if (card.tags.length) {
+            console.log(chalk.gray(`\n   Tags: ${card.tags.join(', ')}`));
           }
 
-          // Get user rating
-          const { rating } = await inquirer.prompt([
+          // Rating
+          const { rating } = await inquirer.prompt<{ rating: string }>([
             {
               type: 'list',
               name: 'rating',
               message: 'How well did you know this?',
-              choices: [
-                { name: "❌ Again (didn't know)", value: 'again' },
-                { name: '🔶 Hard (difficult)', value: 'hard' },
-                { name: '✅ Good (knew it)', value: 'good' },
-                { name: '🚀 Easy (too easy)', value: 'easy' },
-              ],
+              choices: Object.entries(EASE_LABELS).map(
+                ([value, { label }]) => ({
+                  name: label,
+                  value,
+                })
+              ),
             },
           ]);
 
-          if (rating === 'good' || rating === 'easy') {
-            correct++;
-          }
+          tally[rating as keyof typeof tally]++;
 
-          // Show tags if any
-          if (note.tags && note.tags.length > 0) {
-            console.log(chalk.gray(`Tags: ${note.tags.join(', ')}`));
+          if (dueMode) {
+            pendingAnswers.push({
+              cardId: card.cardId,
+              ease: EASE_LABELS[rating].ease,
+            });
           }
         }
 
-        // Session summary
-        const percentage = Math.round((correct / total) * 100);
-        console.log(chalk.bold('\n🎉 Study Session Complete!'));
+        // ── Submit ratings ────────────────────────────────────────────────
+        if (dueMode && pendingAnswers.length > 0) {
+          const submitSpinner = ora('Submitting ratings to Anki…').start();
+          try {
+            const results = await client.answerCards(pendingAnswers);
+            const failed = results.filter(r => !r).length;
+            if (failed > 0) {
+              submitSpinner.warn(
+                `Ratings submitted — ${failed} card(s) could not be answered (already answered?)`
+              );
+            } else {
+              submitSpinner.succeed('Ratings submitted to Anki');
+            }
+          } catch (error) {
+            submitSpinner.fail('Failed to submit ratings to Anki');
+            console.error(
+              chalk.red(error instanceof Error ? error.message : String(error))
+            );
+          }
+        }
+
+        // ── Session summary ───────────────────────────────────────────────
+        const total = cards.length;
+        const knownCount = tally.good + tally.easy;
+        const pct = Math.round((knownCount / total) * 100);
+
+        console.log(chalk.bold('\n🎉 Session complete!'));
+        console.log(`   Cards studied: ${chalk.cyan(String(total))}`);
         console.log(
-          `   Correct: ${chalk.green(correct)}/${total} (${percentage}%)`
+          `   ❌ Again: ${tally.again}  🔶 Hard: ${tally.hard}  ✅ Good: ${tally.good}  🚀 Easy: ${tally.easy}`
+        );
+        console.log(
+          `   Score: ${pct >= 80 ? chalk.green(`${pct}%`) : pct >= 60 ? chalk.yellow(`${pct}%`) : chalk.red(`${pct}%`)}`
         );
 
-        if (percentage >= 80) {
+        if (pct >= 80) {
           console.log(chalk.green('   Excellent work! 🌟'));
-        } else if (percentage >= 60) {
+        } else if (pct >= 60) {
           console.log(chalk.yellow('   Good progress! Keep it up! 👍'));
         } else {
           console.log(chalk.red('   Keep practicing! 💪'));
         }
-      } catch (error: any) {
-        console.error(chalk.red(`Error: ${error.message}`));
+      } catch (error: unknown) {
+        console.error(
+          chalk.red('Error:'),
+          error instanceof Error ? error.message : String(error)
+        );
         process.exit(1);
       }
     });
 
   return command;
-}
-
-function cleanHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
-    .replace(/&lt;/g, '<') // Replace HTML entities
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
-    .trim();
-}
-
-function formatText(text: string): string {
-  // Simple formatting for terminal
-  const lines = text.split('\n');
-  return lines.map(line => `   ${line}`).join('\n');
 }

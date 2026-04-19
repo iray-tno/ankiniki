@@ -14,6 +14,36 @@ export interface NoteInfo {
   cards: number[];
 }
 
+export interface CardInfo {
+  cardId: number;
+  fields: Record<string, { value: string; order: number }>;
+  fieldOrder: number;
+  question: string;
+  answer: string;
+  modelName: string;
+  ord: number;
+  deckName: string;
+  css: string;
+  tags: string[];
+  factor: number;
+  interval: number;
+  note: number;
+  /** 0 = new, 1 = learning, 2 = review, 3 = relearn */
+  type: 0 | 1 | 2 | 3;
+  queue: number;
+  due: number;
+  reps: number;
+  lapses: number;
+  left: number;
+  mod: number;
+}
+
+export interface CardAnswer {
+  cardId: number;
+  /** 1 = Again, 2 = Hard, 3 = Good, 4 = Easy */
+  ease: 1 | 2 | 3 | 4;
+}
+
 export interface AnkiConnectClientOptions {
   baseURL?: string;
   timeout?: number;
@@ -158,6 +188,18 @@ export class AnkiConnectClient {
 
   async notesInfo(noteIds: number[]): Promise<NoteInfo[]> {
     return this.request<NoteInfo[]>('notesInfo', { notes: noteIds });
+  }
+
+  async findCards(query: string): Promise<number[]> {
+    return this.request<number[]>('findCards', { query });
+  }
+
+  async cardsInfo(cardIds: number[]): Promise<CardInfo[]> {
+    return this.request<CardInfo[]>('cardsInfo', { cards: cardIds });
+  }
+
+  async answerCards(answers: CardAnswer[]): Promise<boolean[]> {
+    return this.request<boolean[]>('answerCards', { answers });
   }
 
   // Model operations
