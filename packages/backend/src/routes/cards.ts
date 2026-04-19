@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
-import { ApiResponse, ValidationError } from '@ankiniki/shared';
+import { ApiResponse, ValidationError, ANKI_MODELS } from '@ankiniki/shared';
 import { ankiConnect } from '../services/ankiConnect';
 import mlService from '../services/mlService';
 import { logger } from '../utils/logger';
@@ -12,7 +12,7 @@ const router = Router();
 // Add note/card
 const AddNoteSchema = z.object({
   deckName: z.string().min(1),
-  modelName: z.string().default('Basic'),
+  modelName: z.string().default(ANKI_MODELS.BASIC),
   fields: z.record(z.string()),
   tags: z.array(z.string()).default([]),
 });
@@ -126,7 +126,7 @@ const GenerateAndCreateSchema = z.object({
   content: z.string().min(1, 'Content is required'),
   content_type: z.enum(['code', 'markdown', 'text', 'html']),
   deckName: z.string().min(1, 'Deck name is required'),
-  modelName: z.string().default('Basic'),
+  modelName: z.string().default(ANKI_MODELS.BASIC),
   difficulty_level: z
     .enum(['beginner', 'intermediate', 'advanced'])
     .optional()
@@ -227,10 +227,10 @@ router.post(
 
             // Prepare fields based on model
             const fields: Record<string, string> = {};
-            if (validatedData.modelName === 'Basic') {
+            if (validatedData.modelName === ANKI_MODELS.BASIC) {
               fields['Front'] = front;
               fields['Back'] = card.back;
-            } else if (validatedData.modelName === 'Cloze') {
+            } else if (validatedData.modelName === ANKI_MODELS.CLOZE) {
               // For cloze, put everything in Text field
               fields['Text'] = `${front}\n\n${card.back}`;
             } else {

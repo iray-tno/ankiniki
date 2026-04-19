@@ -9,6 +9,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import { loadConfig } from '../config';
 import { BackendManager } from '../backend-manager';
+import { ANKI_MODELS } from '@ankiniki/shared';
 
 type ImportFormat = 'csv' | 'json' | 'markdown';
 
@@ -43,7 +44,7 @@ export const importCommand = new Command('import')
   )
   .option('-d, --delimiter <delimiter>', 'CSV delimiter', ',')
   .option('--deck <deck>', 'Default deck name')
-  .option('--model <model>', 'Default card model', 'Basic')
+  .option('--model <model>', 'Default card model', ANKI_MODELS.BASIC)
   .option('--tags <tags>', 'Default tags (comma-separated)')
   .option('-p, --preview', 'Preview import without creating cards')
   .option('--dry-run', "Dry run - validate but don't create cards")
@@ -101,7 +102,7 @@ async function importCsv(
   const csvOptions = {
     delimiter: options.delimiter || ',',
     defaultDeck: options.deck,
-    defaultModel: options.model || 'Basic',
+    defaultModel: options.model || ANKI_MODELS.BASIC,
     defaultTags: options.tags ? options.tags.split(',').map(t => t.trim()) : [],
     dryRun: options.preview || options.dryRun || false,
     columnMapping: {
@@ -153,7 +154,7 @@ async function importJson(
 
   const jsonOptions = {
     defaultDeck: options.deck,
-    defaultModel: options.model || 'Basic',
+    defaultModel: options.model || ANKI_MODELS.BASIC,
     defaultTags: options.tags ? options.tags.split(',').map(t => t.trim()) : [],
     dryRun: options.preview || options.dryRun || false,
     validate: true,
@@ -185,7 +186,7 @@ async function importMarkdown(
 
   const mdOptions = {
     defaultDeck: options.deck,
-    defaultModel: options.model || 'Basic',
+    defaultModel: options.model || ANKI_MODELS.BASIC,
     defaultTags: options.tags ? options.tags.split(',').map(t => t.trim()) : [],
     dryRun: options.preview || options.dryRun || false,
   };

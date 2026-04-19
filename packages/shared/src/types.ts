@@ -40,13 +40,13 @@ export type Deck = z.infer<typeof DeckSchema>;
 export const AnkiConnectRequestSchema = z.object({
   action: z.string(),
   version: z.number(),
-  params: z.record(z.any()).optional(),
+  params: z.record(z.unknown()).optional(),
 });
 
 export type AnkiConnectRequest = z.infer<typeof AnkiConnectRequestSchema>;
 
 export const AnkiConnectResponseSchema = z.object({
-  result: z.any(),
+  result: z.unknown(),
   error: z.string().nullable(),
 });
 
