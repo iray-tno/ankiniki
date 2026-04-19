@@ -2,6 +2,7 @@ import { createApp } from './app';
 import { config } from './config';
 import { logger } from './utils/logger';
 import { ankiConnect } from './services/ankiConnect';
+import { ANKI_MESSAGES } from '@ankiniki/shared';
 
 async function startServer() {
   try {
@@ -10,9 +11,7 @@ async function startServer() {
     // Check AnkiConnect connection
     const isAnkiConnected = await ankiConnect.ping();
     if (!isAnkiConnected) {
-      logger.warn(
-        'AnkiConnect is not available. Make sure Anki is running with AnkiConnect addon.'
-      );
+      logger.warn(ANKI_MESSAGES.NOT_AVAILABLE_HINT);
     } else {
       logger.info('Successfully connected to AnkiConnect');
     }

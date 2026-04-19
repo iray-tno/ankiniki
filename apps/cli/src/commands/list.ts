@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
+import { ANKI_MESSAGES } from '@ankiniki/shared';
 import { AnkiClient } from '../anki-client';
 
 export function createListCommand(): Command {
@@ -15,14 +16,14 @@ export function createListCommand(): Command {
       const client = new AnkiClient();
 
       try {
-        const spinner = ora('Connecting to Anki...').start();
+        const spinner = ora(ANKI_MESSAGES.CONNECTING).start();
         const isConnected = await client.ping();
 
         if (!isConnected) {
-          spinner.fail('Cannot connect to Anki');
+          spinner.fail(ANKI_MESSAGES.CANNOT_CONNECT);
           return;
         }
-        spinner.succeed('Connected to Anki');
+        spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
         if (options.cards) {
           // List cards in specific deck

@@ -3,7 +3,12 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { loadConfig, saveConfig, getConfigPath } from '../config';
 import { AnkiClient } from '../anki-client';
-import { ANKI_CONNECT, ANKI_MODELS, SERVER } from '@ankiniki/shared';
+import {
+  ANKI_CONNECT,
+  ANKI_MODELS,
+  ANKI_MESSAGES,
+  SERVER,
+} from '@ankiniki/shared';
 
 export function createConfigCommand(): Command {
   const command = new Command('config');
@@ -124,7 +129,7 @@ async function editConfig(): Promise<void> {
     // If we can't connect to Anki, allow basic config editing
     console.log(
       chalk.yellow(
-        '⚠ Cannot connect to Anki. Editing basic configuration only.'
+        `⚠ ${ANKI_MESSAGES.CANNOT_CONNECT}. Editing basic configuration only.`
       )
     );
 
