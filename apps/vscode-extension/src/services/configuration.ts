@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import { ANKI_CONNECT, ANKI_MODELS } from '@ankiniki/shared';
+import { ANKI_CONNECT, ANKI_MODELS, SERVER } from '@ankiniki/shared';
 
 export interface AnkinikiConfig {
   ankiConnectUrl: string;
+  serverUrl: string;
   defaultDeck: string;
   defaultModel: string;
   autoDetectLanguage: boolean;
@@ -24,6 +25,10 @@ export class ConfigurationManager {
       'ankiConnectUrl',
       ANKI_CONNECT.DEFAULT_URL
     );
+  }
+
+  getServerUrl(): string {
+    return this.getConfiguration().get('serverUrl', SERVER.DEFAULT_URL);
   }
 
   getDefaultDeck(): string {
@@ -49,6 +54,7 @@ export class ConfigurationManager {
   getAllConfig(): AnkinikiConfig {
     return {
       ankiConnectUrl: this.getAnkiConnectUrl(),
+      serverUrl: this.getServerUrl(),
       defaultDeck: this.getDefaultDeck(),
       defaultModel: this.getDefaultModel(),
       autoDetectLanguage: this.getAutoDetectLanguage(),

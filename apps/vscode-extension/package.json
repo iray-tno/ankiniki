@@ -50,6 +50,11 @@
         "category": "Ankiniki"
       },
       {
+        "command": "ankiniki.generateFromFile",
+        "title": "Generate Flashcards from Current File (AI)",
+        "category": "Ankiniki"
+      },
+      {
         "command": "ankiniki.openSettings",
         "title": "Open Settings",
         "category": "Ankiniki"
@@ -85,6 +90,11 @@
           "command": "ankiniki.addCodeBlock",
           "when": "editorTextFocus",
           "group": "ankiniki@2"
+        },
+        {
+          "command": "ankiniki.generateFromFile",
+          "when": "editorTextFocus",
+          "group": "ankiniki@3"
         }
       ],
       "commandPalette": [
@@ -105,6 +115,11 @@
           "type": "string",
           "default": "http://localhost:8765",
           "description": "AnkiConnect server URL"
+        },
+        "ankiniki.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:3001",
+          "description": "Ankiniki backend server URL (used for AI card generation)"
         },
         "ankiniki.defaultDeck": {
           "type": "string",
