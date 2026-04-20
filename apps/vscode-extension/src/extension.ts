@@ -24,7 +24,11 @@ export function activate(context: vscode.ExtensionContext) {
     configManager,
     notificationManager
   );
-  sidebarProvider = new SidebarProvider(context.extensionUri, cardService);
+  sidebarProvider = new SidebarProvider(
+    context.extensionUri,
+    cardService,
+    ankiClient
+  );
 
   // Set context for conditional UI elements
   vscode.commands.executeCommand('setContext', 'ankiniki.enabled', true);
@@ -52,6 +56,10 @@ export function activate(context: vscode.ExtensionContext) {
         'workbench.action.openSettings',
         'ankiniki'
       );
+    }),
+
+    vscode.commands.registerCommand('ankiniki.generateFromFile', () => {
+      handleGenerateFromFile();
     }),
 
     vscode.commands.registerCommand('ankiniki.refresh', () => {
@@ -150,6 +158,25 @@ async function handleQuickAdd() {
   }
 
   await cardService.createQuickCard(front, back);
+}
+
+async function handleGenerateFromFile() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    notificationManager.showError('No active editor — open a file first');
+    return;
+  }
+
+  const content = editor.document.getText();
+  if (!content.trim()) {
+    notificationManager.showError('File is empty');
+    return;
+  }
+
+  const language = editor.document.languageId;
+  const filePath = vscode.workspace.asRelativePath(editor.document.fileName);
+
+  await cardService.generateCardsFromFile(content, language, filePath);
 }
 
 async function testAnkiConnection() {
