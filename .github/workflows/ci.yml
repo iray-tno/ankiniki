@@ -7,8 +7,9 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    name: Test
+  # ── Quality checks (lint + format + type-check) ──────────────────────────────
+  quality:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
 
     steps:
@@ -21,34 +22,57 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Build shared package
-        run: npm run build -w @ankiniki/shared
+        run: npm run build -w packages/shared
 
-      - name: Test shared
-        run: npm test -w @ankiniki/shared -- --reporter=verbose --reporter=json --outputFile=${{ github.workspace }}/shared-results.json
+      - name: Lint
+        run: npm run lint
 
-      - name: Test backend
-        run: npm test -w @ankiniki/backend -- --reporter=verbose --reporter=json --outputFile=${{ github.workspace }}/backend-results.json
+      - name: Format check
+        run: npm run format:check
 
-      - name: Write test summary
-        if: always()
-        run: |
-          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Package | Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|-------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+      - name: Type check (backend)
+        run: npm run build -w packages/backend
 
-          for pkg in shared backend; do
-            file="${{ github.workspace }}/${pkg}-results.json"
-            if [ -f "$file" ]; then
-              total=$(node -e "const r=require('$file'); console.log(r.numTotalTests)")
-              passed=$(node -e "const r=require('$file'); console.log(r.numPassedTests)")
-              failed=$(node -e "const r=require('$file'); console.log(r.numFailedTests)")
-              status=$([[ "$failed" == "0" ]] && echo "✅" || echo "❌")
-              echo "| $status \`@ankiniki/$pkg\` | $total | $passed | $failed |" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "| ⚠️ \`@ankiniki/$pkg\` | - | - | - |" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
+      - name: Type check (CLI)
+        run: npm run build -w apps/cli
+
+      - name: Type check (VS Code extension)
+        run: npm run compile -w apps/vscode-extension
+
+  # ── Tests ─────────────────────────────────────────────────────────────────────
+  test:
+    name: Test / ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    needs: quality
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: shared
+            workspace: packages/shared
+          - name: backend
+            workspace: packages/backend
+          - name: cli
+            workspace: apps/cli
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared package
+        run: npm run build -w packages/shared
+
+      - name: Run tests
+        run: npm test -w ${{ matrix.workspace }}
