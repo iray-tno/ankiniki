@@ -55,7 +55,6 @@ router.post(
 
 // Delete deck
 const DeleteDeckSchema = z.object({
-  name: z.string().min(1),
   deleteCards: z.boolean().default(false),
 });
 
