@@ -12,9 +12,11 @@ const mockClient = {
 };
 
 vi.mock('../anki-client', () => ({
-  AnkiClient: vi.fn(() => {
-    return mockClient;
-  }),
+  AnkiClient: class {
+    constructor() {
+      return mockClient;
+    }
+  },
 }));
 
 vi.mock('inquirer', () => ({

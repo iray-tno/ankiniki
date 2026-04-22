@@ -7,9 +7,9 @@ const mockPing = vi.fn().mockResolvedValue(true);
 
 vi.mock('axios');
 vi.mock('../anki-client', () => ({
-  AnkiClient: vi.fn(() => {
-    return { ping: mockPing };
-  }),
+  AnkiClient: class {
+    ping = mockPing;
+  },
 }));
 vi.mock('../config', () => ({
   loadConfig: vi.fn().mockReturnValue({
