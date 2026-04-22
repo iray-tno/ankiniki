@@ -25,6 +25,7 @@ interface GenerateOptions {
   lang?: string;
   tags?: string;
   yes?: boolean;
+  stdin?: boolean;
 }
 
 interface GeneratedCard {
@@ -66,6 +67,33 @@ function detectContentType(filePath: string): ContentType {
   return 'text';
 }
 
+function detectContentTypeFromContent(content: string): ContentType {
+  const trimmed = content.trimStart();
+  if (trimmed.startsWith('#')) {
+    return 'markdown';
+  }
+  if (
+    /\bfunction\b|\bdef\b|\bclass\b|\bconst\b|\blet\b|\bvar\b|\bimport\b/.test(
+      content
+    )
+  ) {
+    return 'code';
+  }
+  return 'text';
+}
+
+function readStdin(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', chunk => {
+      data += chunk;
+    });
+    process.stdin.on('end', () => resolve(data));
+    process.stdin.on('error', reject);
+  });
+}
+
 function clip(str: string, max: number): string {
   return str.length > max ? `${str.slice(0, max)}…` : str;
 }
@@ -75,7 +103,8 @@ export function createGenerateCommand(): Command {
 
   command
     .description('Generate flashcards from a file using AI')
-    .argument('<file>', 'File to generate cards from')
+    .argument('[file]', 'File to generate cards from')
+    .option('--stdin', 'Read content from stdin instead of a file')
     .option(
       '-d, --deck <deck>',
       'Deck to add cards to (uses config default if omitted)'
@@ -93,29 +122,54 @@ export function createGenerateCommand(): Command {
     .option('--lang <language>', 'Programming language hint (for code files)')
     .option('--tags <tags>', 'Additional tags to apply (comma-separated)')
     .option('-y, --yes', 'Add all generated cards without confirmation prompt')
-    .action(async (file: string, options: GenerateOptions) => {
+    .action(async (file: string | undefined, options: GenerateOptions) => {
       const config = loadConfig();
       const deckName = options.deck || config.defaultDeck;
       const baseUrl = config.serverUrl;
       let cleanup: (() => void) | undefined;
 
       try {
-        // ── 1. Validate file ──────────────────────────────────────────────
-        const filePath = path.resolve(file);
-        if (!fs.existsSync(filePath)) {
-          console.error(chalk.red(`File not found: ${filePath}`));
+        // ── 1. Validate input source ──────────────────────────────────────
+        if (!file && !options.stdin) {
+          console.error(
+            chalk.red('Provide a file path or use --stdin to pipe content.')
+          );
+          process.exit(1);
+        }
+        if (file && options.stdin) {
+          console.error(
+            chalk.red('Cannot use both a file argument and --stdin.')
+          );
           process.exit(1);
         }
 
-        const content = fs.readFileSync(filePath, 'utf8');
+        let content: string;
+        let displaySource: string;
+        let contentType: ContentType;
+
+        if (options.stdin) {
+          content = await readStdin();
+          displaySource = '<stdin>';
+          contentType =
+            (options.contentType as ContentType | undefined) ??
+            detectContentTypeFromContent(content);
+        } else {
+          const filePath = path.resolve(file!);
+          if (!fs.existsSync(filePath)) {
+            console.error(chalk.red(`File not found: ${filePath}`));
+            process.exit(1);
+          }
+          content = fs.readFileSync(filePath, 'utf8');
+          displaySource = filePath;
+          contentType =
+            (options.contentType as ContentType | undefined) ??
+            detectContentType(filePath);
+        }
+
         if (!content.trim()) {
-          console.error(chalk.red('File is empty.'));
+          console.error(chalk.red('Input is empty.'));
           process.exit(1);
         }
-
-        const contentType: ContentType =
-          (options.contentType as ContentType | undefined) ??
-          detectContentType(filePath);
 
         const maxCards = Math.min(
           20,
@@ -128,7 +182,9 @@ export function createGenerateCommand(): Command {
               .filter(Boolean)
           : [];
 
-        console.log(chalk.bold('\n📄 File:         ') + chalk.cyan(filePath));
+        console.log(
+          chalk.bold('\n📄 File:         ') + chalk.cyan(displaySource)
+        );
         console.log(chalk.bold('   Content type: ') + chalk.cyan(contentType));
         console.log(chalk.bold('   Deck:         ') + chalk.cyan(deckName));
         console.log(
