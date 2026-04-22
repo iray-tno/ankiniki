@@ -13,6 +13,7 @@ import { createExportCommand } from './commands/export';
 import { createBundleCommand } from './commands/bundle';
 import { createGenerateCommand } from './commands/generate';
 import { createStatusCommand } from './commands/status';
+import { createSyncCommand } from './commands/sync';
 import { APP_CONFIG } from '@ankiniki/shared';
 
 const program = new Command();
@@ -34,6 +35,7 @@ program.addCommand(createExportCommand());
 program.addCommand(createBundleCommand());
 program.addCommand(createGenerateCommand());
 program.addCommand(createStatusCommand());
+program.addCommand(createSyncCommand());
 
 // Global error handling
 process.on('unhandledRejection', error => {
