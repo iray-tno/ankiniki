@@ -2,7 +2,6 @@ import { spawn, ChildProcess } from 'child_process';
 import axios from 'axios';
 import path from 'path';
 import fs from 'fs';
-import chalk from 'chalk';
 import ora from 'ora';
 import { SERVER } from '@ankiniki/shared';
 
@@ -20,7 +19,10 @@ export class BackendManager {
    */
   async isRunning(): Promise<boolean> {
     try {
-      const healthUrl = `${this.serverUrl}/health`.replace(/([^:]\/)\/+/g, '$1');
+      const healthUrl = `${this.serverUrl}/health`.replace(
+        /([^:]\/)\/+/g,
+        '$1'
+      );
       const response = await axios.get(healthUrl, { timeout: 1000 });
       // 200 is healthy, 503 means server is up but Anki is not connected
       return response.status === 200 || response.status === 503;
@@ -42,13 +44,13 @@ export class BackendManager {
     }
 
     const spinner = ora('Starting backend server...').start();
-    
+
     try {
       // Find project root
       // apps/cli/src/backend-manager.ts -> apps/cli/src -> apps/cli -> apps -> root
       const rootDir = path.resolve(__dirname, '..', '..', '..');
       const backendDir = path.join(rootDir, 'packages', 'backend');
-      
+
       if (!fs.existsSync(backendDir)) {
         spinner.fail('Could not find backend directory');
         throw new Error(`Backend directory not found at ${backendDir}`);
@@ -57,7 +59,7 @@ export class BackendManager {
       // Determine the best way to start the backend
       // In development, we use tsx. In production, we'd use the built dist/index.js
       const isDev = fs.existsSync(path.join(backendDir, 'src', 'index.ts'));
-      
+
       let command: string;
       let args: string[];
 
@@ -81,7 +83,7 @@ export class BackendManager {
 
       // Wait for server to be ready
       const isReady = await this.waitForReady();
-      
+
       if (isReady) {
         spinner.succeed('Backend server started successfully');
       } else {
@@ -106,7 +108,7 @@ export class BackendManager {
       if (await this.isRunning()) {
         return true;
       }
-      
+
       // Check if process is still alive
       if (this.backendProcess && this.backendProcess.exitCode !== null) {
         return false;
@@ -135,7 +137,7 @@ export class BackendManager {
   static async ensure(serverUrl: string): Promise<() => void> {
     const manager = new BackendManager(serverUrl);
     const alreadyRunning = await manager.isRunning();
-    
+
     if (!alreadyRunning) {
       await manager.start();
     }
