@@ -38,6 +38,15 @@ export interface CardInfo {
   mod: number;
 }
 
+export interface DeckStats {
+  deck_id: number;
+  name: string;
+  new_count: number;
+  learn_count: number;
+  review_count: number;
+  total_in_deck: number;
+}
+
 export interface CardAnswer {
   cardId: number;
   /** 1 = Again, 2 = Hard, 3 = Good, 4 = Easy */
@@ -219,6 +228,10 @@ export class AnkiConnectClient {
     } catch {
       return false;
     }
+  }
+
+  async getDeckStats(decks: string[]): Promise<Record<string, DeckStats>> {
+    return this.request<Record<string, DeckStats>>('getDeckStats', { decks });
   }
 
   async sync(): Promise<void> {
