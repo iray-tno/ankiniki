@@ -45,7 +45,11 @@
       "Bash(gh issue:*)",
       "Bash(gh pr:*)",
       "Bash(gh run:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(cat /mnt/e/Users/zigza/dev/ankiniki/.github/workflows/*.yml)",
+      "Bash(node -e 'const p=require\\('\\\\''./__TRACKED_VAR__/package.json'\\\\''\\); console.log\\(JSON.stringify\\(p.scripts, null, 2\\)\\)')",
+      "Bash(node -e \"const p=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin'\\)\\); console.log\\(JSON.stringify\\(p.scripts, null, 2\\)\\)\")",
+      "Bash(node -e \"const p=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin'\\)\\); console.log\\(JSON.stringify\\({workspaces: p.workspaces}, null, 2\\)\\)\")"
     ],
     "deny": []
   },
