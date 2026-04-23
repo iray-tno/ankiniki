@@ -186,6 +186,14 @@ export class AnkiConnectClient {
     return this.request<void>('deleteNotes', { notes: noteIds });
   }
 
+  async addTags(noteIds: number[], tags: string): Promise<void> {
+    return this.request<void>('addTags', { notes: noteIds, tags });
+  }
+
+  async removeTags(noteIds: number[], tags: string): Promise<void> {
+    return this.request<void>('removeTags', { notes: noteIds, tags });
+  }
+
   async canAddNotes(notes: Record<string, unknown>[]): Promise<boolean[]> {
     return this.request<boolean[]>('canAddNotes', { notes });
   }

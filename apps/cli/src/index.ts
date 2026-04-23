@@ -16,6 +16,7 @@ import { createGenerateCommand } from './commands/generate';
 import { createStatusCommand } from './commands/status';
 import { createSyncCommand } from './commands/sync';
 import { createStatsCommand } from './commands/stats';
+import { createTagCommand } from './commands/tag';
 import { APP_CONFIG } from '@ankiniki/shared';
 
 const program = new Command();
@@ -40,6 +41,7 @@ program.addCommand(createGenerateCommand());
 program.addCommand(createStatusCommand());
 program.addCommand(createSyncCommand());
 program.addCommand(createStatsCommand());
+program.addCommand(createTagCommand());
 
 // Global error handling
 process.on('unhandledRejection', error => {
