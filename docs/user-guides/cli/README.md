@@ -13,7 +13,7 @@ Before using the CLI you need:
 1. **Anki desktop** running on your machine
 2. **AnkiConnect addon** installed in Anki (code: `2055492159`)
    - Anki → Tools → Add-ons → Get Add-ons → enter the code
-3. **Ankiniki backend server** running (for import commands)
+3. **Ankiniki backend server** running (for `note import` and `note generate`)
    ```bash
    # From the project root
    npm run dev --workspace=@ankiniki/backend
@@ -42,13 +42,14 @@ node apps/cli/dist/index.js <command>
 
 ```bash
 # Check everything is working
+ankiniki status
 ankiniki config --show
 
 # Add your first card
-ankiniki add "My Deck" "What is a closure?" "A function that captures its enclosing scope"
+ankiniki note add "My Deck" "What is a closure?" "A function that captures its enclosing scope"
 
-# List your decks
-ankiniki list
+# List cards in a deck
+ankiniki note list "My Deck"
 
 # Study a deck
 ankiniki study "My Deck"
@@ -56,36 +57,58 @@ ankiniki study "My Deck"
 
 ---
 
-## Commands
+## Command overview
 
-### `add` — Create a flashcard
+Commands are grouped into two main areas — **`note`** for card operations and **`deck`** for deck management — plus standalone utility commands.
 
-**One-liner:**
+```
+ankiniki note add        Create a new flashcard
+ankiniki note list       List cards in a deck
+ankiniki note edit       Edit a card in $EDITOR
+ankiniki note delete     Delete a card by note ID
+ankiniki note generate   AI-generate cards from a file or stdin
+ankiniki note import     Bulk import from CSV / JSON / Markdown
+ankiniki note tag        Bulk add/remove tags on matched notes
+
+ankiniki deck list       List all decks with card counts
+ankiniki deck create     Create a new deck
+ankiniki deck delete     Delete a deck and its cards
+
+ankiniki export          Export a deck to .apkg / CSV / JSON
+ankiniki bundle          Build .apkg offline (no Anki required)
+ankiniki study           In-terminal study session
+ankiniki stats           Review statistics dashboard
+ankiniki sync            Trigger AnkiWeb sync
+ankiniki status          Check Anki + backend connections
+ankiniki config          Manage settings
+```
+
+---
+
+## `note add` — Create a flashcard
 
 ```bash
-ankiniki add [deck] [front] [back]
+ankiniki note add [deck] [front] [back]
 ```
 
 **Examples:**
 
 ```bash
 # Positional arguments (fastest)
-ankiniki add "JavaScript" "What is hoisting?" "Moving declarations to the top of scope"
+ankiniki note add "JavaScript" "What is hoisting?" "Moving declarations to the top of scope"
 
 # With tags and model
-ankiniki add "Rust" "What is ownership?" "Each value has one owner" \
+ankiniki note add "Rust" "What is ownership?" "Each value has one owner" \
   --tags "rust,memory,ownership" \
   --model "Basic"
 
 # Use default deck (set via config)
-ankiniki add "What is a monad?" "A monoid in the category of endofunctors"
+ankiniki note add "What is a monad?" "A monoid in the category of endofunctors"
 
 # Interactive mode — prompts for everything
-ankiniki add --interactive
-ankiniki add -i
+ankiniki note add --interactive
+ankiniki note add -i
 ```
-
-**Options:**
 
 | Option            | Short | Description                        |
 | ----------------- | ----- | ---------------------------------- |
@@ -93,146 +116,120 @@ ankiniki add -i
 | `--model <model>` | `-m`  | Card model (default: Basic)        |
 | `--interactive`   | `-i`  | Interactive prompts for all fields |
 
-**Interactive mode** opens your `$EDITOR` for front/back content — useful for multi-line code snippets.
-
 ---
 
-### `study` — Quick study session
-
-Starts an in-terminal study session: shows the front, waits for Enter, reveals the back, asks you to rate 1–4.
+## `note list` — Browse cards in a deck
 
 ```bash
-ankiniki study [deck]
+ankiniki note list <deck> [--limit <n>]
 ```
 
 **Examples:**
 
 ```bash
-# Study a specific deck (5 cards by default)
-ankiniki study "JavaScript"
-
-# Study 20 cards in random order
-ankiniki study "JavaScript" --count 20 --random
-ankiniki study "JavaScript" -n 20 --random
-
-# Omit deck to pick from a list
-ankiniki study
+ankiniki note list "JavaScript"
+ankiniki note list "JavaScript" --limit 50
 ```
 
-**Options:**
-
-| Option        | Short | Description                           |
-| ------------- | ----- | ------------------------------------- |
-| `--count <n>` | `-n`  | Number of cards to study (default: 5) |
-| `--random`    |       | Shuffle cards                         |
-
-**Rating scale:**
-
-| Choice   | Meaning               |
-| -------- | --------------------- |
-| ❌ Again | Didn't know it        |
-| 🔶 Hard  | Got it, but difficult |
-| ✅ Good  | Knew it               |
-| 🚀 Easy  | Too easy              |
-
-> **Note:** This mode picks cards from the deck regardless of Anki's scheduling. To use Anki's spaced repetition schedule, review cards in Anki desktop as usual.
+| Option        | Short | Description               |
+| ------------- | ----- | ------------------------- |
+| `--limit <n>` | `-l`  | Max results (default: 10) |
 
 ---
 
-### `list` — Browse decks and cards
+## `note edit` — Edit a card
+
+Search for notes by query, pick from the results, then edit fields in `$EDITOR`.
 
 ```bash
-ankiniki list                        # list all decks (default)
-ankiniki list --decks                # same as above
-ankiniki list --cards "My Deck"      # list cards in a deck
-ankiniki list --cards "My Deck" --limit 50
+ankiniki note edit <query> [--deck <name>] [--limit <n>]
 ```
 
 **Examples:**
 
 ```bash
-# See all decks with card counts
-ankiniki list
+# Find by keyword
+ankiniki note edit "hoisting"
 
-# Browse cards in a deck (first 10)
-ankiniki list --cards "JavaScript"
+# Scope to a deck
+ankiniki note edit "tag:js" --deck "JavaScript"
 
-# See more cards
-ankiniki list --cards "JavaScript" --limit 50
+# Cap results shown in picker
+ankiniki note edit "added:1" --limit 5
 ```
-
-**Options:**
-
-| Option           | Short | Description               |
-| ---------------- | ----- | ------------------------- |
-| `--decks`        | `-d`  | List all decks            |
-| `--cards <deck>` | `-c`  | List cards in deck        |
-| `--limit <n>`    | `-l`  | Max results (default: 10) |
 
 ---
 
-### `config` — Manage settings
+## `note delete` — Remove a card
 
 ```bash
-ankiniki config               # show current config (default)
-ankiniki config --show
-ankiniki config --edit        # interactive editor
-ankiniki config --set key=value
-ankiniki config --reset       # restore defaults
+ankiniki note delete <noteId> [--force]
 ```
 
-**Configuration keys:**
+Note IDs are shown by `ankiniki note list <deck>`.
 
-| Key              | Default                 | Description                            |
-| ---------------- | ----------------------- | -------------------------------------- |
-| `ankiConnectUrl` | `http://localhost:8765` | AnkiConnect API endpoint               |
-| `serverUrl`      | `http://localhost:3001` | Ankiniki backend (used for import)     |
-| `defaultDeck`    | `Default`               | Deck used when none is specified       |
-| `defaultModel`   | `Basic`                 | Card model used when none is specified |
-| `debugMode`      | `false`                 | Verbose logging                        |
+```bash
+ankiniki note list "JavaScript"
+# → 1. Card ID: 1700000001
+#      Front: What is hoisting?
+
+ankiniki note delete 1700000001
+ankiniki note delete 1700000001 --force   # skip confirmation
+```
+
+---
+
+## `note generate` — AI-generate cards
+
+Generate flashcards from a file or piped content using the AI backend.
+
+```bash
+ankiniki note generate <file>   [options]
+ankiniki note generate --stdin  [options]
+```
 
 **Examples:**
 
 ```bash
-# Show current settings and connection status
-ankiniki config --show
+# Generate from a file (content type auto-detected from extension)
+ankiniki note generate README.md --deck "Docs"
+ankiniki note generate src/auth.ts --deck "Code" --lang typescript
 
-# Set default deck
-ankiniki config --set defaultDeck=JavaScript
+# Pipe content in
+cat CHANGELOG.md | ankiniki note generate --stdin --deck "Releases"
+git diff HEAD~1 | ankiniki note generate --stdin --content-type code --deck "Review"
 
-# Change backend URL
-ankiniki config --set serverUrl=http://localhost:3001
-
-# Interactive edit (opens prompts with live deck/model selection)
-ankiniki config --edit
-
-# Reset everything to defaults
-ankiniki config --reset
+# Non-interactive
+ankiniki note generate README.md --deck "Docs" --yes
 ```
 
-Config is saved at `~/.ankiniki.json`.
+| Option                  | Short | Description                                    |
+| ----------------------- | ----- | ---------------------------------------------- |
+| `--stdin`               |       | Read content from stdin                        |
+| `--deck <deck>`         | `-d`  | Target deck                                    |
+| `--content-type <type>` | `-t`  | `code` \| `markdown` \| `text` (auto-detected) |
+| `--difficulty <level>`  |       | `beginner` \| `intermediate` \| `advanced`     |
+| `--max-cards <n>`       | `-n`  | Max cards to generate (default: 5)             |
+| `--lang <language>`     |       | Programming language hint (for code files)     |
+| `--tags <tags>`         |       | Additional tags (comma-separated)              |
+| `--yes`                 | `-y`  | Add all generated cards without confirmation   |
 
 ---
 
-### `import` — Bulk import from file
+## `note import` — Bulk import from file
 
-Import multiple cards at once from CSV, JSON, or Markdown. Format is **auto-detected from the file extension**.
+Format is **auto-detected from the file extension** (`.csv`, `.json`, `.md`).
 
 ```bash
-ankiniki import <file> [options]
+ankiniki note import <file> [options]
 ```
 
-#### CSV import
+### CSV
 
 ```bash
-# Auto-detected from .csv extension
-ankiniki import cards.csv
-
-# Preview first (no cards created)
-ankiniki import cards.csv --preview
-
-# Override default deck and tags
-ankiniki import cards.csv --deck "JavaScript" --tags "imported,js"
+ankiniki note import cards.csv
+ankiniki note import cards.csv --preview          # dry run
+ankiniki note import cards.csv --deck "JavaScript" --tags "imported,js"
 ```
 
 **CSV format:**
@@ -240,36 +237,21 @@ ankiniki import cards.csv --deck "JavaScript" --tags "imported,js"
 ```csv
 Front,Back,Deck,Tags,Model
 "What is a closure?","A function capturing its enclosing scope","JavaScript","js,closures","Basic"
-"What is hoisting?","Moving declarations to the top","JavaScript","js","Basic"
 ```
 
-Minimal (deck/tags from CLI flags):
-
-```csv
-Front,Back
-"What is a closure?","A function capturing its enclosing scope"
-```
-
-Custom column names:
+Custom column mapping:
 
 ```bash
-ankiniki import cards.csv \
-  --mapping '{"front":"Question","back":"Answer","deck":"Subject","tags":"Topics"}'
+ankiniki note import cards.csv \
+  --mapping '{"front":"Question","back":"Answer","deck":"Subject"}'
 ```
 
----
-
-#### JSON import
+### JSON
 
 ```bash
-# Auto-detected from .json extension
-ankiniki import cards.json
-
-ankiniki import cards.json --preview
-ankiniki import cards.json --deck "Rust" --tags "rust"
+ankiniki note import cards.json
+ankiniki note import cards.json --deck "Rust"
 ```
-
-**JSON format (array):**
 
 ```json
 [
@@ -278,43 +260,16 @@ ankiniki import cards.json --deck "Rust" --tags "rust"
     "back": "Each value in Rust has one owner.",
     "deck": "Rust",
     "tags": ["rust", "memory"]
-  },
-  {
-    "front": "What is borrowing?",
-    "back": "Temporarily using a value without taking ownership.",
-    "deck": "Rust",
-    "tags": ["rust", "memory"]
   }
 ]
 ```
 
-**JSON format (object with defaults):**
-
-```json
-{
-  "deck_name": "Rust",
-  "default_tags": ["rust"],
-  "default_model": "Basic",
-  "cards": [
-    { "front": "What is ownership?", "back": "Each value has one owner." },
-    { "front": "What is borrowing?", "back": "Temporarily using without owning." }
-  ]
-}
-```
-
----
-
-#### Markdown import
+### Markdown
 
 ```bash
-# Auto-detected from .md extension
-ankiniki import cards.md
-
-ankiniki import cards.md --preview
-ankiniki import cards.md --deck "TypeScript"
+ankiniki note import cards.md
+ankiniki note import cards.md --preview
 ```
-
-**Markdown format:**
 
 ```markdown
 ---
@@ -322,191 +277,186 @@ deck: Programming::TypeScript
 tags: [typescript, types]
 ---
 
-## What is a type assertion?
-
-**Front:** What is a type assertion in TypeScript?
-**Back:** Telling the compiler to treat a value as a specific type using `as` or `<Type>`.
-
 ## What is a union type?
 
 **Front:** What is a union type?
 **Back:** A type that can be one of several types, written as `A | B`.
 ```
 
-- The frontmatter (`---` block) sets the default deck and tags
-- Each `##` section is one card
-- `**Front:**` and `**Back:**` are required in each section
-
----
-
-#### Common import options
+### Common options
 
 | Option               | Short | Description                             |
 | -------------------- | ----- | --------------------------------------- |
 | `--format <fmt>`     | `-f`  | Force format: `csv`, `json`, `markdown` |
-| `--deck <deck>`      |       | Default deck (overrides file content)   |
+| `--deck <deck>`      |       | Default deck                            |
 | `--model <model>`    |       | Card model (default: Basic)             |
 | `--tags <tags>`      |       | Extra tags (comma-separated)            |
 | `--preview`          | `-p`  | Dry run — show what would be imported   |
-| `--dry-run`          |       | Same as `--preview`                     |
 | `--delimiter <char>` | `-d`  | CSV delimiter (default: `,`)            |
 | `--mapping <json>`   |       | Custom CSV column mapping               |
 
 ---
 
-### `import mapping` — Show format examples
+## `note tag` — Bulk tag management
+
+Add or remove tags across all notes matching an AnkiConnect query.
 
 ```bash
-ankiniki import mapping
-```
-
----
-
-### `deck` — Manage decks
-
-```bash
-ankiniki deck list                   # list all decks with card counts
-ankiniki deck create <name>          # create a new deck
-ankiniki deck delete <name>          # delete deck (confirmation prompt)
-ankiniki deck delete <name> --force  # skip confirmation
+ankiniki note tag <query> --add <tags> [--remove <tags>] [--deck <name>] [--yes]
 ```
 
 **Examples:**
 
 ```bash
-# See all decks
+# Tag all notes in a deck
+ankiniki note tag "deck:Japanese" --add "n+1,active"
+
+# Rename a tag across all notes
+ankiniki note tag "tag:old-tag" --remove "old-tag" --add "new-tag" --yes
+
+# Tag this week's new notes
+ankiniki note tag "added:7" --add "this-week" --yes
+```
+
+| Option            | Short | Description                     |
+| ----------------- | ----- | ------------------------------- |
+| `--add <tags>`    |       | Comma-separated tags to add     |
+| `--remove <tags>` |       | Comma-separated tags to remove  |
+| `--deck <name>`   | `-d`  | Scope search to a specific deck |
+| `--yes`           | `-y`  | Skip confirmation prompt        |
+
+---
+
+## `deck` — Manage decks
+
+```bash
 ankiniki deck list
-
-# Create a nested deck
 ankiniki deck create "Programming::TypeScript"
-
-# Delete a deck and all its cards
 ankiniki deck delete "Old Deck"
+ankiniki deck delete "Old Deck" --force    # skip confirmation
 ```
 
-> `ankiniki deck delete` removes the deck **and all its cards**. A confirmation prompt is shown by default.
+> `deck delete` removes the deck **and all its cards**. A confirmation prompt is shown by default.
 
 ---
 
-### `delete` — Remove a card
+## `export` — Export a deck
 
 ```bash
-ankiniki delete <noteId>           # shows card preview + confirmation
-ankiniki delete <noteId> --force   # skip confirmation
+ankiniki export <deck> [output] [--format apkg|csv|json] [--query <query>] [--include-sched]
 ```
 
-Note IDs are shown by `ankiniki list --cards <deck>`.
-
-**Example:**
-
-```bash
-# Find the note ID first
-ankiniki list --cards "JavaScript"
-# → 1. Card ID: 1700000001
-#      Front: What is hoisting?
-
-# Delete it
-ankiniki delete 1700000001
-```
-
----
-
-### `export` — Export a deck as `.apkg`
-
-```bash
-ankiniki export <deck> [output]
-```
+| Format | Description                                        |
+| ------ | -------------------------------------------------- |
+| `apkg` | Anki package — import directly into Anki (default) |
+| `csv`  | Spreadsheet-friendly, all fields + tags            |
+| `json` | Machine-readable array of note objects             |
 
 **Examples:**
 
 ```bash
-# Export to current directory (saves as JavaScript.apkg)
-ankiniki export "JavaScript"
-
-# Export to a specific path
-ankiniki export "Programming::Rust" ~/backups/rust.apkg
-
-# Include scheduling and review history
-ankiniki export "JavaScript" --include-sched
+ankiniki export "JavaScript"                             # → JavaScript.apkg
+ankiniki export "JavaScript" --format csv               # → JavaScript.csv
+ankiniki export "JavaScript" --format json              # → JavaScript.json
+ankiniki export "JavaScript" notes.apkg --include-sched
+ankiniki export "JavaScript" --format csv --query "tag:hard"
 ```
-
-**Options:**
-
-| Option            | Description                                     |
-| ----------------- | ----------------------------------------------- |
-| `--include-sched` | Include Anki scheduling and review history data |
-
-The `.apkg` file can be imported directly into any Anki installation via File → Import.
 
 ---
 
-## Common Workflows
-
-### Engineer workflow: capture while coding
+## `stats` — Review statistics
 
 ```bash
-# Just learned something in Rust — add it immediately
-ankiniki add "Rust" \
-  "What does \`Option::unwrap_or_else\` do?" \
-  "Returns the value or calls a closure to compute a fallback"  \
-  --tags "rust,option,error-handling"
+ankiniki stats                     # full dashboard
+ankiniki stats --brief             # one-line summary (e.g. for status bars)
+ankiniki stats --deck "JavaScript" # scope to one deck
+```
 
-# Check it was added
-ankiniki list --cards "Rust"
+---
+
+## `sync` — AnkiWeb sync
+
+```bash
+ankiniki sync
+```
+
+Triggers the same sync as Anki's built-in "Sync" button. Requires an AnkiWeb account configured in Anki.
+
+---
+
+## `config` — Settings
+
+```bash
+ankiniki config --show
+ankiniki config --set defaultDeck=JavaScript
+ankiniki config --set serverUrl=http://localhost:3001
+ankiniki config --edit
+ankiniki config --reset
+```
+
+| Key              | Default                 | Description                              |
+| ---------------- | ----------------------- | ---------------------------------------- |
+| `ankiConnectUrl` | `http://localhost:8765` | AnkiConnect API endpoint                 |
+| `serverUrl`      | `http://localhost:3001` | Ankiniki backend (for import + generate) |
+| `defaultDeck`    | `Default`               | Deck used when none is specified         |
+| `defaultModel`   | `Basic`                 | Card model used when none is specified   |
+| `debugMode`      | `false`                 | Verbose logging                          |
+
+Config is saved at `~/.ankiniki.json`.
+
+---
+
+## Common workflows
+
+### Capture while coding
+
+```bash
+ankiniki note add "Rust" \
+  "What does \`Option::unwrap_or_else\` do?" \
+  "Returns the value or calls a closure to compute a fallback" \
+  --tags "rust,option"
 ```
 
 ### Batch import from study notes
 
 ```bash
-# Write cards in Markdown while reading docs, then import all at once
-ankiniki import study-notes.md --preview   # check first
-ankiniki import study-notes.md
+ankiniki note import study-notes.md --preview
+ankiniki note import study-notes.md
 ```
 
-### Daily review in terminal
+### AI-generate cards from a PR diff
 
 ```bash
-# 10 random cards from your main deck
+git diff main | ankiniki note generate --stdin --content-type code --deck "Review" --yes
+```
+
+### Daily review
+
+```bash
 ankiniki study "Programming" --count 10 --random
 ```
 
-### Back up or share a deck
+### Back up a deck
 
 ```bash
-# Export a deck to share with a colleague or move to another machine
-ankiniki export "Programming::Rust" rust-deck.apkg
-
-# Include your review history (progress, scheduling)
 ankiniki export "Programming::Rust" rust-deck.apkg --include-sched
-# Import on the other machine: Anki → File → Import → select rust-deck.apkg
 ```
 
-### Clean up old cards
+### Rename a tag across a deck
 
 ```bash
-# List cards to find the one to remove
-ankiniki list --cards "JavaScript" --limit 50
-
-# Delete by note ID (shown in the list output)
-ankiniki delete 1700000001
-```
-
-### Sync config on a new machine
-
-```bash
-ankiniki config --edit   # set ankiConnectUrl, serverUrl, defaultDeck
-ankiniki config --show   # verify connection is green
+ankiniki note tag "deck:Japanese" --remove "todo" --add "done" --yes
 ```
 
 ---
 
 ## Troubleshooting
 
-| Problem                    | Fix                                                                           |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| `Cannot connect to Anki`   | Make sure Anki desktop is open and AnkiConnect is installed                   |
-| `Deck does not exist`      | Create the deck in Anki first, or check the name spelling                     |
-| `Import failed: API Error` | Check backend server is running (`npm run dev --workspace=@ankiniki/backend`) |
-| `Model does not exist`     | Use `ankiniki list` to see model names, or use `Basic`                        |
+| Problem                    | Fix                                                                                    |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| `Cannot connect to Anki`   | Make sure Anki desktop is open and AnkiConnect is installed                            |
+| `Deck does not exist`      | Create the deck with `ankiniki deck create "<name>"` or check spelling                 |
+| `Import failed: API Error` | Check backend server is running (`npm run dev --workspace=@ankiniki/backend`)          |
+| `Model does not exist`     | Use `ankiniki deck list` to see decks, then check model names in Anki desktop settings |
 
 AnkiConnect status: open `http://localhost:8765` in a browser — it should return a version number.

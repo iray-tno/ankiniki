@@ -8,11 +8,10 @@ export function createListCommand(): Command {
   const command = new Command('list');
 
   command
-    .description('List decks or cards')
-    .option('-d, --decks', 'List all decks')
-    .option('-c, --cards <deck>', 'List cards in a specific deck')
+    .description('List cards in a deck')
+    .argument('<deck>', 'Deck name to list cards from')
     .option('-l, --limit <number>', 'Limit number of results', '10')
-    .action(async options => {
+    .action(async (deck: string, options: { limit: string }) => {
       const client = new AnkiClient();
 
       try {
@@ -25,13 +24,7 @@ export function createListCommand(): Command {
         }
         spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
-        if (options.cards) {
-          // List cards in specific deck
-          await listCards(client, options.cards, parseInt(options.limit));
-        } else {
-          // List decks (default)
-          await listDecks(client);
-        }
+        await listCards(client, deck, parseInt(options.limit));
       } catch (error: any) {
         console.error(chalk.red(`Error: ${error.message}`));
         process.exit(1);
@@ -39,30 +32,6 @@ export function createListCommand(): Command {
     });
 
   return command;
-}
-
-async function listDecks(client: AnkiClient): Promise<void> {
-  const spinner = ora('Loading decks...').start();
-
-  try {
-    const deckNames = await client.getDeckNames();
-    spinner.succeed(`Found ${deckNames.length} decks`);
-
-    console.log(chalk.bold('\n📚 Available Decks:'));
-
-    for (const [index, deckName] of deckNames.entries()) {
-      // Get card count for each deck
-      const noteIds = await client.findNotes(`deck:"${deckName}"`);
-      const cardCount = noteIds.length;
-
-      console.log(
-        `${chalk.cyan(`${index + 1}.`)} ${chalk.white(deckName)} ${chalk.gray(`(${cardCount} cards)`)}`
-      );
-    }
-  } catch (error) {
-    spinner.fail('Failed to load decks');
-    throw error;
-  }
 }
 
 async function listCards(
