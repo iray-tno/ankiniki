@@ -16,68 +16,93 @@ npm link
 
 ## Usage
 
-### Basic Commands
+Commands are grouped into two main areas — **`note`** for card operations and **`deck`** for deck management — plus a set of standalone utility commands.
 
-```bash
-# Show help
-ankiniki --help
-
-# Add a new card
-ankiniki add "What is React?" "A JavaScript library for building user interfaces"
-
-# Add card to specific deck
-ankiniki add "JavaScript Basics" "What is a closure?" "A function that has access to outer function variables"
-
-# Interactive card creation
-ankiniki add --interactive
-
-# List all decks
-ankiniki list
-
-# List cards in a deck
-ankiniki list --cards "JavaScript Basics"
-
-# Study cards
-ankiniki study
-
-# Study specific deck
-ankiniki study "React Concepts"
-
-# Configuration
-ankiniki config --show
-ankiniki config --edit
-ankiniki config --set defaultDeck=MyDeck
+```
+ankiniki note <subcommand>   # card/note operations
+ankiniki deck <subcommand>   # deck management
+ankiniki export              # export to .apkg / CSV / JSON
+ankiniki bundle              # build .apkg offline (no Anki needed)
+ankiniki study               # in-terminal study session
+ankiniki stats               # review statistics
+ankiniki sync                # trigger AnkiWeb sync
+ankiniki status              # check connections
+ankiniki config              # manage settings
 ```
 
-### Options
+### Note commands
 
-#### Add Command
+```bash
+# Add a card
+ankiniki note add "JavaScript" "What is hoisting?" "Moving declarations to the top"
+ankiniki note add --interactive
 
-- `--tags <tags>`: Comma-separated tags
-- `--model <model>`: Card model to use
-- `--interactive`: Interactive mode with editor
+# List cards in a deck
+ankiniki note list "JavaScript"
+ankiniki note list "JavaScript" --limit 20
 
-#### List Command
+# Edit a card
+ankiniki note edit "hoisting"
+ankiniki note edit "tag:js" --deck "JavaScript"
 
-- `--decks`: List all decks (default)
-- `--cards <deck>`: List cards in specific deck
-- `--limit <number>`: Limit results (default: 10)
+# Delete a card by note ID
+ankiniki note delete <noteId>
+ankiniki note delete <noteId> --force
 
-#### Study Command
+# Generate cards with AI from a file
+ankiniki note generate README.md --deck "Docs"
+ankiniki note generate --stdin --deck "Code Review"
 
-- `--count <number>`: Number of cards to study (default: 5)
-- `--random`: Study in random order
+# Import cards from CSV, JSON, or Markdown
+ankiniki note import cards.csv
+ankiniki note import cards.md --preview
 
-#### Config Command
+# Bulk-manage tags
+ankiniki note tag "deck:JavaScript" --add "active" --remove "archived"
+ankiniki note tag "added:7" --add "this-week" --yes
+```
 
-- `--show`: Show current configuration
-- `--edit`: Edit configuration interactively
-- `--set <key=value>`: Set a configuration value
-- `--reset`: Reset to defaults
+### Deck commands
+
+```bash
+ankiniki deck list
+ankiniki deck create "Programming::TypeScript"
+ankiniki deck delete "Old Deck"
+ankiniki deck delete "Old Deck" --force
+```
+
+### Export
+
+```bash
+ankiniki export "JavaScript"                             # → JavaScript.apkg
+ankiniki export "JavaScript" --format csv               # → JavaScript.csv
+ankiniki export "JavaScript" --format json              # → JavaScript.json
+ankiniki export "JavaScript" notes.apkg --include-sched
+ankiniki export "JavaScript" --format csv --query "tag:hard"
+```
+
+### Utility commands
+
+```bash
+ankiniki stats                        # review dashboard
+ankiniki stats --brief                # one-line summary (useful in status bars)
+ankiniki stats --deck "JavaScript"    # scoped to one deck
+
+ankiniki sync                         # trigger AnkiWeb sync
+
+ankiniki status                       # check Anki + backend connections
+
+ankiniki config --show
+ankiniki config --set defaultDeck=JavaScript
+ankiniki config --edit
+
+ankiniki study "JavaScript"
+ankiniki study "JavaScript" --count 20 --random
+```
 
 ## Configuration
 
-The CLI stores configuration in `~/.ankiniki.json`:
+Config is saved at `~/.ankiniki.json`:
 
 ```json
 {
@@ -86,25 +111,6 @@ The CLI stores configuration in `~/.ankiniki.json`:
   "defaultModel": "Basic",
   "debugMode": false
 }
-```
-
-## Examples
-
-```bash
-# Quick card addition
-ankiniki add "JavaScript" "What is hoisting?" "Variable declarations are moved to the top"
-
-# Add with tags
-ankiniki add "React" "What is JSX?" "JavaScript XML syntax" --tags "react,jsx,syntax"
-
-# Interactive mode with editor
-ankiniki add -i
-
-# Study session
-ankiniki study "JavaScript Fundamentals" --count 10 --random
-
-# List recent cards
-ankiniki list --cards "React Concepts" --limit 5
 ```
 
 ## Requirements
