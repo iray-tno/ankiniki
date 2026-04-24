@@ -27,11 +27,8 @@ Detailed guides for all Ankiniki components and features.
 
 #### Command Line Interface (CLI)
 
-- **[CLI Overview](user-guides/cli/overview.md)** - Command-line tool introduction
-- **[All Commands](user-guides/cli/commands.md)** - Complete command reference
-- **[Interactive Mode](user-guides/cli/interactive-mode.md)** - Interactive card creation
-- **[Configuration](user-guides/cli/configuration.md)** - CLI settings and preferences
-- **[Scripting with CLI](user-guides/cli/scripting.md)** - Automation and batch operations
+- **[CLI Hands-On Guide](user-guides/cli/README.md)** - Full command reference and workflows
+- **[WSL + AnkiConnect](user-guides/wsl-ankiconnect/README.md)** - Connecting to Anki on Windows from WSL2
 
 #### Backend API
 

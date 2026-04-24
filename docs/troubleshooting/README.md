@@ -399,6 +399,24 @@ ankiniki config --reset
    - Remove all "ankiniki.\*" entries from settings.json
    - Restart VS Code
 
+## 🐧 WSL2 — AnkiConnect not reachable from WSL
+
+If Anki runs on Windows and you develop inside WSL2, `localhost:8765` in WSL does not reach AnkiConnect by default because the two environments have separate network namespaces.
+
+**Quick fix (Windows 11 + WSL 0.67+):** enable mirrored networking in `%USERPROFILE%\.wslconfig`:
+
+```ini
+[wsl2]
+networkingMode=mirrored
+```
+
+Then `wsl --shutdown` and restart. After that, `localhost:8765` works from WSL with no AnkiConnect changes.
+
+For older WSL2 or Tailscale-based setups, see the full guide:
+👉 [Connecting AnkiConnect from WSL](../user-guides/wsl-ankiconnect/README.md)
+
+---
+
 ## 🌐 Network and Connectivity Issues
 
 ### Port and URL Issues
