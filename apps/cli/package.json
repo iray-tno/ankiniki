@@ -6,7 +6,7 @@
     "ankiniki": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "node build.mjs",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
@@ -28,6 +28,7 @@
     "@types/inquirer": "^9.0.3",
     "@types/node": "^20.5.0",
     "jest": "^29.6.2",
+    "esbuild": "^0.25.0",
     "tsx": "^3.12.7",
     "typescript": "^5.1.6",
     "vitest": "^4.1.2"
