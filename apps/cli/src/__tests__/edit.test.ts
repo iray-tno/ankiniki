@@ -196,3 +196,81 @@ describe('edit command', () => {
     exitSpy.mockRestore();
   });
 });
+
+describe('edit command — non-interactive (--field)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockClient.ping.mockResolvedValue(true);
+    mockClient.findNotes.mockResolvedValue([101]);
+    mockClient.notesInfo.mockResolvedValue([NOTE_1]);
+    mockClient.updateNoteFields.mockResolvedValue(undefined);
+    consoleSpy.mockImplementation(() => {});
+  });
+
+  it('updates fields without prompts when --field is provided', async () => {
+    await run([
+      'TypeScript',
+      '--field',
+      'Front=Updated front',
+      '--field',
+      'Back=Updated back',
+    ]);
+
+    expect(mockInquirerPrompt).not.toHaveBeenCalled();
+    expect(mockClient.updateNoteFields).toHaveBeenCalledWith(101, {
+      Front: 'Updated front',
+      Back: 'Updated back',
+    });
+  });
+
+  it('treats a bare integer query as nid: search', async () => {
+    await run(['1234567890', '--field', 'Back=new value']);
+
+    expect(mockClient.findNotes).toHaveBeenCalledWith('nid:1234567890');
+  });
+
+  it('uses deck-scoped query for non-numeric queries', async () => {
+    await run(['しかし', '--deck', 'Japanese', '--field', 'Back=new']);
+
+    expect(mockClient.findNotes).toHaveBeenCalledWith('deck:"Japanese" しかし');
+  });
+
+  it('exits with error when --field query matches multiple notes', async () => {
+    mockClient.findNotes.mockResolvedValue([101, 102]);
+    mockClient.notesInfo.mockResolvedValue([NOTE_1, NOTE_2]);
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit: 1');
+    });
+
+    await expect(run(['type', '--field', 'Back=x'])).rejects.toThrow(
+      'process.exit: 1'
+    );
+    expect(mockClient.updateNoteFields).not.toHaveBeenCalled();
+    exitSpy.mockRestore();
+  });
+
+  it('exits with error when --field specifies an unknown field name', async () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit: 1');
+    });
+
+    await expect(
+      run(['TypeScript', '--field', 'NonExistent=x'])
+    ).rejects.toThrow('process.exit: 1');
+    expect(mockClient.updateNoteFields).not.toHaveBeenCalled();
+    exitSpy.mockRestore();
+  });
+
+  it('exits when no notes found in non-interactive mode', async () => {
+    mockClient.findNotes.mockResolvedValue([]);
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit: 1');
+    });
+
+    await expect(run(['missing', '--field', 'Back=x'])).rejects.toThrow(
+      'process.exit: 1'
+    );
+    expect(mockClient.updateNoteFields).not.toHaveBeenCalled();
+    exitSpy.mockRestore();
+  });
+});
