@@ -1,6 +1,30 @@
-import { app, BrowserWindow, Menu, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import Store from 'electron-store';
 import { join } from 'path';
 import { isDev } from './utils';
+
+interface AppSettings {
+  ankiConnectUrl: string;
+  theme: string;
+  autoSync: boolean;
+  newCardsPerDay: number;
+  reviewCardsPerDay: number;
+}
+
+const store = new Store<AppSettings>({
+  defaults: {
+    ankiConnectUrl: 'http://localhost:8765',
+    theme: 'system',
+    autoSync: true,
+    newCardsPerDay: 20,
+    reviewCardsPerDay: 200,
+  },
+});
+
+ipcMain.handle('settings:get', () => store.store);
+ipcMain.handle('settings:set', (_event, settings: Partial<AppSettings>) => {
+  store.set(settings);
+});
 
 let mainWindow: BrowserWindow;
 
