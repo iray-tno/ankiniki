@@ -5,6 +5,7 @@ import cardRoutes from './cards';
 import mlRoutes from './ml';
 import importRoutes from './import';
 import exportRoutes from './export';
+import studyRoutes from './study';
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use('/api/cards', cardRoutes);
 router.use('/api/ml', mlRoutes);
 router.use('/api/import', importRoutes);
 router.use('/api/export', exportRoutes);
+router.use('/api/study', studyRoutes);
 
 export default router;
