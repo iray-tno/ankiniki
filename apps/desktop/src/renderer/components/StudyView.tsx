@@ -1,41 +1,98 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+
+const BACKEND_URL = 'http://localhost:3001';
 
 interface StudyViewProps {
   selectedDeck: string | null;
 }
 
-interface Card {
-  id: string;
+interface StudyCard {
+  cardId: number;
   front: string;
   back: string;
   tags: string[];
 }
 
+function extractFields(card: {
+  fields: Record<string, { value: string; order: number }>;
+  tags: string[];
+}): { front: string; back: string; tags: string[] } {
+  const sorted = Object.entries(card.fields).sort(
+    ([, a], [, b]) => a.order - b.order
+  );
+  return {
+    front: sorted[0]?.[1].value ?? '',
+    back: sorted[1]?.[1].value ?? '',
+    tags: card.tags,
+  };
+}
+
 export function StudyView({ selectedDeck }: StudyViewProps) {
+  const [cards, setCards] = useState<StudyCard[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [sessionStats, setSessionStats] = useState({
-    studied: 0,
-    correct: 0,
-  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [sessionStats, setSessionStats] = useState({ studied: 0, correct: 0 });
 
-  // Mock cards for demo
-  const mockCards: Card[] = [
-    {
-      id: '1',
-      front: 'What is the difference between `let` and `var` in JavaScript?',
-      back: '`let` has block scope and cannot be redeclared in the same scope, while `var` has function scope and can be redeclared. `let` also has temporal dead zone.',
-      tags: ['javascript', 'variables'],
-    },
-    {
-      id: '2',
-      front: 'How do you create a functional component in React?',
-      back: '```jsx\nfunction MyComponent(props) {\n  return <div>Hello {props.name}</div>;\n}\n```',
-      tags: ['react', 'components'],
-    },
-  ];
+  const loadDueCards = useCallback(async () => {
+    if (!selectedDeck) {
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setDone(false);
+    setCurrentIndex(0);
+    setShowAnswer(false);
+    setSessionStats({ studied: 0, correct: 0 });
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/study/due?deck=${encodeURIComponent(selectedDeck)}&limit=20`
+      );
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+      const { data } = await res.json();
+      const raw = data.cards as Array<
+        { cardId: number } & Parameters<typeof extractFields>[0]
+      >;
+      setCards(raw.map(c => ({ cardId: c.cardId, ...extractFields(c) })));
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to load due cards.');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedDeck]);
 
-  const currentCard = mockCards[currentCardIndex];
+  useEffect(() => {
+    loadDueCards();
+  }, [loadDueCards]);
+
+  const handleAnswer = async (ease: 1 | 2 | 3 | 4) => {
+    const card = cards[currentIndex];
+    try {
+      await fetch(`${BACKEND_URL}/api/study/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardId: card.cardId, ease }),
+      });
+    } catch {
+      // Non-fatal: still advance even if answer submission fails
+    }
+
+    setSessionStats(prev => ({
+      studied: prev.studied + 1,
+      correct: prev.correct + (ease >= 3 ? 1 : 0),
+    }));
+
+    if (currentIndex < cards.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setShowAnswer(false);
+    } else {
+      setDone(true);
+    }
+  };
 
   if (!selectedDeck) {
     return (
@@ -48,23 +105,49 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
     );
   }
 
-  const handleAnswer = (difficulty: 'again' | 'hard' | 'good' | 'easy') => {
-    // Update session stats
-    setSessionStats(prev => ({
-      studied: prev.studied + 1,
-      correct:
-        prev.correct + (difficulty === 'good' || difficulty === 'easy' ? 1 : 0),
-    }));
+  if (loading) {
+    return (
+      <div className='study-view no-deck'>
+        <div className='message'>
+          <h2>Loading cards…</h2>
+        </div>
+      </div>
+    );
+  }
 
-    // Move to next card
-    if (currentCardIndex < mockCards.length - 1) {
-      setCurrentCardIndex(prev => prev + 1);
-      setShowAnswer(false);
-    } else {
-      // Session complete
-      alert(`Session complete! You studied ${sessionStats.studied + 1} cards.`);
-    }
-  };
+  if (error) {
+    return (
+      <div className='study-view no-deck'>
+        <div className='message'>
+          <h2>Error</h2>
+          <p>{error}</p>
+          <button className='show-answer-button' onClick={loadDueCards}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (done || cards.length === 0) {
+    return (
+      <div className='study-view no-deck'>
+        <div className='message'>
+          <h2>{cards.length === 0 ? 'No cards due' : 'Session complete!'}</h2>
+          <p>
+            {cards.length === 0
+              ? 'Great work — nothing due in this deck right now.'
+              : `You studied ${sessionStats.studied} card${sessionStats.studied !== 1 ? 's' : ''} — ${sessionStats.correct} correct.`}
+          </p>
+          <button className='show-answer-button' onClick={loadDueCards}>
+            Reload
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentCard = cards[currentIndex];
 
   return (
     <div className='study-view'>
@@ -72,7 +155,7 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
         <div className='study-info'>
           <h1>Studying: {selectedDeck}</h1>
           <div className='progress'>
-            Card {currentCardIndex + 1} of {mockCards.length}
+            Card {currentIndex + 1} of {cards.length}
           </div>
         </div>
         <div className='session-stats'>
@@ -93,13 +176,15 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
             </div>
           )}
 
-          <div className='card-tags'>
-            {currentCard.tags.map(tag => (
-              <span key={tag} className='tag'>
-                {tag}
-              </span>
-            ))}
-          </div>
+          {currentCard.tags.length > 0 && (
+            <div className='card-tags'>
+              {currentCard.tags.map(tag => (
+                <span key={tag} className='tag'>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className='study-actions'>
@@ -114,25 +199,25 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
             <div className='difficulty-buttons'>
               <button
                 className='difficulty-button again'
-                onClick={() => handleAnswer('again')}
+                onClick={() => handleAnswer(1)}
               >
                 Again
               </button>
               <button
                 className='difficulty-button hard'
-                onClick={() => handleAnswer('hard')}
+                onClick={() => handleAnswer(2)}
               >
                 Hard
               </button>
               <button
                 className='difficulty-button good'
-                onClick={() => handleAnswer('good')}
+                onClick={() => handleAnswer(3)}
               >
                 Good
               </button>
               <button
                 className='difficulty-button easy'
-                onClick={() => handleAnswer('easy')}
+                onClick={() => handleAnswer(4)}
               >
                 Easy
               </button>
@@ -165,6 +250,7 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
 
         .message p {
           color: var(--text-tertiary);
+          margin-bottom: 1.5rem;
         }
 
         .study-header {
@@ -227,6 +313,7 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
           display: flex;
           flex-wrap: wrap;
           gap: 0.5rem;
+          margin-top: 1rem;
         }
 
         .tag {
@@ -272,29 +359,12 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
           min-width: 80px;
         }
 
-        .difficulty-button.again {
-          background-color: var(--danger-color);
-          color: white;
-        }
+        .difficulty-button.again { background-color: var(--danger-color); color: white; }
+        .difficulty-button.hard  { background-color: var(--warning-color); color: white; }
+        .difficulty-button.good  { background-color: var(--success-color); color: white; }
+        .difficulty-button.easy  { background-color: var(--secondary-color); color: white; }
 
-        .difficulty-button.hard {
-          background-color: var(--warning-color);
-          color: white;
-        }
-
-        .difficulty-button.good {
-          background-color: var(--success-color);
-          color: white;
-        }
-
-        .difficulty-button.easy {
-          background-color: var(--secondary-color);
-          color: white;
-        }
-
-        .difficulty-button:hover {
-          opacity: 0.9;
-        }
+        .difficulty-button:hover { opacity: 0.9; }
       `}</style>
     </div>
   );
