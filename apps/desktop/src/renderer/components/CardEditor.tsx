@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+const BACKEND_URL = 'http://localhost:3001';
 
 interface CardEditorProps {
   selectedDeck: string | null;
@@ -8,37 +10,72 @@ export function CardEditor({ selectedDeck }: CardEditorProps) {
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [tags, setTags] = useState('');
-  const [deckName, setDeckName] = useState(selectedDeck || '');
+  const [deckName, setDeckName] = useState(selectedDeck ?? '');
+  const [decks, setDecks] = useState<string[]>([]);
   const [preview, setPreview] = useState(false);
+  const [status, setStatus] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/decks`)
+      .then(r => r.json())
+      .then(({ data }) => setDecks(data as string[]))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (selectedDeck) {
+      setDeckName(selectedDeck);
+    }
+  }, [selectedDeck]);
 
   const handleSave = async () => {
     if (!front.trim() || !back.trim() || !deckName.trim()) {
-      alert('Please fill in all required fields');
+      setStatus({
+        type: 'error',
+        message: 'Deck, Front and Back are required.',
+      });
       return;
     }
 
+    setSaving(true);
+    setStatus(null);
     try {
-      // TODO: Replace with actual API call
-      // await fetch('http://localhost:3001/api/cards', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     deckName,
-      //     modelName: 'Basic',
-      //     fields: { Front: front, Back: back },
-      //     tags: tags.split(',').map(t => t.trim()).filter(t => t),
-      //   }),
-      // });
-
-      // Mock success
-      alert('Card created successfully!');
-
-      // Reset form
+      const res = await fetch(`${BACKEND_URL}/api/cards`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deckName,
+          modelName: 'Basic',
+          fields: { Front: front.trim(), Back: back.trim() },
+          tags: tags
+            .split(',')
+            .map(t => t.trim())
+            .filter(Boolean),
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        throw new Error(body.message ?? `Server error: ${res.status}`);
+      }
+      setStatus({
+        type: 'success',
+        message: `Card saved (note ID ${body.data.noteId})`,
+      });
       setFront('');
       setBack('');
       setTags('');
-    } catch (err) {
-      alert('Failed to create card');
+      setPreview(false);
+    } catch (err: any) {
+      setStatus({
+        type: 'error',
+        message: err.message ?? 'Failed to create card',
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -62,11 +99,21 @@ export function CardEditor({ selectedDeck }: CardEditorProps) {
           >
             👁️ Preview
           </button>
-          <button className='save-button' onClick={handleSave}>
-            💾 Save Card
+          <button
+            className='save-button'
+            onClick={handleSave}
+            disabled={saving}
+          >
+            💾 {saving ? 'Saving…' : 'Save Card'}
           </button>
         </div>
       </header>
+
+      {status && (
+        <div className={`status-banner status-${status.type}`}>
+          {status.message}
+        </div>
+      )}
 
       <div className='editor-content'>
         <div className='form-section'>
@@ -78,12 +125,11 @@ export function CardEditor({ selectedDeck }: CardEditorProps) {
             className='deck-select'
           >
             <option value=''>Select a deck...</option>
-            <option value='JavaScript Fundamentals'>
-              JavaScript Fundamentals
-            </option>
-            <option value='React Concepts'>React Concepts</option>
-            <option value='Node.js APIs'>Node.js APIs</option>
-            <option value='TypeScript Types'>TypeScript Types</option>
+            {decks.map(d => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -172,7 +218,7 @@ export function CardEditor({ selectedDeck }: CardEditorProps) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 2rem;
+          margin-bottom: 1rem;
         }
 
         .editor-header h1 {
@@ -217,8 +263,32 @@ export function CardEditor({ selectedDeck }: CardEditorProps) {
           font-weight: 500;
         }
 
-        .save-button:hover {
+        .save-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .save-button:not(:disabled):hover {
           opacity: 0.9;
+        }
+
+        .status-banner {
+          padding: 0.75rem 1rem;
+          border-radius: var(--radius-md);
+          margin-bottom: 1.5rem;
+          font-size: 0.9rem;
+        }
+
+        .status-success {
+          background-color: color-mix(in srgb, var(--success-color) 15%, transparent);
+          color: var(--success-color);
+          border: 1px solid color-mix(in srgb, var(--success-color) 40%, transparent);
+        }
+
+        .status-error {
+          background-color: color-mix(in srgb, var(--danger-color) 15%, transparent);
+          color: var(--danger-color);
+          border: 1px solid color-mix(in srgb, var(--danger-color) 40%, transparent);
         }
 
         .editor-content {
@@ -290,6 +360,7 @@ export function CardEditor({ selectedDeck }: CardEditorProps) {
           font-size: 1rem;
           resize: vertical;
           min-height: 120px;
+          box-sizing: border-box;
         }
 
         .field-textarea:focus {
