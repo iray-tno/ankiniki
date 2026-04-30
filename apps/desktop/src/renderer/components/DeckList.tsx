@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
+const BACKEND_URL = 'http://localhost:3001';
 
 interface DeckListProps {
   onSelectDeck: (deckName: string) => void;
 }
 
-interface Deck {
-  name: string;
-  cardCount: number;
-}
-
 export function DeckList({ onSelectDeck }: DeckListProps) {
-  const [decks, setDecks] = useState<Deck[]>([]);
+  const [decks, setDecks] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newDeckName, setNewDeckName] = useState('');
@@ -24,24 +21,16 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
     try {
       setLoading(true);
       setError(null);
-
-      // TODO: Replace with actual API call
-      // const response = await fetch('http://localhost:3001/api/decks');
-      // const data = await response.json();
-
-      // Mock data for now
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const mockDecks = [
-        { name: 'JavaScript Fundamentals', cardCount: 25 },
-        { name: 'React Concepts', cardCount: 18 },
-        { name: 'Node.js APIs', cardCount: 32 },
-        { name: 'TypeScript Types', cardCount: 15 },
-      ];
-
-      setDecks(mockDecks);
-    } catch (err) {
+      const res = await fetch(`${BACKEND_URL}/api/decks`);
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+      const { data } = await res.json();
+      setDecks(data as string[]);
+    } catch (err: any) {
       setError(
-        'Failed to load decks. Make sure Anki is running with AnkiConnect.'
+        err.message ??
+          'Failed to load decks. Make sure Anki is running with AnkiConnect.'
       );
     } finally {
       setLoading(false);
@@ -52,21 +41,45 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
     if (!newDeckName.trim()) {
       return;
     }
-
     try {
-      // TODO: Replace with actual API call
-      // await fetch('http://localhost:3001/api/decks', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name: newDeckName }),
-      // });
-
-      // Mock creation
-      setDecks(prev => [...prev, { name: newDeckName, cardCount: 0 }]);
+      const res = await fetch(`${BACKEND_URL}/api/decks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newDeckName.trim() }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message ?? `Server error: ${res.status}`);
+      }
       setNewDeckName('');
       setShowCreateForm(false);
-    } catch (err) {
-      setError('Failed to create deck');
+      await loadDecks();
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to create deck');
+    }
+  };
+
+  const deleteDeck = async (name: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Delete deck "${name}"? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/decks/${encodeURIComponent(name)}`,
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deleteCards: false }),
+        }
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message ?? `Server error: ${res.status}`);
+      }
+      await loadDecks();
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to delete deck');
     }
   };
 
@@ -110,6 +123,7 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
             type='text'
             value={newDeckName}
             onChange={e => setNewDeckName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && createDeck()}
             placeholder='Enter deck name...'
             className='deck-name-input'
             autoFocus
@@ -131,22 +145,40 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
         </div>
       )}
 
-      <div className='decks-grid'>
-        {decks.map(deck => (
-          <div
-            key={deck.name}
-            className='deck-card'
-            onClick={() => onSelectDeck(deck.name)}
-          >
-            <h3 className='deck-name'>{deck.name}</h3>
-            <p className='deck-stats'>{deck.cardCount} cards</p>
-            <div className='deck-actions'>
-              <button className='study-button'>Study</button>
-              <button className='edit-button'>Edit</button>
+      {decks.length === 0 ? (
+        <p className='empty-state'>
+          No decks found. Create one above or open Anki to add decks.
+        </p>
+      ) : (
+        <div className='decks-grid'>
+          {decks.map(name => (
+            <div
+              key={name}
+              className='deck-card'
+              onClick={() => onSelectDeck(name)}
+            >
+              <h3 className='deck-name'>{name}</h3>
+              <div className='deck-actions'>
+                <button
+                  className='study-button'
+                  onClick={e => {
+                    e.stopPropagation();
+                    onSelectDeck(name);
+                  }}
+                >
+                  Study
+                </button>
+                <button
+                  className='delete-button'
+                  onClick={e => deleteDeck(name, e)}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <style>{`
         .deck-list {
@@ -237,6 +269,9 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
           border-radius: var(--radius-md);
           font-size: 1rem;
           margin-bottom: 1rem;
+          background-color: var(--bg-primary);
+          color: var(--text-primary);
+          box-sizing: border-box;
         }
 
         .form-actions {
@@ -260,6 +295,12 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
           border: none;
           border-radius: var(--radius-md);
           cursor: pointer;
+        }
+
+        .empty-state {
+          color: var(--text-secondary);
+          text-align: center;
+          padding: 3rem 0;
         }
 
         .decks-grid {
@@ -286,11 +327,6 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
           font-size: 1.25rem;
           font-weight: 600;
           color: var(--text-primary);
-          margin-bottom: 0.5rem;
-        }
-
-        .deck-stats {
-          color: var(--text-secondary);
           margin-bottom: 1rem;
         }
 
@@ -300,7 +336,7 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
         }
 
         .study-button,
-        .edit-button {
+        .delete-button {
           padding: 0.375rem 0.75rem;
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
@@ -316,10 +352,10 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
           border-color: var(--primary-color);
         }
 
-        .edit-button:hover {
-          background-color: var(--secondary-color);
+        .delete-button:hover {
+          background-color: var(--danger-color);
           color: white;
-          border-color: var(--secondary-color);
+          border-color: var(--danger-color);
         }
       `}</style>
     </div>
