@@ -1,33 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { AppSettings } from '../types';
+
+const DEFAULTS: AppSettings = {
+  ankiConnectUrl: 'http://localhost:8765',
+  theme: 'system',
+  autoSync: true,
+  newCardsPerDay: 20,
+  reviewCardsPerDay: 200,
+};
 
 export function Settings() {
-  const [settings, setSettings] = useState({
-    ankiConnectUrl: 'http://localhost:8765',
-    theme: 'system',
-    autoSync: true,
-    newCardsPerDay: 20,
-    reviewCardsPerDay: 200,
-  });
+  const [settings, setSettings] = useState<AppSettings>(DEFAULTS);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
 
-  const handleSave = () => {
-    // TODO: Implement settings save
-    console.log('Saving settings:', settings);
-    alert('Settings saved!');
+  useEffect(() => {
+    window.electronAPI?.settings.get().then(saved => {
+      setSettings({ ...DEFAULTS, ...saved });
+    });
+  }, []);
+
+  const handleSave = async () => {
+    await window.electronAPI?.settings.set(settings);
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   const testConnection = async () => {
     try {
-      // TODO: Implement actual connection test
-      // const response = await fetch(`${settings.ankiConnectUrl}`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ action: 'version', version: 6 }),
-      // });
-
-      // Mock successful connection
-      await new Promise(resolve => setTimeout(resolve, 500));
-      alert('✅ Connection successful!');
-    } catch (error) {
+      const res = await fetch(settings.ankiConnectUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'version', version: 6 }),
+      });
+      const data = await res.json();
+      alert(`✅ Connected — AnkiConnect v${data.result}`);
+    } catch {
       alert(
         '❌ Connection failed. Make sure Anki is running with AnkiConnect addon.'
       );
@@ -154,7 +161,7 @@ export function Settings() {
 
         <div className='settings-actions'>
           <button onClick={handleSave} className='save-button'>
-            Save Settings
+            {saveStatus === 'saved' ? '✓ Saved' : 'Save Settings'}
           </button>
         </div>
       </div>

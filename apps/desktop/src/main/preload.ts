@@ -20,6 +20,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('menu-about', callback);
   },
 
+  // Settings persistence
+  settings: {
+    get: () => ipcRenderer.invoke('settings:get'),
+    set: (settings: Record<string, unknown>) =>
+      ipcRenderer.invoke('settings:set', settings),
+  },
+
   // Remove listeners
   removeAllListeners: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);
