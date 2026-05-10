@@ -271,13 +271,23 @@ describe('mapCardFields', () => {
   });
 
   it('maps Cloze model to Text field', () => {
-    expect(mapCardFields('Q', 'A', 'Cloze')).toEqual({ Text: 'Q\n\nA' });
+    expect(mapCardFields('Q', 'A', 'Cloze')).toEqual({ Text: 'Q<br><br>A' });
   });
 
   it('falls back to Front/Back for unknown models', () => {
     expect(mapCardFields('Q', 'A', 'BasicAndReversed')).toEqual({
       Front: 'Q',
       Back: 'A',
+    });
+  });
+
+  it('converts \\n to <br> in all model types', () => {
+    expect(mapCardFields('line1\nline2', 'ans\nhere', 'Basic')).toEqual({
+      Front: 'line1<br>line2',
+      Back: 'ans<br>here',
+    });
+    expect(mapCardFields('front\ntext', 'back\ntext', 'Cloze')).toEqual({
+      Text: 'front<br>text<br><br>back<br>text',
     });
   });
 });
