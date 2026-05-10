@@ -217,6 +217,7 @@ describe('export command', () => {
       expect(parsed).toHaveLength(2);
       expect(parsed[0]).toMatchObject({
         noteId: 101,
+        deckName: 'TypeScript',
         modelName: 'Basic',
         tags: ['ts', 'beginner'],
         fields: {
@@ -230,6 +231,31 @@ describe('export command', () => {
       await run(['TypeScript', '/tmp/out.json', '--format', 'json']);
 
       expect(mockClient.exportPackage).not.toHaveBeenCalled();
+    });
+
+    it('uses source deck name as deckName by default', async () => {
+      await run(['TypeScript', '/tmp/out.json', '--format', 'json']);
+
+      const raw: string = mockWriteFileSync.mock.calls[0][1] as string;
+      const parsed = JSON.parse(raw);
+      expect(parsed[0].deckName).toBe('TypeScript');
+    });
+
+    it('overrides deckName with --deck-name', async () => {
+      await run([
+        'TypeScript',
+        '/tmp/out.json',
+        '--format',
+        'json',
+        '--deck-name',
+        'Grammar',
+      ]);
+
+      const raw: string = mockWriteFileSync.mock.calls[0][1] as string;
+      const parsed = JSON.parse(raw);
+      parsed.forEach((record: any) => {
+        expect(record.deckName).toBe('Grammar');
+      });
     });
   });
 

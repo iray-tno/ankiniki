@@ -122,12 +122,14 @@ export const JsonImportOptionsSchema = z.object({
   defaultTags: z.array(z.string()).optional().default([]),
   dryRun: z.boolean().optional().default(false),
   validate: z.boolean().optional().default(true),
+  deckOverride: z.string().optional(),
 });
 
 export interface JsonCard {
   front: string;
   back: string;
   deck?: string;
+  deckName?: string;
   model?: string;
   tags?: string[];
   difficulty?: string;
@@ -175,7 +177,13 @@ export function processJsonCards(
     return {
       front: card.front.trim(),
       back: card.back.trim(),
-      deck: (card.deck || defaultDeck || 'Default').trim(),
+      deck: (
+        options.deckOverride ||
+        card.deckName ||
+        card.deck ||
+        defaultDeck ||
+        'Default'
+      ).trim(),
       model: (card.model || defaultModel).trim(),
       tags: allTags,
       difficulty: card.difficulty?.trim(),

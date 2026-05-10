@@ -230,6 +230,50 @@ describe('processJsonCards', () => {
     expect(cards[0].deck).toBe('CardDeck');
   });
 
+  it('reads deckName from each card', () => {
+    const data = [{ front: 'Q', back: 'A', deckName: 'English::Writing' }];
+    const opts = JsonImportOptionsSchema.parse({});
+    const cards = processJsonCards(data, opts);
+    expect(cards[0].deck).toBe('English::Writing');
+  });
+
+  it('deckOverride trumps per-card deckName and deck', () => {
+    const data = [
+      { front: 'Q', back: 'A', deckName: 'FromFile', deck: 'LegacyField' },
+    ];
+    const opts = JsonImportOptionsSchema.parse({ deckOverride: 'ForcedDeck' });
+    const cards = processJsonCards(data, opts);
+    expect(cards[0].deck).toBe('ForcedDeck');
+  });
+
+  it('priority: deckOverride > deckName > deck > defaultDeck', () => {
+    const data = [
+      { front: 'Q', back: 'A', deckName: 'FileLevel', deck: 'Legacy' },
+    ];
+    expect(
+      processJsonCards(
+        data,
+        JsonImportOptionsSchema.parse({
+          deckOverride: 'Override',
+          defaultDeck: 'Fallback',
+        })
+      )[0].deck
+    ).toBe('Override');
+    expect(
+      processJsonCards(
+        data,
+        JsonImportOptionsSchema.parse({ defaultDeck: 'Fallback' })
+      )[0].deck
+    ).toBe('FileLevel');
+    const noNames = [{ front: 'Q', back: 'A', deck: 'Legacy' }];
+    expect(
+      processJsonCards(
+        noNames,
+        JsonImportOptionsSchema.parse({ defaultDeck: 'Fallback' })
+      )[0].deck
+    ).toBe('Legacy');
+  });
+
   it('merges card tags with default tags', () => {
     const opts = JsonImportOptionsSchema.parse({
       defaultTags: ['default-tag'],

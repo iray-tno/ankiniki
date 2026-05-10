@@ -17,6 +17,7 @@ interface ImportOptions {
   format?: ImportFormat;
   delimiter?: string;
   deck?: string;
+  deckName?: string;
   model?: string;
   tags?: string;
   preview?: boolean;
@@ -49,6 +50,10 @@ export const importCommand = new Command('import')
   .option('-p, --preview', 'Preview import without creating cards')
   .option('--dry-run', "Dry run - validate but don't create cards")
   .option('--mapping <mapping>', 'Custom column mapping for CSV (JSON string)')
+  .option(
+    '--deck-name <deckName>',
+    'Override deck for all cards — takes priority over deckName in the file'
+  )
   .action(async (filePath: string, options: ImportOptions) => {
     const config = loadConfig();
     const baseUrl = config.serverUrl;
@@ -158,6 +163,7 @@ async function importJson(
     defaultTags: options.tags ? options.tags.split(',').map(t => t.trim()) : [],
     dryRun: options.preview || options.dryRun || false,
     validate: true,
+    deckOverride: options.deckName,
   };
 
   const formData = new FormData();
