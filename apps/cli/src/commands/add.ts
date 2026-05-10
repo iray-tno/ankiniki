@@ -108,11 +108,11 @@ export function createAddCommand(): Command {
         // Map to AnkiConnect fields format
         const fields: Record<string, string> = {};
         if (fieldNames.length >= 2) {
-          fields[fieldNames[0]] = cardData.front;
-          fields[fieldNames[1]] = cardData.back;
+          fields[fieldNames[0]] = cardData.front.replace(/\n/g, '<br>');
+          fields[fieldNames[1]] = cardData.back.replace(/\n/g, '<br>');
         } else {
-          fields.Front = cardData.front;
-          fields.Back = cardData.back;
+          fields.Front = cardData.front.replace(/\n/g, '<br>');
+          fields.Back = cardData.back.replace(/\n/g, '<br>');
         }
 
         // Add the note
