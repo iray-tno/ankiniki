@@ -160,8 +160,10 @@ export function createBundleCommand(): Command {
                 console.error(` - Card ${e.rowNumber}: ${e.error}`)
               );
           }
-        } catch (error: any) {
-          spinner.fail(`Bundling failed: ${error.message}`);
+        } catch (error) {
+          spinner.fail(
+            `Bundling failed: ${error instanceof Error ? error.message : String(error)}`
+          );
           process.exit(1);
         }
       }

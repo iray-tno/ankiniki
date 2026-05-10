@@ -91,8 +91,10 @@ export class BackendManager {
         this.stop();
         throw new Error('Backend server startup timeout');
       }
-    } catch (error: any) {
-      spinner.fail(`Failed to start backend: ${error.message}`);
+    } catch (error) {
+      spinner.fail(
+        `Failed to start backend: ${error instanceof Error ? error.message : String(error)}`
+      );
       throw error;
     }
   }

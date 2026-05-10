@@ -87,8 +87,12 @@ export function createEditCommand(): Command {
         let noteIds: number[];
         try {
           noteIds = await client.findNotes(fullQuery);
-        } catch (error: any) {
-          searchSpinner.fail(chalk.red(`Search failed: ${error.message}`));
+        } catch (error) {
+          searchSpinner.fail(
+            chalk.red(
+              `Search failed: ${error instanceof Error ? error.message : String(error)}`
+            )
+          );
           process.exit(1);
         }
 
@@ -110,8 +114,12 @@ export function createEditCommand(): Command {
         let note: NoteInfo;
         try {
           [note] = await client.notesInfo([noteIds[0]]);
-        } catch (error: any) {
-          infoSpinner.fail(chalk.red(`Failed to load note: ${error.message}`));
+        } catch (error) {
+          infoSpinner.fail(
+            chalk.red(
+              `Failed to load note: ${error instanceof Error ? error.message : String(error)}`
+            )
+          );
           process.exit(1);
         }
         infoSpinner.stop();
@@ -137,8 +145,12 @@ export function createEditCommand(): Command {
               `Note ${note.noteId} updated (${Object.keys(options.field).length} field${Object.keys(options.field).length !== 1 ? 's' : ''} changed)`
             )
           );
-        } catch (error: any) {
-          saveSpinner.fail(chalk.red(`Failed to save: ${error.message}`));
+        } catch (error) {
+          saveSpinner.fail(
+            chalk.red(
+              `Failed to save: ${error instanceof Error ? error.message : String(error)}`
+            )
+          );
           process.exit(1);
         }
         return;
@@ -153,8 +165,12 @@ export function createEditCommand(): Command {
       let noteIds: number[];
       try {
         noteIds = await client.findNotes(fullQuery);
-      } catch (error: any) {
-        searchSpinner.fail(chalk.red(`Search failed: ${error.message}`));
+      } catch (error) {
+        searchSpinner.fail(
+          chalk.red(
+            `Search failed: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
 
@@ -176,8 +192,12 @@ export function createEditCommand(): Command {
       let notes: NoteInfo[];
       try {
         notes = await client.notesInfo(sliced);
-      } catch (error: any) {
-        infoSpinner.fail(chalk.red(`Failed to load notes: ${error.message}`));
+      } catch (error) {
+        infoSpinner.fail(
+          chalk.red(
+            `Failed to load notes: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
       infoSpinner.stop();
@@ -255,8 +275,12 @@ export function createEditCommand(): Command {
             `Note ${selectedNote.noteId} updated (${changed.length} field${changed.length !== 1 ? 's' : ''} changed)`
           )
         );
-      } catch (error: any) {
-        saveSpinner.fail(chalk.red(`Failed to save: ${error.message}`));
+      } catch (error) {
+        saveSpinner.fail(
+          chalk.red(
+            `Failed to save: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });

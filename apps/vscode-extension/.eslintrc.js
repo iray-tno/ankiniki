@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',

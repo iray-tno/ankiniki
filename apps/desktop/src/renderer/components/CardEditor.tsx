@@ -69,10 +69,10 @@ export function CardEditor({ selectedDeck }: CardEditorProps) {
       setBack('');
       setTags('');
       setPreview(false);
-    } catch (err: any) {
+    } catch (err) {
       setStatus({
         type: 'error',
-        message: err.message ?? 'Failed to create card',
+        message: err instanceof Error ? err.message : 'Failed to create card',
       });
     } finally {
       setSaving(false);

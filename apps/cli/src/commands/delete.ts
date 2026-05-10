@@ -76,8 +76,12 @@ export function createDeleteCommand(): Command {
         const deleteSpinner = ora('Deleting card...').start();
         await client.deleteNotes([noteId]);
         deleteSpinner.succeed(`Card ${noteId} deleted`);
-      } catch (error: any) {
-        console.error(chalk.red(`Error: ${error.message}`));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });

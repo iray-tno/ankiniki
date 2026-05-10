@@ -25,8 +25,12 @@ export function createListCommand(): Command {
         spinner.succeed(ANKI_MESSAGES.CONNECTED);
 
         await listCards(client, deck, parseInt(options.limit));
-      } catch (error: any) {
-        console.error(chalk.red(`Error: ${error.message}`));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });

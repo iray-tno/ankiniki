@@ -25,8 +25,12 @@ export function createSyncCommand(): Command {
     try {
       await client.sync();
       syncSpinner.succeed(chalk.green('Sync complete'));
-    } catch (error: any) {
-      syncSpinner.fail(chalk.red(`Sync failed: ${error.message}`));
+    } catch (error) {
+      syncSpinner.fail(
+        chalk.red(
+          `Sync failed: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });

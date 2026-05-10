@@ -114,8 +114,12 @@ export function createStatsCommand(): Command {
         );
 
         console.log();
-      } catch (error: any) {
-        loadSpinner.fail(chalk.red(`Failed to load stats: ${error.message}`));
+      } catch (error) {
+        loadSpinner.fail(
+          chalk.red(
+            `Failed to load stats: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });

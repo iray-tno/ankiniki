@@ -49,7 +49,22 @@
       "Bash(cat /mnt/e/Users/zigza/dev/ankiniki/.github/workflows/*.yml)",
       "Bash(node -e 'const p=require\\('\\\\''./__TRACKED_VAR__/package.json'\\\\''\\); console.log\\(JSON.stringify\\(p.scripts, null, 2\\)\\)')",
       "Bash(node -e \"const p=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin'\\)\\); console.log\\(JSON.stringify\\(p.scripts, null, 2\\)\\)\")",
-      "Bash(node -e \"const p=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin'\\)\\); console.log\\(JSON.stringify\\({workspaces: p.workspaces}, null, 2\\)\\)\")"
+      "Bash(node -e \"const p=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin'\\)\\); console.log\\(JSON.stringify\\({workspaces: p.workspaces}, null, 2\\)\\)\")",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node *)",
+      "WebFetch(domain:foosoft.net)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:git.sr.ht)",
+      "Bash(sed -n '88,98p' /mnt/e/Users/zigza/dev/ankiniki/apps/cli/src/backend-manager.ts)",
+      "Bash(sed -n '130,140p' /mnt/e/Users/zigza/dev/ankiniki/apps/cli/src/commands/add.ts)",
+      "Bash(sed -n '160,168p' /mnt/e/Users/zigza/dev/ankiniki/apps/cli/src/commands/bundle.ts)",
+      "Bash(xargs sed *)",
+      "Bash(sed -n '240,255p' /mnt/e/Users/zigza/dev/ankiniki/apps/cli/src/commands/import.ts)",
+      "Bash(sed -n '90,98p' /mnt/e/Users/zigza/dev/ankiniki/apps/cli/src/backend-manager.ts)",
+      "Bash(2>/dev/null)",
+      "Bash(echo \"EXIT_CODE: $?\")",
+      "Bash(wait)"
     ],
     "deny": []
   },
