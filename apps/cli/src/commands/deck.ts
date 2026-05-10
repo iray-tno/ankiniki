@@ -38,8 +38,12 @@ export function createDeckCommand(): Command {
             `${chalk.cyan(`${i + 1}.`)} ${chalk.white(name)} ${chalk.gray(`(${noteIds.length} cards)`)}`
           );
         }
-      } catch (error: any) {
-        console.error(chalk.red(`Error: ${error.message}`));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });
@@ -61,8 +65,12 @@ export function createDeckCommand(): Command {
         const createSpinner = ora(`Creating deck "${name}"...`).start();
         await client.createDeck(name);
         createSpinner.succeed(`Deck "${name}" created`);
-      } catch (error: any) {
-        console.error(chalk.red(`Error: ${error.message}`));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });
@@ -114,8 +122,12 @@ export function createDeckCommand(): Command {
         deleteSpinner.succeed(
           `Deck "${name}" deleted (${noteIds.length} cards removed)`
         );
-      } catch (error: any) {
-        console.error(chalk.red(`Error: ${error.message}`));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });

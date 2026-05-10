@@ -175,8 +175,12 @@ export function createExportCommand(): Command {
             if (options.includeSched) {
               console.log(chalk.gray('  Scheduling data included'));
             }
-          } catch (error: any) {
-            exportSpinner.fail(chalk.red(`Export failed: ${error.message}`));
+          } catch (error) {
+            exportSpinner.fail(
+              chalk.red(
+                `Export failed: ${error instanceof Error ? error.message : String(error)}`
+              )
+            );
             process.exit(1);
           }
           return;
@@ -192,8 +196,12 @@ export function createExportCommand(): Command {
         let noteIds: number[];
         try {
           noteIds = await client.findNotes(fullQuery);
-        } catch (error: any) {
-          searchSpinner.fail(chalk.red(`Search failed: ${error.message}`));
+        } catch (error) {
+          searchSpinner.fail(
+            chalk.red(
+              `Search failed: ${error instanceof Error ? error.message : String(error)}`
+            )
+          );
           process.exit(1);
         }
 
@@ -208,9 +216,11 @@ export function createExportCommand(): Command {
           searchSpinner.succeed(
             `Fetched ${chalk.white.bold(String(notes.length))} note${notes.length !== 1 ? 's' : ''}`
           );
-        } catch (error: any) {
+        } catch (error) {
           searchSpinner.fail(
-            chalk.red(`Failed to fetch note details: ${error.message}`)
+            chalk.red(
+              `Failed to fetch note details: ${error instanceof Error ? error.message : String(error)}`
+            )
           );
           process.exit(1);
         }
@@ -230,9 +240,11 @@ export function createExportCommand(): Command {
           writeSpinner.succeed(
             `Exported ${notes.length} note${notes.length !== 1 ? 's' : ''} → ${chalk.cyan(outputPath)} ${chalk.gray(`(${sizeStr})`)}`
           );
-        } catch (error: any) {
+        } catch (error) {
           writeSpinner.fail(
-            chalk.red(`Failed to write file: ${error.message}`)
+            chalk.red(
+              `Failed to write file: ${error instanceof Error ? error.message : String(error)}`
+            )
           );
           process.exit(1);
         }

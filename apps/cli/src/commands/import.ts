@@ -214,13 +214,38 @@ async function importMarkdown(
   );
 }
 
+interface ImportPreviewData {
+  totalRows?: number;
+  totalCards?: number;
+  validCards: number;
+  invalidCards: number;
+  detectedColumns?: string[];
+  sampleCards?: Array<{
+    front: string;
+    back: string;
+    deck: string;
+    tags?: string[];
+  }>;
+  errors?: Array<{ rowNumber: number; error: string }>;
+}
+
+interface ImportResultData {
+  totalRows?: number;
+  totalCards?: number;
+  successfulCards: number;
+  failedCards: number;
+  preview?: boolean;
+  dryRun?: boolean;
+  results?: Array<{ success: boolean; rowNumber?: number; error?: string }>;
+}
+
 async function postFormData(
   baseUrl: string,
   endpoint: string,
   formData: FormData,
   isPreview: boolean,
-  previewFn: (data: any) => void,
-  resultFn: (data: any) => void
+  previewFn: (data: ImportPreviewData) => void,
+  resultFn: (data: ImportResultData) => void
 ): Promise<void> {
   try {
     console.log(`🚀 ${isPreview ? 'Previewing' : 'Importing'}...`);
@@ -256,7 +281,7 @@ async function postFormData(
 
 // ─── Display helpers ──────────────────────────────────────────────────────────
 
-function displayPreview(data: any): void {
+function displayPreview(data: ImportPreviewData): void {
   console.log('\n📋 Import Preview:');
   console.log(`📁 Total rows: ${data.totalRows ?? data.totalCards}`);
   console.log(`✅ Valid cards: ${data.validCards}`);
@@ -266,9 +291,9 @@ function displayPreview(data: any): void {
     console.log(`\n🔍 Detected columns: ${data.detectedColumns.join(', ')}`);
   }
 
-  if (data.sampleCards?.length > 0) {
+  if (data.sampleCards && data.sampleCards.length > 0) {
     console.log('\n📝 Sample cards:');
-    data.sampleCards.slice(0, 3).forEach((card: any, i: number) => {
+    data.sampleCards.slice(0, 3).forEach((card, i) => {
       console.log(
         `\n${i + 1}. Front: ${card.front.substring(0, 60)}${card.front.length > 60 ? '...' : ''}`
       );
@@ -282,25 +307,25 @@ function displayPreview(data: any): void {
     });
   }
 
-  if (data.errors?.length > 0) {
+  if (data.errors && data.errors.length > 0) {
     console.log('\n❌ Validation errors:');
     data.errors
       .slice(0, 3)
-      .forEach((e: any) => console.log(`   Row ${e.rowNumber}: ${e.error}`));
+      .forEach(e => console.log(`   Row ${e.rowNumber}: ${e.error}`));
   }
 
   console.log('\n💡 Remove --preview to proceed with import');
 }
 
-function displayJsonPreview(data: any): void {
+function displayJsonPreview(data: ImportPreviewData): void {
   console.log('\n📋 Import Preview:');
   console.log(`📁 Total cards: ${data.totalCards}`);
   console.log(`✅ Valid cards: ${data.validCards}`);
   console.log(`❌ Invalid cards: ${data.invalidCards}`);
 
-  if (data.sampleCards?.length > 0) {
+  if (data.sampleCards && data.sampleCards.length > 0) {
     console.log('\n📝 Sample cards:');
-    data.sampleCards.slice(0, 3).forEach((card: any, i: number) => {
+    data.sampleCards.slice(0, 3).forEach((card, i) => {
       console.log(
         `\n${i + 1}. Front: ${card.front.substring(0, 60)}${card.front.length > 60 ? '...' : ''}`
       );
@@ -314,28 +339,28 @@ function displayJsonPreview(data: any): void {
     });
   }
 
-  if (data.errors?.length > 0) {
+  if (data.errors && data.errors.length > 0) {
     console.log('\n❌ Validation errors:');
     data.errors
       .slice(0, 3)
-      .forEach((e: any) => console.log(`   Card ${e.rowNumber}: ${e.error}`));
+      .forEach(e => console.log(`   Card ${e.rowNumber}: ${e.error}`));
   }
 
   console.log('\n💡 Remove --preview to proceed with import');
 }
 
-function displayImportResults(data: any): void {
+function displayImportResults(data: ImportResultData): void {
   console.log('\n✅ Import Complete!');
   console.log(`📊 Total processed: ${data.totalRows ?? data.totalCards}`);
   console.log(`✅ Imported: ${data.successfulCards}`);
   console.log(`❌ Failed:   ${data.failedCards}`);
 
-  const failures = data.results?.filter((r: any) => !r.success) ?? [];
+  const failures = data.results?.filter(r => !r.success) ?? [];
   if (failures.length > 0) {
     console.log('\n❌ Failures:');
     failures
       .slice(0, 5)
-      .forEach((f: any) => console.log(`   Row ${f.rowNumber}: ${f.error}`));
+      .forEach(f => console.log(`   Row ${f.rowNumber}: ${f.error}`));
     if (failures.length > 5) {
       console.log(`   ... and ${failures.length - 5} more`);
     }
@@ -344,18 +369,18 @@ function displayImportResults(data: any): void {
   console.log('\n🎉 Done!');
 }
 
-function displayJsonImportResults(data: any): void {
+function displayJsonImportResults(data: ImportResultData): void {
   console.log('\n✅ Import Complete!');
   console.log(`📊 Total processed: ${data.totalCards}`);
   console.log(`✅ Imported: ${data.successfulCards}`);
   console.log(`❌ Failed:   ${data.failedCards}`);
 
-  const failures = data.results?.filter((r: any) => !r.success) ?? [];
+  const failures = data.results?.filter(r => !r.success) ?? [];
   if (failures.length > 0) {
     console.log('\n❌ Failures:');
     failures
       .slice(0, 5)
-      .forEach((f: any) => console.log(`   Card ${f.rowNumber}: ${f.error}`));
+      .forEach(f => console.log(`   Card ${f.rowNumber}: ${f.error}`));
     if (failures.length > 5) {
       console.log(`   ... and ${failures.length - 5} more`);
     }

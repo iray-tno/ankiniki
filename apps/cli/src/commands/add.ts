@@ -132,8 +132,12 @@ export function createAddCommand(): Command {
         console.log(
           `  Tags: ${cardData.tags.length ? chalk.cyan(cardData.tags.join(', ')) : chalk.gray('None')}`
         );
-      } catch (error: any) {
-        console.error(chalk.red(`Error: ${error.message}`));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
     });

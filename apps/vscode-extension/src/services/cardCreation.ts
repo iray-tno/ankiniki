@@ -197,6 +197,7 @@ export class CardCreationService {
       back: string;
       tags: string[];
       difficulty: string;
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       confidence_score: number;
     }
 
@@ -207,14 +208,19 @@ export class CardCreationService {
         async () => {
           const response = await fetch(`${serverUrl}/api/ml/generate/cards`, {
             method: 'POST',
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               content,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
               content_type: contentType,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
               difficulty_level: 'intermediate',
+              // eslint-disable-next-line @typescript-eslint/naming-convention
               max_cards: 10,
               ...(codeLanguages.has(language)
-                ? { programming_language: language }
+                ? // eslint-disable-next-line @typescript-eslint/naming-convention
+                  { programming_language: language }
                 : {}),
             }),
           });
@@ -297,6 +303,7 @@ export class CardCreationService {
           await this.ankiClient.addNote(
             targetDeck,
             ANKI_MODELS.BASIC,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             { Front: item.card.front, Back: item.card.back },
             allTags
           );

@@ -27,10 +27,11 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
       }
       const { data } = await res.json();
       setDecks(data as string[]);
-    } catch (err: any) {
+    } catch (err) {
       setError(
-        err.message ??
-          'Failed to load decks. Make sure Anki is running with AnkiConnect.'
+        err instanceof Error
+          ? err.message
+          : 'Failed to load decks. Make sure Anki is running with AnkiConnect.'
       );
     } finally {
       setLoading(false);
@@ -54,8 +55,8 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
       setNewDeckName('');
       setShowCreateForm(false);
       await loadDecks();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to create deck');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create deck');
     }
   };
 
@@ -78,8 +79,8 @@ export function DeckList({ onSelectDeck }: DeckListProps) {
         throw new Error(body.message ?? `Server error: ${res.status}`);
       }
       await loadDecks();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to delete deck');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete deck');
     }
   };
 

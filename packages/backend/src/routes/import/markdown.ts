@@ -13,7 +13,7 @@ import { asyncHandler } from '../../utils/asyncHandler';
 const router = Router();
 
 interface MulterRequest extends Request {
-  file?: any;
+  file?: Express.Multer.File;
 }
 
 /**

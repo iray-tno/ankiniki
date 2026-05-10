@@ -58,8 +58,10 @@ export function StudyView({ selectedDeck }: StudyViewProps) {
         { cardId: number } & Parameters<typeof extractFields>[0]
       >;
       setCards(raw.map(c => ({ cardId: c.cardId, ...extractFields(c) })));
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to load due cards.');
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to load due cards.'
+      );
     } finally {
       setLoading(false);
     }

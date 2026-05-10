@@ -63,8 +63,12 @@ export function createTagCommand(): Command {
         let noteIds: number[];
         try {
           noteIds = await client.findNotes(fullQuery);
-        } catch (error: any) {
-          searchSpinner.fail(chalk.red(`Search failed: ${error.message}`));
+        } catch (error) {
+          searchSpinner.fail(
+            chalk.red(
+              `Search failed: ${error instanceof Error ? error.message : String(error)}`
+            )
+          );
           process.exit(1);
         }
 
@@ -126,9 +130,11 @@ export function createTagCommand(): Command {
               `Updated tags on ${noteIds.length} note${noteIds.length !== 1 ? 's' : ''}`
             )
           );
-        } catch (error: any) {
+        } catch (error) {
           applySpinner.fail(
-            chalk.red(`Failed to update tags: ${error.message}`)
+            chalk.red(
+              `Failed to update tags: ${error instanceof Error ? error.message : String(error)}`
+            )
           );
           process.exit(1);
         }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Layout } from './components/Layout';
 import { DeckList } from './components/DeckList';
 import { CardEditor } from './components/CardEditor';
@@ -32,7 +32,7 @@ function App() {
     );
   };
 
-  const triggerSync = async () => {
+  const triggerSync = useCallback(async () => {
     addToast('info', 'Syncing with AnkiWeb…');
     try {
       const res = await fetch(`${BACKEND_URL}/api/sync`, { method: 'POST' });
@@ -41,10 +41,13 @@ function App() {
         throw new Error(body.message ?? `Server error: ${res.status}`);
       }
       addToast('success', 'Sync complete');
-    } catch (err: any) {
-      addToast('error', `Sync failed: ${err.message}`);
+    } catch (err) {
+      addToast(
+        'error',
+        `Sync failed: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!window.electronAPI) {
@@ -64,7 +67,7 @@ function App() {
       window.electronAPI?.removeAllListeners('menu-sync');
       window.electronAPI?.removeAllListeners('menu-about');
     };
-  }, []);
+  }, [triggerSync]);
 
   const renderCurrentView = () => {
     switch (currentView) {
