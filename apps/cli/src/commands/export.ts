@@ -51,7 +51,7 @@ function notesToCsv(notes: NoteInfo[]): string {
   return `${[header, ...rows].join('\n')}\n`;
 }
 
-function notesToJson(notes: NoteInfo[]): string {
+function notesToJson(notes: NoteInfo[], deckName: string): string {
   const records = notes.map(note => {
     const fields: Record<string, string> = {};
     for (const [name, { value }] of Object.entries(note.fields)) {
@@ -59,6 +59,7 @@ function notesToJson(notes: NoteInfo[]): string {
     }
     return {
       noteId: note.noteId,
+      deckName,
       modelName: note.modelName,
       tags: note.tags,
       fields,
@@ -87,6 +88,10 @@ export function createExportCommand(): Command {
       '--include-sched',
       'Include scheduling/review history data (apkg only)'
     )
+    .option(
+      '--deck-name <name>',
+      'Override the deckName written into JSON output (default: source deck name)'
+    )
     .action(
       async (
         deck: string,
@@ -95,6 +100,7 @@ export function createExportCommand(): Command {
           format: string;
           query?: string;
           includeSched?: boolean;
+          deckName?: string;
         }
       ) => {
         const format = options.format as Format;
@@ -212,7 +218,9 @@ export function createExportCommand(): Command {
         const writeSpinner = ora(`Writing ${format.toUpperCase()}…`).start();
         try {
           const content =
-            format === 'csv' ? notesToCsv(notes) : notesToJson(notes);
+            format === 'csv'
+              ? notesToCsv(notes)
+              : notesToJson(notes, options.deckName ?? deck);
           fs.writeFileSync(outputPath, content, 'utf8');
 
           const size = fs.statSync(outputPath).size;
