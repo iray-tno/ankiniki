@@ -282,10 +282,12 @@ export function mapCardFields(
   back: string,
   model: string
 ): Record<string, string> {
+  const f = front.replace(/\n/g, '<br>');
+  const b = back.replace(/\n/g, '<br>');
   if (model === ANKI_MODELS.CLOZE) {
-    return { Text: `${front}\n\n${back}` };
+    return { Text: `${f}<br><br>${b}` };
   }
-  return { Front: front, Back: back };
+  return { Front: f, Back: b };
 }
 
 /**
