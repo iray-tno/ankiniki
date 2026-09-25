@@ -28,9 +28,16 @@ Thumbs.db
 # Generated files
 *.d.ts
 
-# Electron build outputs
+# Desktop build outputs
 apps/desktop/dist/
 apps/desktop/build/
+apps/desktop/src-tauri/target/
+src-tauri/target/
+apps/desktop/src-tauri/gen/
+src-tauri/gen/
+
+# Hozo generated files
+**/*.hozo.css
 
 # VS Code extension build
 apps/vscode-extension/*.vsix

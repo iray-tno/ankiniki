@@ -2,13 +2,13 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    "noEmit": false,
-    "composite": true,
-    "skipLibCheck": true
+    "rootDir": "./src/renderer",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src/main/**/*"],
-  "exclude": ["dist", "node_modules", "src/renderer"],
+  "include": ["src/renderer/**/*"],
+  "exclude": ["dist", "build", "node_modules", "src-tauri"],
   "references": [
     {
       "path": "../../packages/shared"

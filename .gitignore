@@ -32,9 +32,16 @@ Thumbs.db
 # Coverage
 coverage/
 
-# Electron
+# Desktop app
 apps/desktop/dist/
 apps/desktop/build/
+apps/desktop/src-tauri/target/
+src-tauri/target/
+apps/desktop/src-tauri/gen/
+src-tauri/gen/
+
+# Hozo
+**/*.hozo.css
 
 # VS Code Extension
 apps/vscode-extension/*.vsix

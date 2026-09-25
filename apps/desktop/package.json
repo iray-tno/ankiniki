@@ -1,56 +1,33 @@
 {
   "name": "@ankiniki/desktop",
   "version": "0.1.0",
-  "description": "Ankiniki desktop application built with Electron and React",
-  "main": "dist/main.js",
-  "homepage": "./",
+  "type": "module",
+  "description": "Ankiniki desktop application built with Tauri and Hozo",
   "scripts": {
-    "start": "electron .",
-    "dev": "concurrently \"npm run build:watch\" \"wait-on dist/main.js && electron .\"",
-    "build": "tsc && npm run build:renderer",
-    "build:watch": "tsc --watch",
-    "build:renderer": "vite build",
-    "dev:renderer": "vite",
-    "clean": "rm -rf dist build",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dev": "tauri dev",
+    "dev:frontend": "vite",
+    "build": "tsc && npm run build:frontend",
+    "build:frontend": "vite build",
+    "build:app": "tauri build",
+    "clean": "rm -rf dist build src-tauri/target"
   },
   "dependencies": {
     "@ankiniki/shared": "*",
-    "electron-store": "^8.1.0"
+    "@hozo/core": "^0.1.0",
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-opener": "^2.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@hozo/compiler": "^0.1.0",
+    "@hozo/vite": "^0.1.0",
+    "@tauri-apps/cli": "^2.11.5",
     "@types/node": "^20.5.0",
-    "@types/react": "^18.2.20",
-    "@types/react-dom": "^18.2.7",
-    "@vitejs/plugin-react": "^4.0.4",
-    "concurrently": "^8.2.0",
-    "electron": "^25.6.0",
-    "electron-builder": "^24.6.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "typescript": "^5.1.6",
-    "vite": "^4.4.9",
-    "wait-on": "^7.0.1"
-  },
-  "build": {
-    "appId": "com.ankiniki.desktop",
-    "productName": "Ankiniki",
-    "directories": {
-      "output": "build"
-    },
-    "files": [
-      "dist/**/*",
-      "node_modules/**/*"
-    ],
-    "mac": {
-      "category": "public.app-category.education"
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "linux": {
-      "target": "AppImage"
-    }
+    "vite": "^8.3.1"
   }
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { AppSettings } from '../types';
+import { desktopApi } from '../desktopApi';
 
 const DEFAULTS: AppSettings = {
   ankiConnectUrl: 'http://localhost:8765',
@@ -14,13 +15,13 @@ export function Settings() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
 
   useEffect(() => {
-    window.electronAPI?.settings.get().then(saved => {
+    desktopApi.settings.get().then(saved => {
       setSettings({ ...DEFAULTS, ...saved });
     });
   }, []);
 
   const handleSave = async () => {
-    await window.electronAPI?.settings.set(settings);
+    await desktopApi.settings.set(settings);
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus('idle'), 2000);
   };
