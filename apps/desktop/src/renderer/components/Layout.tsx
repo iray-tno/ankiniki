@@ -1,4 +1,5 @@
 import React from 'react';
+import { View, Text } from '@hozo/core';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -52,10 +53,10 @@ export function Layout({
         </nav>
 
         {selectedDeck && (
-          <div className='selected-deck'>
-            <h3>Current Deck</h3>
-            <p>{selectedDeck}</p>
-          </div>
+          <View className='selected-deck'>
+            <Text className='selected-deck-title'>Current Deck</Text>
+            <Text>{selectedDeck}</Text>
+          </View>
         )}
       </aside>
 
@@ -132,7 +133,9 @@ export function Layout({
           border-radius: var(--radius-md);
         }
 
-        .selected-deck h3 {
+        .selected-deck h3,
+        .selected-deck-title {
+          display: block;
           font-size: 0.875rem;
           color: var(--text-secondary);
           margin-bottom: 0.25rem;

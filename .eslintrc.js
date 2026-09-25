@@ -100,6 +100,7 @@ module.exports = {
     'dist/',
     'build/',
     'node_modules/',
+    'apps/desktop/src-tauri/',
     '*.js', // Ignore built JS files
     '*.d.ts',
     'apps/desktop/src/renderer/types.ts', // Has global declarations

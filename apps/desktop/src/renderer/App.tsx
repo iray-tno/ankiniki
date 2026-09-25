@@ -5,6 +5,8 @@ import { CardEditor } from './components/CardEditor';
 import { StudyView } from './components/StudyView';
 import { Settings } from './components/Settings';
 
+import { desktopApi } from './desktopApi';
+
 const BACKEND_URL = 'http://localhost:3001';
 
 type View = 'decks' | 'editor' | 'study' | 'settings';
@@ -50,22 +52,24 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!window.electronAPI) {
-      return;
-    }
+    let unlisteners: (() => void)[] = [];
 
-    window.electronAPI.onMenuNewCard(() => setCurrentView('editor'));
-    window.electronAPI.onMenuReview(() => setCurrentView('study'));
-    window.electronAPI.onMenuSync(() => triggerSync());
-    window.electronAPI.onMenuAbout(() =>
-      addToast('info', 'Ankiniki v0.1.0 — Anki companion tool for engineers')
-    );
+    const setupMenuListeners = async () => {
+      const u1 = await desktopApi.menu.onNewCard(() =>
+        setCurrentView('editor')
+      );
+      const u2 = await desktopApi.menu.onReview(() => setCurrentView('study'));
+      const u3 = await desktopApi.menu.onSync(() => triggerSync());
+      const u4 = await desktopApi.menu.onAbout(() =>
+        addToast('info', 'Ankiniki v0.1.0 — Anki companion tool for engineers')
+      );
+      unlisteners = [u1, u2, u3, u4];
+    };
+
+    setupMenuListeners();
 
     return () => {
-      window.electronAPI?.removeAllListeners('menu-new-card');
-      window.electronAPI?.removeAllListeners('menu-review');
-      window.electronAPI?.removeAllListeners('menu-sync');
-      window.electronAPI?.removeAllListeners('menu-about');
+      unlisteners.forEach(u => u());
     };
   }, [triggerSync]);
 
