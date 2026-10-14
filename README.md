@@ -1,378 +1,105 @@
-# Ankiniki - Anki Companion Tool for Engineers
+# Ankiniki
 
-Ankiniki is an Anki companion tool specifically designed for engineers' technical learning. It provides a modern flashcard experience that seamlessly integrates with developers' workflows while leveraging Anki's powerful spaced repetition algorithm.
+Ankiniki helps create, manage and study Anki notes from the terminal, VS Code
+and a Tauri desktop application. The current collection and review scheduling
+are managed by Anki through AnkiConnect.
 
-## 🚀 Project Vision
+The next milestone is **compatible import/export**: preserve Anki note fields,
+HTML, tags and model names when exchanging JSON. Independent local collections,
+shared mobile screens and scheduling come after the exchange format is reliable.
 
-Eliminate Anki's biggest barrier - the manual effort of card creation - allowing engineers to focus on mastering technical knowledge.
+The intended learning uses also include private audio-assisted practice and
+public exercises embedded in technical articles, with Anki downloads generated
+from the same lesson source. Static browser sessions can come before independent
+collections; these learning and publishing features are planned, not implemented.
 
-### Problems We Solve
+## Current components
 
-- ❌ **Manual Card Creation Labor**: Time-consuming card creation process every time you learn new technology
-- ❌ **Limited Technical Content Support**: Lack of native support for code blocks, diagrams, and markdown
-- ❌ **Workflow Fragmentation**: Context switching between development environment and Anki
+| Component  | Implementation                  | Current role                                             |
+| ---------- | ------------------------------- | -------------------------------------------------------- |
+| CLI        | TypeScript, Commander           | Note/deck management, import/export, study, AnkiWeb sync |
+| Shared     | TypeScript, Zod                 | AnkiConnect client, parsers, types and validation        |
+| Backend    | Express                         | Import, AI integration and desktop API                   |
+| Desktop    | Tauri 2, Rust, React, Hozo/Vite | Decks, card creation, study and settings                 |
+| VS Code    | TypeScript extension            | Selection/code cards and file generation                 |
+| ML service | Python, FastAPI                 | Optional content processing and generation               |
+| Mobile     | Planned React Native + Hozo     | Shared screens; no mobile application exists yet         |
 
-## ✨ Key Features
+Tauri's Rust layer currently handles settings and menus. Desktop data operations
+still call the Express backend. Most screens still use DOM elements; installing
+Hozo's build plugin alone does not make them reusable on React Native.
 
-### 🔧 Workflow Integration ✅
+## Setup
 
-- **VS Code Extension**: Create flashcards directly from your IDE with smart code understanding
-- **CLI Tool**: Quick card addition from terminal with interactive prompts
-- **Desktop App**: Modern Electron GUI with card editor and study interface
-- **Keyboard Shortcuts**: Instantly convert selected code to flashcards
+Install [mise](https://mise.jdx.dev/) and Git, then run from the repository root:
 
-### 💻 Developer-Focused Content Management ✅
-
-- **Code Blocks**: Native syntax highlighting for all programming languages
-- **Smart Context**: Automatic question generation based on code type
-- **File Tracking**: Include source file paths and line numbers
-- **Markdown Support**: Rich formatting for technical content
-
-### 🤖 AI-Powered Card Generation ✅
-
-- **Intelligent Card Generation**: AI analyzes code and generates contextually relevant questions
-- **Multi-Format Processing**: Extract learning materials from code, Markdown, PDFs, and HTML
-- **Question Enhancement**: Improve existing questions for better learning outcomes
-- **Smart Content Analysis**: Automatic difficulty assessment and concept extraction
-- **Fallback Mode**: Works without OpenAI API using template-based generation
-
-### 🌐 Cross-Platform ✅
-
-- **Desktop**: Electron app (Windows, Mac, Linux)
-- **CLI**: Command-line tool (cross-platform)
-- **VS Code**: Extension for all platforms
-- **Mobile**: React Native _(Future)_
-
-## 🏗️ Architecture
-
-### Technology Stack
-
-- **Frontend**: React, TypeScript
-- **Desktop**: Electron
-- **Mobile**: React Native
-- **Backend**: Node.js
-- **AI/ML**: Python (microservice)
-- **Data**: AnkiConnect API (integrates with existing Anki)
-
-### Companion Tool Strategy
-
-Ankiniki is not a replacement for Anki but a companion tool with full compatibility with existing Anki databases. All data is managed within Anki through the AnkiConnect API.
-
-## 📈 Development Roadmap
-
-### Phase 1: MVP (Minimum Viable Product) ✅
-
-- [x] **Backend API**: Express.js server with AnkiConnect integration
-- [x] **Electron Desktop App**: React-based GUI with card editor and study interface
-- [x] **CLI Tool**: Command-line interface for quick card creation
-- [x] **Shared Types**: TypeScript definitions and utilities
-- [x] **Monorepo Setup**: Workspace-based project structure
-
-### Phase 2: AI Integration & IDE Integration ✅
-
-- [x] **VS Code Extension**: Create flashcards directly from your IDE
-- [x] **Python ML Microservice**: FastAPI-based AI service with OpenAI integration
-- [x] **Automatic Card Generation**: Generate flashcards from code, text, and documents
-- [x] **Content Ingestion Pipeline**: Process PDFs, Markdown, HTML, and code files
-- [x] **Backend Integration**: Seamless API integration with existing Node.js backend
-
-### Phase 3: Full Feature Set (Future)
-
-- [ ] React Native mobile app
-- [ ] Mermaid diagram support
-- [ ] Advanced customization features
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Node.js** 18+ and npm 9+
-- **Anki** desktop application
-- **AnkiConnect** addon installed in Anki
-
-### Installation
-
-1. **Clone and setup the project**:
-
-```bash
-git clone https://github.com/iray-tno/ankiniki.git
-cd ankiniki
-npm install
+```sh
+mise trust
+mise install
+mise exec -- npm run setup
 ```
 
-2. **Install AnkiConnect addon**:
-   - Open Anki → Tools → Add-ons → Get Add-ons
-   - Enter code: `2055492159`
-   - Restart Anki
+The pinned versions are in `mise.toml`. Native desktop development also needs
+Rust and [Tauri's OS prerequisites](https://v2.tauri.app/start/prerequisites/).
+See [development environment](docs/developer/environment.md).
 
-3. **Build all packages**:
+For real Anki operations, install AnkiConnect (Anki add-on code `2055492159`)
+and keep Anki running. Automated tests use mocks and do not require Anki.
 
-```bash
-npm run build
+## CLI
+
+After building, use `mise exec -- node apps/cli/dist/index.js ...` or optionally
+link the CLI with `mise exec -- npm link -w apps/cli` to use `ankiniki` directly.
+
+```sh
+ankiniki note add "Programming" "What is a closure?" "A function with access to its enclosing scope"
+ankiniki note import cards.json --preview
+ankiniki export "Programming" programming.json --format json
+ankiniki bundle cards.json cards.apkg
+ankiniki study "Programming" --due
+ankiniki sync
 ```
 
-## 🛠️ Development
+`sync` triggers Anki's AnkiWeb sync. `bundle` creates an APKG from source files
+without running Anki. JSON currently represents note content, not a full
+collection backup; use Anki's native package export when scheduling or full
+collection fidelity is required.
 
-### Project Structure
+See [CLI commands](apps/cli/README.md), [JSON import](docs/user-guides/json-import/README.md)
+and the [exchange design](docs/design/anki-exchange.md) for the current limits.
 
-```
-ankiniki/
-├── packages/
-│   ├── shared/          # Shared types and utilities
-│   └── backend/         # Express.js API server
-├── apps/
-│   ├── desktop/         # Electron desktop app
-│   ├── cli/             # Command-line tool
-│   └── vscode-extension/# VS Code extension
-├── docs/                # Documentation
-└── tools/               # Build and development tools
-```
+## Desktop development
 
-### Available Scripts
+Run in separate terminals:
 
-#### Root Level
-
-```bash
-npm run build          # Build all packages and apps
-npm run dev            # Start all development servers
-npm run test           # Run all tests
-npm run lint           # Lint all code
-npm run clean          # Clean all build artifacts
+```sh
+mise exec -- npm run dev -w packages/backend
+mise exec -- npm run dev -w apps/desktop
 ```
 
-#### Backend Server (`packages/backend`)
+`mise exec -- npm run dev:frontend -w apps/desktop` opens a frontend development
+server on port 1420. The backend defaults to port 3001 and AnkiConnect to 8765.
+The native app and browser preview have different origins; configure backend
+CORS for the origin being used.
 
-```bash
-cd packages/backend
-npm run dev            # Start development server with hot reload
-npm run build          # Build TypeScript to JavaScript
-npm run start          # Start production server
+## Verification
+
+```sh
+mise exec -- npm run ci
 ```
 
-#### Desktop App (`apps/desktop`)
-
-```bash
-cd apps/desktop
-npm run dev            # Start Electron in development mode
-npm run build          # Build renderer and main process
-npm run dist           # Create distributable packages
-```
-
-#### CLI Tool (`apps/cli`)
-
-```bash
-cd apps/cli
-npm run build          # Build CLI executable
-npm link               # Link globally for development
-ankiniki --help        # Test CLI commands
-```
-
-#### VS Code Extension (`apps/vscode-extension`)
-
-```bash
-cd apps/vscode-extension
-npm run compile        # Compile TypeScript
-npm run watch          # Watch mode for development
-npm run package        # Create .vsix package
-# Press F5 in VS Code to launch Extension Development Host
-```
-
-### Development Workflow
-
-1. **Start the backend server**:
-
-```bash
-cd packages/backend
-npm run dev
-```
-
-2. **Start the desktop app** (in another terminal):
-
-```bash
-cd apps/desktop
-npm run dev
-```
-
-3. **Test the CLI** (after building):
-
-```bash
-cd apps/cli
-npm run build
-npm link
-ankiniki config --show
-```
-
-## 🎯 Usage Examples
-
-### CLI Quick Start
-
-```bash
-# Configure AnkiConnect connection
-ankiniki config --edit
-
-# Add a quick flashcard
-ankiniki add "What is React?" "A JavaScript library for building user interfaces"
-
-# Interactive card creation
-ankiniki add --interactive
-
-# Study cards from terminal
-ankiniki study "JavaScript Fundamentals" --count 5
-
-# List all decks
-ankiniki list
-```
-
-### VS Code Extension Quick Start
-
-```bash
-# Install the extension (when published)
-# Or press F5 for development
-
-# Keyboard shortcuts:
-# Ctrl+Shift+A - Add selected text as flashcard
-# Ctrl+Shift+C - Add code block as flashcard
-# Ctrl+Shift+Q - Quick add flashcard
-
-# Available via Command Palette (Ctrl+Shift+P):
-# "Ankiniki: Add Selected Text as Flashcard"
-# "Ankiniki: Add Code Block as Flashcard"
-# "Ankiniki: Quick Add Flashcard"
-```
-
-### Desktop App
-
-1. Launch the desktop app
-2. Configure AnkiConnect URL in Settings
-3. Create or select a deck
-4. Use the card editor to create flashcards with syntax highlighting
-5. Study cards with the built-in review interface
-
-### API Server
-
-```bash
-# Start the backend server
-cd packages/backend
-npm run dev
-
-# Test API endpoints
-curl http://localhost:3001/health
-curl http://localhost:3001/api/decks
-```
-
-### AI-Powered Card Generation
-
-```bash
-# Start the ML microservice (Python)
-npm run ml-service:install  # Install Python dependencies
-npm run ml-service:dev      # Start the service
-
-# Or using Docker
-npm run ml-service:docker
-npm run ml-service:docker-run
-
-# Generate cards via API
-curl -X POST http://localhost:3001/api/cards/generate-and-create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": "const factorial = (n) => n <= 1 ? 1 : n * factorial(n - 1);",
-    "content_type": "code",
-    "deckName": "Programming",
-    "programming_language": "javascript",
-    "max_cards": 3
-  }'
-```
-
-## 🔧 Configuration
-
-### AnkiConnect Setup
-
-Ensure AnkiConnect is properly configured in Anki:
-
-1. **Install the addon** (code: 2055492159)
-2. **Configure CORS** (if needed):
-   - Anki → Tools → Add-ons → AnkiConnect → Config
-   - Add your domain to webCorsOriginList
-
-### Environment Variables
-
-Create a `.env` file in `packages/backend/`:
-
-```env
-PORT=3001
-ANKI_CONNECT_URL=http://localhost:8765
-ML_SERVICE_URL=http://localhost:8000
-NODE_ENV=development
-CORS_ORIGIN=http://localhost:3000
-```
-
-### AI Service Configuration
-
-For enhanced AI features, configure the ML service in `services/ml-service/`:
-
-```env
-# Optional: OpenAI API key for enhanced AI features
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Service configuration
-PORT=8000
-LOG_LEVEL=INFO
-```
-
-**Note**: The ML service works without OpenAI API key using fallback template-based generation.
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-npm run test
-
-# Test specific package
-cd packages/backend && npm test
-cd packages/shared && npm test
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **"Cannot connect to Anki"**:
-   - Make sure Anki is running
-   - Verify AnkiConnect addon is installed
-   - Check if Anki is listening on port 8765
-
-2. **"Permission denied" errors**:
-   - Check AnkiConnect CORS configuration
-   - Ensure firewall isn't blocking connections
-
-3. **Build errors**:
-   - Delete `node_modules` and reinstall: `npm run clean && npm install`
-   - Ensure you're using Node.js 18+
-
-### Debug Mode
-
-Enable debug logging:
-
-```bash
-# CLI
-ankiniki config --set debugMode=true
-
-# Backend
-NODE_ENV=development npm run dev
-```
-
-## 🤝 Contributing
-
-We welcome contributions to the project! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-## 📄 License
-
-This project is released under the [MIT License](LICENSE).
-
-## 📚 Documentation
-
-For detailed design philosophy and market analysis, please refer to the [strategy document](strategy.md).
-
----
-
-**Made with ❤️ for engineers who want to learn efficiently**
+This builds the TypeScript packages, extension and desktop frontend, type-checks,
+lints, checks formatting and runs shared/backend/CLI tests. Native app packaging
+is separate: `mise exec -- npm run build:app -w apps/desktop`.
+
+## Direction and documentation
+
+- [Documentation index](docs/README.md)
+- [Development guide](DEVELOPMENT.md)
+- [Compatibility-first architecture](docs/design/local-first-architecture.md)
+- [Anki exchange contract](docs/design/anki-exchange.md)
+- [Content, audio practice and public article widgets](docs/design/content-and-learning.md)
+- [Current roadmap](todos.md)
+
+The original [strategy](strategy.md) is historical context, not a description of
+current features. This project is distributed under the [MIT License](LICENSE).

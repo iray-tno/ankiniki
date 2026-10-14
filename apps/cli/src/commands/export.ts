@@ -7,7 +7,11 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { ANKI_MESSAGES, type NoteInfo } from '@ankiniki/shared';
+import {
+  ANKI_MESSAGES,
+  serializeAnkiNotes,
+  type NoteInfo,
+} from '@ankiniki/shared';
 import { AnkiClient } from '../anki-client';
 
 type Format = 'apkg' | 'csv' | 'json';
@@ -49,23 +53,6 @@ function notesToCsv(notes: NoteInfo[]): string {
   });
 
   return `${[header, ...rows].join('\n')}\n`;
-}
-
-function notesToJson(notes: NoteInfo[], deckName: string): string {
-  const records = notes.map(note => {
-    const fields: Record<string, string> = {};
-    for (const [name, { value }] of Object.entries(note.fields)) {
-      fields[name] = value;
-    }
-    return {
-      noteId: note.noteId,
-      deckName,
-      modelName: note.modelName,
-      tags: note.tags,
-      fields,
-    };
-  });
-  return `${JSON.stringify(records, null, 2)}\n`;
 }
 
 export function createExportCommand(): Command {
@@ -230,7 +217,7 @@ export function createExportCommand(): Command {
           const content =
             format === 'csv'
               ? notesToCsv(notes)
-              : notesToJson(notes, options.deckName ?? deck);
+              : serializeAnkiNotes(notes, options.deckName ?? deck);
           fs.writeFileSync(outputPath, content, 'utf8');
 
           const size = fs.statSync(outputPath).size;

@@ -1,225 +1,68 @@
-# Ankiniki Development Status & Roadmap
+# Roadmap
 
-## ✅ Phase 1 MVP - COMPLETED
+Updated 2026-10-14. This file separates existing features from planned milestones.
 
-**Status**: ✅ **Complete** (December 2024)
+## Existing implementation
 
-### Phase 1 Goals Achieved
+- TypeScript CLI with note/deck commands, import/export, offline APKG bundling,
+  Anki-based study, statistics and AnkiWeb sync.
+- Shared parsers, validation and AnkiConnect client.
+- Express API and an optional Python processing/generation service.
+- VS Code extension for selection/code creation and file generation.
+- Tauri desktop with settings, menus and React screens backed by Express.
+- Vitest suites for shared/backend/CLI; workspace build/type/lint/format checks.
 
-- ✅ Desktop-first approach with Electron app
-- ✅ CLI tool for power users
-- ✅ Basic markdown and syntax highlighting support
-- ✅ Complete AnkiConnect integration
-- ✅ Monorepo structure with TypeScript
+## Milestone 1: compatible exchange
 
----
+- [x] Reproducible mise-based development setup and current documentation.
+- [x] Import the JSON produced by CLI export without losing field names or values.
+- [x] Specify note-content guarantees, unsupported data and existing-model checks.
+- [x] Test custom fields, empty values, HTML, Cloze text, tags and invalid models.
+- [ ] Define a versioned archive covering models, card/deck membership and media.
+- [ ] Add previewable import plans and identity rules before update/merge modes.
+- [ ] Restore native model/media data only through verified capabilities.
+- [ ] Preserve/recover scheduling and review history through a verified native
+      package or supported connector; never imply content JSON provides this.
 
-## Implementation Status
+## Milestone 2: content sessions, shared core and Hozo screens
 
-### ✅ 1. Project Setup & Architecture - COMPLETE
+Before the full migration, deliver a small content session using the
+[content and learning design](docs/design/content-and-learning.md):
 
-- [x] Initialize monorepo structure with workspaces
-- [x] Set up TypeScript configuration
-- [x] Configure ESLint, Prettier, and pre-commit hooks
-- [x] Create shared types and utilities package
-- [x] Set up build scripts
+- [ ] Specify stable package/item/activity identities and revisioned content.
+- [ ] Validate self-authored question and audio fixtures with resolved media.
+- [ ] Generate public Web data and an Anki APKG from the same approved source;
+      exclude personal progress and private inputs from public output.
+- [ ] Verify first import, repeated import and updates after user edits/reviews
+      in a dedicated Anki collection, including models and media.
+- [ ] Build a short static article widget with no account or application server.
+- [ ] Add a local Tauri audio session: playback, response wait, repeat and self-rating.
 
-### ✅ 2. Core Backend (Node.js) - COMPLETE
+These sessions do not require full review-history restoration or an independent
+scheduler. The shared-core migration can use their fixtures and screen contracts:
 
-- [x] Set up Express.js server with TypeScript
-- [x] Implement AnkiConnect client wrapper
-- [x] Create card management API endpoints
-- [x] Implement error handling and logging
-- [x] Add configuration management system
-- [x] Health check and status monitoring
+- [ ] Implement a portable Rust exchange core using the same compatibility fixtures.
+- [ ] Verify a minimal shared operation from CLI, Tauri and React Native.
+- [ ] Move desktop data operations from Express to the shared core in stages.
+- [ ] Share screens through Hozo; keep navigation and OS integration per platform.
+- [ ] Validate Native behavior on devices and report reproducible Hozo bugs upstream.
+- [ ] Verify audio interruption/recovery and the same session on React Native devices.
+- [ ] Expose browser-needed pure Rust logic through WASM when required; keep
+      Native storage and FFI outside the static widget.
 
-### ✅ 3. Electron Desktop App - COMPLETE
+## Milestone 3: independent learning
 
-- [x] Initialize Electron app with React frontend
-- [x] Set up main process and renderer communication
-- [x] Implement basic UI layout with sidebar navigation
-- [x] Create card editor with markdown support
-- [x] Add syntax highlighting for code blocks
-- [x] Implement card creation and editing forms
-- [x] Add deck management interface with grid view
-- [x] Create review interface with Anki-style card display
-- [x] Add settings/preferences screen
-- [x] Security: Secure IPC and external link handling
+- [ ] Introduce a local collection only after reliable exchange and restore exist.
+- [ ] Add SQLite persistence, review events, scheduler and daily study queues.
+- [ ] Preserve the existing Anki workflows and distinguish content exchange,
+      AnkiWeb sync and independent device sync.
+- [ ] Add backup/transfer, then explicitly resolve multi-device conflicts.
 
-### ✅ 4. CLI Tool - COMPLETE
+## Later
 
-- [x] Set up CLI project with Commander.js
-- [x] Implement core commands:
-  - [x] `ankiniki add [deck-name] "question" "answer"`
-  - [x] `ankiniki study [deck-name]` with terminal interface
-  - [x] `ankiniki list` for decks and cards
-  - [x] `ankiniki config` for settings management
-- [x] Add interactive mode for card creation
-- [x] Implement configuration file support
-- [x] Add help documentation and examples
-- [x] Rich terminal output with colors and spinners
+AI integration improvements, recording/automatic speech assessment, broader card
+rendering, optional server-backed Web access and collaboration. Static article
+practice belongs to the earlier content milestone and does not require a server.
 
-### ✅ 5. Shared Components & Libraries - COMPLETE
-
-- [x] Create shared TypeScript types and schemas
-- [x] Build utilities for AnkiConnect communication
-- [x] Implement validation with Zod
-- [x] Add error handling classes
-- [x] Create constants and configuration management
-
-### ✅ 6. AnkiConnect Integration - COMPLETE
-
-- [x] Test AnkiConnect API connectivity
-- [x] Implement deck creation and management
-- [x] Add card CRUD operations
-- [x] Complete API wrapper with error handling
-- [x] Connection testing and status monitoring
-
-### ✅ 7. Documentation & Setup - COMPLETE
-
-- [x] Create comprehensive README with setup guide
-- [x] Write user guides for CLI and desktop app
-- [x] Add troubleshooting guides
-- [x] Create installation instructions
-- [x] Document project structure and development workflow
-
----
-
-## 🚧 Phase 2: AI Integration & VS Code Extension - PLANNED
-
-**Target**: Q1-Q2 2025
-
-### 8. VS Code Extension - PENDING
-
-- [ ] Set up VS Code extension project structure
-- [ ] Create extension manifest and configuration
-- [ ] Implement command palette commands:
-  - [ ] "Add selected text as flashcard"
-  - [ ] "Add code block as flashcard"
-  - [ ] "Quick card creation"
-- [ ] Add keyboard shortcuts for common actions
-- [ ] Create sidebar webview for card management
-- [ ] Implement inline card review within VS Code
-- [ ] Add status bar integration
-- [ ] Create extension settings and configuration
-
-### 9. Python ML Microservice - PENDING
-
-- [ ] Set up Python backend with FastAPI
-- [ ] Implement document processing pipeline
-- [ ] Add support for multiple input formats:
-  - [ ] Markdown files
-  - [ ] PDF documents
-  - [ ] Code files with syntax detection
-  - [ ] Web URLs and articles
-- [ ] Integrate LLM for automatic card generation
-- [ ] Create chunk processing and concept extraction
-- [ ] Add card quality validation and filtering
-
-### 10. AI Integration Frontend - PENDING
-
-- [ ] Add import functionality to desktop app
-- [ ] Create batch card generation interface
-- [ ] Implement preview and editing for AI-generated cards
-- [ ] Add content source management
-- [ ] Create templates for different content types
-
-### 11. Enhanced CLI Features - PARTIALLY COMPLETE
-
-- [x] Add `ankiniki import <file>` command (CSV, JSON, Markdown — auto-detected)
-- [x] Add `POST /api/import/markdown` backend endpoint
-- [x] Add `POST /api/import/json/body` backend endpoint (programmatic use)
-- [ ] Add `ankiniki study --due` flag to study only Anki-scheduled due cards
-- [x] Add `ankiniki deck create <name>` and `ankiniki deck delete <name>` commands
-- [x] Add `ankiniki delete <noteId>` command to remove individual cards
-- [ ] Add AI generation commands (`ankiniki generate <file>`)
-- [ ] Implement batch processing for multiple files
-- [ ] Add export/import of card collections
-
----
-
-## 🔮 Phase 3: Full Feature Set - FUTURE
-
-**Target**: Q3-Q4 2025
-
-### 12. React Native Mobile App - FUTURE
-
-- [ ] Set up React Native project structure
-- [ ] Create mobile-optimized UI components
-- [ ] Implement offline study mode
-- [ ] Add sync functionality with desktop/web
-- [ ] Create mobile-specific features (camera for OCR)
-
-### 13. Advanced Features - FUTURE
-
-- [ ] Mermaid diagram rendering support
-- [ ] LaTeX mathematical formula rendering
-- [ ] Advanced card templates and styling
-- [ ] Collaborative deck sharing
-- [ ] Analytics and learning insights
-- [ ] Custom spaced repetition algorithms
-
-### 14. Testing & Quality Assurance - ONGOING
-
-- [ ] Set up Jest testing framework
-- [ ] Write unit tests for core functions
-- [ ] Add integration tests for AnkiConnect
-- [ ] Create E2E tests for Electron app
-- [ ] Add performance benchmarking
-- [ ] Security audit and vulnerability scanning
-
----
-
-## 🎯 Current Status Summary
-
-### ✅ **Completed (Phase 1)**
-
-- **Backend API**: Full Express.js server with AnkiConnect integration
-- **Desktop App**: Complete Electron application with React frontend
-- **CLI Tool**: Professional command-line interface with all core features
-- **Infrastructure**: Monorepo setup, TypeScript, shared packages
-- **Documentation**: Comprehensive setup and usage guides
-
-### 🚧 **In Progress**
-
-- Planning Phase 2 architecture and AI integration strategy
-
-### 🔜 **Next Priorities**
-
-1. **VS Code Extension** - IDE integration for seamless workflow
-2. **Python ML Service** - AI-powered card generation
-3. **Content Import Pipeline** - Batch processing of learning materials
-
----
-
-## Success Metrics Achieved ✅
-
-- ✅ Successfully create and sync cards with Anki
-- ✅ CLI tool handles common workflows efficiently
-- ✅ Desktop app provides better UX than native Anki for card creation
-- ✅ Cross-platform compatibility (Windows, Mac, Linux)
-- ✅ Type-safe codebase with comprehensive error handling
-- ✅ Production-ready with proper logging and configuration
-
-## Technical Architecture Decisions
-
-### ✅ Implemented
-
-- **Monorepo Structure**: npm workspaces for shared code
-- **AnkiConnect Strategy**: Companion tool approach, not replacement
-- **TypeScript First**: Type safety throughout the stack
-- **Modular Design**: Easy to extend with AI and mobile components
-- **Security Focus**: Secure IPC, input validation, CORS protection
-
-### 📋 Ready for Phase 2
-
-- **API Design**: Extensible for ML pipeline integration
-- **Component Architecture**: Modular frontend for AI features
-- **Configuration System**: Ready for complex AI service settings
-- **Error Handling**: Robust foundation for external service integration
-
----
-
-**Last Updated**: December 2024  
-**Current Version**: 0.1.0  
-**Repository**: https://github.com/iray-tno/ankiniki
+See [architecture](docs/design/local-first-architecture.md) and
+[exchange contract](docs/design/anki-exchange.md) for decisions and validation gates.

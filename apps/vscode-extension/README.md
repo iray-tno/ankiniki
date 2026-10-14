@@ -150,20 +150,20 @@ Access all commands via Command Palette (`Ctrl+Shift+P`):
 
 ```bash
 cd apps/vscode-extension
-npm install
-npm run compile
+mise exec -- npm install
+mise exec -- npm run compile
 ```
 
 ### Running Tests
 
 ```bash
-npm run test
+mise exec -- npm run test
 ```
 
 ### Packaging Extension
 
 ```bash
-npm run package
+mise exec -- npm run package
 ```
 
 ## Contributing

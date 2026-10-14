@@ -33,6 +33,9 @@ jobs:
       - name: Lint and format
         run: mise exec -- npm run lint && mise exec -- npm run format:check
 
+      - name: CLI exchange smoke test
+        run: mise exec -- npm run test:exchange
+
   desktop:
     name: Desktop frontend / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
