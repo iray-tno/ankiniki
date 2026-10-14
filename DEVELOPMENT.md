@@ -28,6 +28,12 @@ The first milestone is reliable Anki-compatible JSON import/export. Read:
 
 - [Architecture and milestones](docs/design/local-first-architecture.md)
 - [Exchange guarantees and limits](docs/design/anki-exchange.md)
+- [Content, audio sessions and static article practice](docs/design/content-and-learning.md)
+
+Keep reusable content separate from personal progress. Public publishing uses
+only explicitly approved content and media; private lesson sources and local
+profiles stay outside this repository. A short browser/audio session does not
+require an independent collection or scheduler.
 
 Preserve raw Anki field values in the exchange path. Do not trim HTML, replace
 newlines, merge fields into Front/Back, add tags implicitly, or treat external

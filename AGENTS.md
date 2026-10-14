@@ -11,6 +11,9 @@ Read DEVELOPMENT.md and docs/developer/environment.md before changing code.
   or scheduling. See docs/design/anki-exchange.md and the architecture proposal.
 - Preserve raw fields in the exchange path. Keep authoring transformations
   separate, and test fidelity with fixtures and mocked Anki operations.
+- Keep lesson sources separate from personal progress. Use self-authored public
+  fixtures; private lesson text/media and local profiles stay outside this repo.
+  See docs/design/content-and-learning.md for audio and static Web session plans.
 - Track work in Issues and focused PRs. Codex branches use
   `codex/issue-<number>_<topic>`; commit/PR titles use `#<issue> <description>`.
 - Stacked PRs may target the preceding branch; describe the dependency and merge

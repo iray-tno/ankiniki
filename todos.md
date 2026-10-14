@@ -24,13 +24,31 @@ Updated 2026-10-14. This file separates existing features from planned milestone
 - [ ] Preserve/recover scheduling and review history through a verified native
       package or supported connector; never imply content JSON provides this.
 
-## Milestone 2: shared Rust core and Hozo screens
+## Milestone 2: content sessions, shared core and Hozo screens
+
+Before the full migration, deliver a small content session using the
+[content and learning design](docs/design/content-and-learning.md):
+
+- [ ] Specify stable package/item/activity identities and revisioned content.
+- [ ] Validate self-authored question and audio fixtures with resolved media.
+- [ ] Generate public Web data and an Anki APKG from the same approved source;
+      exclude personal progress and private inputs from public output.
+- [ ] Verify first import, repeated import and updates after user edits/reviews
+      in a dedicated Anki collection, including models and media.
+- [ ] Build a short static article widget with no account or application server.
+- [ ] Add a local Tauri audio session: playback, response wait, repeat and self-rating.
+
+These sessions do not require full review-history restoration or an independent
+scheduler. The shared-core migration can use their fixtures and screen contracts:
 
 - [ ] Implement a portable Rust exchange core using the same compatibility fixtures.
 - [ ] Verify a minimal shared operation from CLI, Tauri and React Native.
 - [ ] Move desktop data operations from Express to the shared core in stages.
 - [ ] Share screens through Hozo; keep navigation and OS integration per platform.
 - [ ] Validate Native behavior on devices and report reproducible Hozo bugs upstream.
+- [ ] Verify audio interruption/recovery and the same session on React Native devices.
+- [ ] Expose browser-needed pure Rust logic through WASM when required; keep
+      Native storage and FFI outside the static widget.
 
 ## Milestone 3: independent learning
 
@@ -42,8 +60,9 @@ Updated 2026-10-14. This file separates existing features from planned milestone
 
 ## Later
 
-AI integration improvements, broader card rendering, optional server-backed Web
-access and collaboration. These are not prerequisites for the first milestone.
+AI integration improvements, recording/automatic speech assessment, broader card
+rendering, optional server-backed Web access and collaboration. Static article
+practice belongs to the earlier content milestone and does not require a server.
 
 See [architecture](docs/design/local-first-architecture.md) and
 [exchange contract](docs/design/anki-exchange.md) for decisions and validation gates.
