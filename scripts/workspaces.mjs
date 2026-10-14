@@ -22,13 +22,17 @@ function npm(args) {
   }
 }
 
-function build() {
+function buildPackages() {
   // Dependencies must exist before consumers compile. The extension calls its
   // build command "compile"; the desktop build includes the Vite frontend.
   for (const workspace of ['packages/shared', 'packages/backend', 'apps/cli']) {
     npm(['run', 'build', '-w', workspace]);
   }
   npm(['run', 'compile', '-w', 'apps/vscode-extension']);
+}
+
+function build() {
+  buildPackages();
   npm(['run', 'build', '-w', 'apps/desktop']);
 }
 
@@ -47,6 +51,9 @@ function typeCheck() {
 switch (process.argv[2]) {
   case 'build':
     build();
+    break;
+  case 'build:packages':
+    buildPackages();
     break;
   case 'type-check':
     typeCheck();
@@ -73,5 +80,7 @@ switch (process.argv[2]) {
     npm(['run', 'format:check']);
     break;
   default:
-    throw new Error('Expected build, type-check, test, setup or check.');
+    throw new Error(
+      'Expected build, build:packages, type-check, test, setup or check.'
+    );
 }

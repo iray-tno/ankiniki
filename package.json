@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "node scripts/workspaces.mjs build",
+    "build:packages": "node scripts/workspaces.mjs build:packages",
     "dev": "npm run dev -w apps/desktop",
     "test": "node scripts/workspaces.mjs test",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
