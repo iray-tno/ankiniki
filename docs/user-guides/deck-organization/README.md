@@ -104,7 +104,7 @@ Create focused decks for better AI categorization:
 
 ```bash
 # CLI Example
-ankiniki add "What is useEffect in React?" \
+ankiniki note add "What is useEffect in React?" \
   "A React Hook for side effects and lifecycle events" \
   --deck "React Hooks" \
   --tags "react,hooks,lifecycle,useEffect"
@@ -241,7 +241,7 @@ curl -X POST http://localhost:3001/api/cards/generate-and-create \
 
 ```bash
 # Check deck sizes and balance
-ankiniki list --decks --stats
+ankiniki note list --decks --stats
 
 # Review learning progress
 ankiniki study "JavaScript Fundamentals" --stats
@@ -311,7 +311,7 @@ ankiniki config --set defaultDeck="Project-$PROJECT_NAME"
 
 # Add learning from current feature branch
 BRANCH_NAME=$(git branch --show-current)
-ankiniki add "Question about $BRANCH_NAME" "Answer" --tags "$BRANCH_NAME"
+ankiniki note add "Question about $BRANCH_NAME" "Answer" --tags "$BRANCH_NAME"
 ```
 
 #### Automatic Tagging
@@ -319,7 +319,7 @@ ankiniki add "Question about $BRANCH_NAME" "Answer" --tags "$BRANCH_NAME"
 ```bash
 # Tag with current Git context
 GIT_CONTEXT=$(git branch --show-current)-$(git rev-parse --short HEAD)
-ankiniki add "Question" "Answer" --tags "$GIT_CONTEXT,$(date +%Y-%m)"
+ankiniki note add "Question" "Answer" --tags "$GIT_CONTEXT,$(date +%Y-%m)"
 ```
 
 ## 📈 Measuring Effectiveness

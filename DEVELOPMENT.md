@@ -1,293 +1,84 @@
-# Development Guide
+# Development guide
 
-This document outlines the development workflow, code quality standards, and best practices for contributing to Ankiniki.
+Use [the environment guide](docs/developer/environment.md) for installation,
+verification and OS prerequisites. All Node/npm commands run through mise.
 
-## 🚀 Quick Start
+## Current structure
 
-### Initial Setup
-
-```bash
-# Clone and setup
-git clone https://github.com/iray-tno/ankiniki.git
-cd ankiniki
-
-# Run automated setup
-npm run setup
-
-# Or manual setup
-npm install
-npx husky install
-npm run build
+```text
+packages/shared/         Types, parsers and AnkiConnect client
+packages/backend/        Express API and import integrations
+apps/cli/                Commander CLI; bundles into dist/index.js
+apps/desktop/            React/Hozo frontend and Tauri Rust host
+apps/vscode-extension/   VS Code extension
+services/ml-service/     Optional Python service
 ```
 
-### Development Workflow
-
-```bash
-# Start all development servers
-npm run dev
-
-# Or start individual components
-cd packages/backend && npm run dev    # API server
-cd apps/desktop && npm run dev        # Electron app
-cd apps/cli && npm run build          # CLI tool
-```
-
-## 🧹 Code Quality
-
-### Automated Tools
-
-- **ESLint**: Code quality and consistency
-- **Prettier**: Code formatting
-- **TypeScript**: Type checking
-- **Husky**: Git hooks for quality checks
-
-### Available Commands
-
-```bash
-# Quality checks
-npm run lint          # Check code quality
-npm run lint:fix      # Fix auto-fixable issues
-npm run format        # Format all code
-npm run format:check  # Check formatting
-npm run type-check    # TypeScript compilation
-npm run check         # Run all quality checks
-
-# Development
-npm run build         # Build all packages
-npm run dev          # Start development servers
-npm run test         # Run tests
-npm run clean        # Clean build artifacts
-```
-
-### Pre-commit Hooks
-
-Git hooks automatically run before each commit:
-
-- ESLint auto-fixes
-- Prettier formatting
-- Type checking
-- Staged files only
-
-## 📝 Code Standards
-
-### TypeScript Guidelines
-
-- **Strict Mode**: All projects use strict TypeScript
-- **Type Safety**: Prefer `interface` over `type` for object definitions
-- **No `any`**: Use proper typing, `unknown` for uncertain types
-- **Explicit Returns**: Use explicit return types for public APIs
-
-### Code Style
-
-- **Formatting**: Prettier with 80 character line limit
-- **Imports**: Organize imports automatically
-- **Quotes**: Single quotes for strings, JSX
-- **Semicolons**: Always required
-- **Trailing Commas**: ES5 compatible
-
-### File Organization
-
-```
-packages/
-├── shared/           # Common types and utilities
-│   ├── src/
-│   │   ├── types.ts  # Zod schemas and TypeScript types
-│   │   ├── utils.ts  # Utility functions
-│   │   └── constants.ts
-│   └── package.json
-└── backend/          # Express.js API server
-    ├── src/
-    │   ├── routes/   # API endpoints
-    │   ├── services/ # Business logic
-    │   ├── middleware/
-    │   └── config/
-    └── package.json
-
-apps/
-├── desktop/          # Electron application
-│   ├── src/
-│   │   ├── main/     # Electron main process
-│   │   └── renderer/ # React frontend
-│   └── package.json
-└── cli/              # Command-line tool
-    ├── src/
-    │   └── commands/ # CLI command implementations
-    └── package.json
-```
+Build shared first. `mise exec -- npm run build` handles build order, compiles
+the VS Code extension and builds the desktop frontend. Use
+`mise exec -- npm run ci` for the full implemented verification suite.
 
-### Naming Conventions
+The desktop still depends on Express for card/deck/study operations. Its Rust
+commands currently provide settings persistence; the planned shared Rust core
+is not implemented yet. The project has no mobile app or independent collection.
 
-- **Files**: kebab-case (`card-editor.tsx`)
-- **Components**: PascalCase (`CardEditor`)
-- **Functions**: camelCase (`createCard`)
-- **Constants**: UPPER_SNAKE_CASE (`DEFAULT_TIMEOUT`)
-- **Types/Interfaces**: PascalCase (`Card`, `ApiResponse`)
+## Scope and design
 
-## 🔧 IDE Configuration
+The first milestone is reliable Anki-compatible JSON import/export. Read:
 
-### VS Code Setup
+- [Architecture and milestones](docs/design/local-first-architecture.md)
+- [Exchange guarantees and limits](docs/design/anki-exchange.md)
 
-The project includes VS Code workspace settings:
+Preserve raw Anki field values in the exchange path. Do not trim HTML, replace
+newlines, merge fields into Front/Back, add tags implicitly, or treat external
+note IDs as permission to overwrite existing notes. The authoring formats are a
+separate path and can retain their documented transformations.
 
-- Auto-format on save
-- ESLint integration
-- TypeScript language server
-- Recommended extensions
+Use export/import fixtures to test fidelity without modifying a real Anki
+collection. Claims about templates, media or review-state preservation need
+explicit implementations and tests; a successful Basic note import is not a
+complete collection round trip.
 
-### Recommended Extensions
+## Workflow
 
-- ESLint
-- Prettier
-- TypeScript
-- Auto Rename Tag
-- GitLens
-- TODO Tree
+1. Inspect the relevant code and existing tests; create or reuse a GitHub Issue.
+2. Create a branch, using `codex/issue-<number>_<topic>` for Codex work.
+3. Keep each PR focused. Stacked PRs may target the preceding branch and must
+   state the dependency and merge order.
+4. Run relevant tests and the full checks when changing shared behavior.
+5. Commit through mise and describe actual behavior, validation and limitations.
+6. Push and open a PR. Do not merge without an explicit request.
 
-## 🧪 Testing Strategy
+Commit/PR titles use `#<issue> <description>`. Use truthful attribution if adding
+an attribution footer; do not claim another tool produced the changes.
 
-### Test Structure
+## Hozo
 
-```bash
-# Unit tests
-packages/shared/src/*.test.ts
-packages/backend/src/**/*.test.ts
+Hozo dependencies are used as published packages. Reproduce a suspected Hozo bug
+with the installed version and the smallest meaningful example. Search existing
+issues in `iray-tno/hozo`, then open an upstream issue with versions, expected and
+actual behavior, reproduction steps and useful diagnostics. Link it from the
+relevant Ankiniki work. Avoid local framework forks or unexplained workarounds.
 
-# Integration tests
-apps/cli/src/**/*.test.ts
-apps/desktop/src/**/*.test.ts
+The native UI integration needs its own device validation. A successful Vite
+build does not prove that the same screen works on React Native.
 
-# E2E tests
-tests/e2e/
-```
+## Testing conventions
 
-### Testing Commands
+Shared/backend/CLI use Vitest. Backend route tests use Supertest and mock Anki.
+CLI builds with esbuild, so its type check must also be run separately.
 
-```bash
-npm run test                    # All tests
-cd packages/backend && npm test # Package-specific
-```
+Use class syntax for constructor mocks. Use module factories for ESM `fs`
+exports rather than spying on read-only exports. Hoisted mock factories must
+only reference values available at initialization. Resolve filesystem paths
+with the platform path API rather than asserting Unix-only absolute paths.
 
-## 📦 Build Process
+Combine value and type imports from the same module; ESLint rejects duplicate
+imports. AnkiConnect `addTags` and `removeTags` take a space-separated string.
 
-### Development Builds
+## Local files
 
-```bash
-npm run build                   # All packages
-cd packages/shared && npm run build # Individual package
-```
-
-### Production Builds
-
-```bash
-# Desktop app distributables
-cd apps/desktop
-npm run build
-npm run dist
-
-# CLI tool
-cd apps/cli
-npm run build
-npm link
-```
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-1. **TypeScript Errors**
-
-   ```bash
-   npm run type-check
-   # Fix errors in reported files
-   ```
-
-2. **Linting Errors**
-
-   ```bash
-   npm run lint:fix     # Auto-fix
-   npm run lint         # Manual review
-   ```
-
-3. **Format Issues**
-
-   ```bash
-   npm run format       # Fix all formatting
-   ```
-
-4. **Build Failures**
-
-   ```bash
-   npm run clean        # Clean everything
-   npm install          # Reinstall deps
-   npm run build        # Rebuild
-   ```
-
-5. **Git Hook Failures**
-
-   ```bash
-   # Manually run pre-commit checks
-   npm run precommit
-
-   # Skip hooks if needed (not recommended)
-   git commit --no-verify
-   ```
-
-### Development Environment
-
-- **Node.js**: 18+ required
-- **npm**: 9+ required
-- **OS**: Windows, macOS, Linux supported
-- **Anki**: Required for testing AnkiConnect integration
-
-## 🎯 Quality Gates
-
-### Definition of Done
-
-Before marking work complete:
-
-- [ ] All TypeScript compilation errors resolved
-- [ ] ESLint passes without warnings
-- [ ] Code formatted with Prettier
-- [ ] Relevant tests added/updated
-- [ ] Documentation updated
-- [ ] Manual testing completed
-- [ ] Git hooks pass
-
-### CI/CD Pipeline
-
-```bash
-npm run ci    # Runs complete quality check + tests
-```
-
-This validates:
-
-- TypeScript compilation
-- Linting rules
-- Code formatting
-- Unit tests
-- Build processes
-- Security audit
-
-## 🤝 Contributing Workflow
-
-1. **Setup**: Run `npm run setup` for initial development environment
-2. **Branch**: Create feature branch from `main`
-3. **Develop**: Write code following established patterns
-4. **Quality**: Run `npm run check` before committing
-5. **Test**: Ensure all tests pass
-6. **Commit**: Git hooks ensure quality standards
-7. **PR**: Submit pull request with clear description
-
-## 📊 Monitoring
-
-### Performance Metrics
-
-- **Build Times**: Monitor with `npm run build`
-- **Bundle Sizes**: Check Electron app size
-- **Type Check Speed**: Track TypeScript performance
-
-### Quality Metrics
-
-- **ESLint Warnings**: Aim for zero warnings
-- **Test Coverage**: Maintain high coverage
-- **Security Vulns**: Regular `npm audit`
+`temp/` is ignored. Use it for scratch files and test logs and stage explicit
+paths. Never include generated output, local configuration or private working
+notes in Issues/PRs. There is no reason to run a repository-wide formatting fix
+as part of dependency installation.

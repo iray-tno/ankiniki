@@ -16,7 +16,7 @@ CLI を使用する前に以下が必要です。
 3. **Ankiniki バックエンドサーバー**が起動していること（`note import` / `note generate` で必要）
    ```bash
    # プロジェクトルートから
-   npm run dev --workspace=@ankiniki/backend
+   mise exec -- npm run dev --workspace=@ankiniki/backend
    # サーバーが http://localhost:3001 で起動します
    ```
 
@@ -26,11 +26,11 @@ CLI を使用する前に以下が必要です。
 
 ```bash
 # プロジェクトルートから CLI をビルド
-npm run build --workspace=@ankiniki/cli
+mise exec -- npm run build --workspace=@ankiniki/cli
 
 # ビルドなしで直接実行（開発モード）
 cd apps/cli
-npm run dev -- <コマンド>
+mise exec -- npm run dev -- <コマンド>
 
 # ビルド後に実行
 node apps/cli/dist/index.js <コマンド>

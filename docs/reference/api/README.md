@@ -486,8 +486,8 @@ The Ankiniki CLI tool uses this API internally:
 
 ```bash
 # CLI commands map to API endpoints
-ankiniki add "Question" "Answer"    # POST /api/cards
-ankiniki list --decks              # GET /api/decks
+ankiniki note add "Question" "Answer"    # POST /api/cards
+ankiniki note list --decks              # GET /api/decks
 ankiniki search "deck:Programming" # GET /api/cards/search
 ```
 
@@ -508,10 +508,10 @@ Future versions will use URL versioning: `/api/v2/`
 ```bash
 # Development mode with hot reload
 cd packages/backend
-npm run dev
+mise exec -- npm run dev
 
 # Production mode
-npm run build
+mise exec -- npm run build
 npm start
 ```
 

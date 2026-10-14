@@ -52,16 +52,16 @@ JSON import provides a structured way to create multiple flashcards with rich me
 
 ```bash
 # Basic import with default deck
-ankiniki import cards.json --format json --deck "JavaScript"
+ankiniki note import cards.json --format json --deck "JavaScript"
 
 # Preview before importing
-ankiniki import cards.json --format json --preview
+ankiniki note import cards.json --format json --preview
 
 # Import with default tags
-ankiniki import cards.json --format json --tags "imported,json"
+ankiniki note import cards.json --format json --tags "imported,json"
 
 # Dry run for validation
-ankiniki import cards.json --format json --dry-run
+ankiniki note import cards.json --format json --dry-run
 ```
 
 ### 2. API Import
@@ -135,7 +135,7 @@ curl -X POST http://localhost:3001/api/import/json/preview \
 **CLI Command:**
 
 ```bash
-ankiniki import programming.json --format json --preview
+ankiniki note import programming.json --format json --preview
 ```
 
 ### Example 2: Language Learning with Metadata
@@ -235,29 +235,29 @@ ankiniki import programming.json --format json --preview
 
 ```bash
 # Import simple JSON array
-ankiniki import simple.json --format json --deck "Study Cards"
+ankiniki note import simple.json --format json --deck "Study Cards"
 
 # Import with preview
-ankiniki import cards.json --format json --preview
+ankiniki note import cards.json --format json --preview
 
 # Import with default tags
-ankiniki import cards.json --format json --tags "review,important"
+ankiniki note import cards.json --format json --tags "review,important"
 
 # Dry run validation
-ankiniki import cards.json --format json --dry-run
+ankiniki note import cards.json --format json --dry-run
 ```
 
 ### Advanced Import Options
 
 ```bash
 # Specify model type
-ankiniki import cards.json --format json --model "Cloze" --deck "Cloze Cards"
+ankiniki note import cards.json --format json --model "Cloze" --deck "Cloze Cards"
 
 # Multiple default tags
-ankiniki import cards.json --format json --tags "imported,json,batch-1"
+ankiniki note import cards.json --format json --tags "imported,json,batch-1"
 
 # Preview with specific deck
-ankiniki import cards.json --format json --preview --deck "Preview Deck"
+ankiniki note import cards.json --format json --preview --deck "Preview Deck"
 ```
 
 ## 🔧 Validation and Error Handling
@@ -294,7 +294,7 @@ ankiniki import cards.json --format json --preview --deck "Preview Deck"
 
 ```bash
 # Always preview first
-ankiniki import cards.json --format json --preview
+ankiniki note import cards.json --format json --preview
 
 # Validate JSON syntax
 cat cards.json | jq '.' # Check if valid JSON
@@ -317,8 +317,8 @@ jq '.cards | length' object-format.json
 
 ```bash
 # Good: Preview large file first
-ankiniki import large-cards.json --format json --preview
-ankiniki import large-cards.json --format json
+ankiniki note import large-cards.json --format json --preview
+ankiniki note import large-cards.json --format json
 
 # Better: Split large files
 jq '.[0:500]' large.json > batch1.json
@@ -340,7 +340,7 @@ cat cards.json | jq '.'
 
 ```bash
 # Solution: Check deck exists and format is correct
-ankiniki import cards.json --format json --preview
+ankiniki note import cards.json --format json --preview
 ```
 
 **3. Tags not applying correctly**
@@ -355,7 +355,7 @@ ankiniki import cards.json --format json --preview
 
 ```bash
 # Solution: Use existing Anki models
-ankiniki import cards.json --format json --model "Basic"
+ankiniki note import cards.json --format json --model "Basic"
 ```
 
 ### Debug Commands
@@ -373,7 +373,7 @@ jq '.cards | length' object-format.json
 
 # Test import with single card
 echo '[{"front":"Test","back":"Answer"}]' > test.json
-ankiniki import test.json --format json --preview
+ankiniki note import test.json --format json --preview
 ```
 
 ## 📋 Format Comparison
@@ -433,10 +433,10 @@ ankiniki import test.json --format json --preview
 cat cards.json | jq '.'
 
 # 2. Preview import
-ankiniki import cards.json --format json --preview
+ankiniki note import cards.json --format json --preview
 
 # 3. Import with specific options
-ankiniki import cards.json --format json --deck "Target Deck"
+ankiniki note import cards.json --format json --deck "Target Deck"
 
 # 4. Verify in Anki
 # Check Anki for imported cards
@@ -464,7 +464,7 @@ SELECT json_arrayagg(
 ```bash
 # Fetch cards from API and import
 curl https://api.example.com/cards | jq '.' > api-cards.json
-ankiniki import api-cards.json --format json --deck "API Import"
+ankiniki note import api-cards.json --format json --deck "API Import"
 ```
 
 ---
