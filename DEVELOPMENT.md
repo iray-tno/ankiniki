@@ -3,6 +3,16 @@
 Use [the environment guide](docs/developer/environment.md) for installation,
 verification and OS prerequisites. All Node/npm commands run through mise.
 
+## Coding agent instructions
+
+[AGENTS.md](AGENTS.md) is the common repository instruction source. Claude Code
+supports it natively from v2.1.277; this repository relies on that support instead
+of a separate Claude instruction file. With the default Project instructions
+setting, a project or ancestor `CLAUDE.md`/`CLAUDE.local.md` takes precedence.
+Check `/context` to confirm which instructions load; use `/config` to read both
+formats if an ancestor file is needed. See the
+[official loading rules](https://code.claude.com/docs/en/memory#agentsmd).
+
 ## Current structure
 
 ```text
