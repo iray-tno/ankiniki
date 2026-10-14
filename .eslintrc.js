@@ -97,6 +97,7 @@ module.exports = {
     },
   ],
   ignorePatterns: [
+    'temp/',
     'dist/',
     'build/',
     'node_modules/',

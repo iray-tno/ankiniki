@@ -55,5 +55,6 @@ packages/*/src/*.js
 packages/*/src/*.js.map
 
 # Temporary files
+/temp/
 *.tmp
 *.temp/demo/

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import path from 'path';
 import { createExportCommand } from '../commands/export';
 
 // ── Fixtures ───────────────────────────────────────────────────────────────
@@ -104,7 +105,7 @@ describe('export command', () => {
 
       expect(mockClient.exportPackage).toHaveBeenCalledWith(
         'TypeScript',
-        '/tmp/out.apkg',
+        path.resolve('/tmp/out.apkg'),
         false
       );
     });
@@ -114,7 +115,7 @@ describe('export command', () => {
 
       expect(mockClient.exportPackage).toHaveBeenCalledWith(
         'TypeScript',
-        '/tmp/out.apkg',
+        path.resolve('/tmp/out.apkg'),
         true
       );
     });
@@ -147,7 +148,7 @@ describe('export command', () => {
 
       expect(mockClient.findNotes).toHaveBeenCalledWith('deck:"TypeScript"');
       expect(mockWriteFileSync).toHaveBeenCalledWith(
-        '/tmp/out.csv',
+        path.resolve('/tmp/out.csv'),
         expect.stringContaining('noteId'),
         'utf8'
       );
@@ -202,7 +203,7 @@ describe('export command', () => {
 
       expect(mockClient.findNotes).toHaveBeenCalledWith('deck:"TypeScript"');
       expect(mockWriteFileSync).toHaveBeenCalledWith(
-        '/tmp/out.json',
+        path.resolve('/tmp/out.json'),
         expect.stringContaining('"noteId"'),
         'utf8'
       );

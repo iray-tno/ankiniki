@@ -44,6 +44,7 @@ apps/vscode-extension/*.vsix
 apps/vscode-extension/out/
 
 # Temporary files
+/temp/
 *.tmp
 *.temp
 

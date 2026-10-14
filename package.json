@@ -8,19 +8,20 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "dev": "npm run dev --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "build": "node scripts/workspaces.mjs build",
+    "build:packages": "node scripts/workspaces.mjs build:packages",
+    "dev": "npm run dev -w apps/desktop",
+    "test": "node scripts/workspaces.mjs test",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "type-check": "tsc --noEmit",
+    "type-check": "node scripts/workspaces.mjs type-check",
     "prepare": "husky install",
     "clean": "rm -rf node_modules packages/*/node_modules apps/*/node_modules packages/*/dist apps/*/dist",
     "precommit": "lint-staged",
-    "setup": "./scripts/setup.sh",
-    "check": "./scripts/quality-check.sh",
+    "setup": "node scripts/workspaces.mjs setup",
+    "check": "node scripts/workspaces.mjs check",
     "ci": "npm run check && npm run test",
     "ml-service:dev": "cd services/ml-service && uvicorn main:app --reload --port 8000",
     "ml-service:install": "cd services/ml-service && pip install -r requirements.txt",
@@ -52,8 +53,8 @@
     ]
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0"
   },
   "repository": {
     "type": "git",
