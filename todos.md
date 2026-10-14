@@ -7,6 +7,8 @@ Updated 2026-10-14. This file separates existing features from planned milestone
 - TypeScript CLI with note/deck commands, import/export, offline APKG bundling,
   Anki-based study, statistics and AnkiWeb sync.
 - Shared parsers, validation and AnkiConnect client.
+- A v1 reusable lesson contract and offline CLI validation of declarations,
+  identities, references and local audio integrity; self-authored fixtures.
 - Express API and an optional Python processing/generation service.
 - VS Code extension for selection/code creation and file generation.
 - Tauri desktop with settings, menus and React screens backed by Express.
@@ -29,8 +31,8 @@ Updated 2026-10-14. This file separates existing features from planned milestone
 Before the full migration, deliver a small content session using the
 [content and learning design](docs/design/content-and-learning.md):
 
-- [ ] Specify stable package/item/activity identities and revisioned content.
-- [ ] Validate self-authored question and audio fixtures with resolved media.
+- [x] Specify stable package/item/activity identities and revisioned content.
+- [x] Validate self-authored question and audio fixtures with resolved media.
 - [ ] Generate public Web data and an Anki APKG from the same approved source;
       exclude personal progress and private inputs from public output.
 - [ ] Verify first import, repeated import and updates after user edits/reviews
