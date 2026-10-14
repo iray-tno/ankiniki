@@ -61,6 +61,10 @@ The optional Python service is only needed for its document-processing and
 generation endpoints. Anki with AnkiConnect is needed for actual Anki operations,
 but the automated tests use mocks and do not modify a real collection.
 
+Backend CORS defaults include the Vite development origin (port 1420) and the
+Tauri production origins. Override `CORS_ORIGIN` with a comma-separated list
+when using other trusted frontend origins.
+
 ## Git hooks and local work
 
 Use `mise exec -- git commit ...` so hooks see the pinned runtime. Hooks format

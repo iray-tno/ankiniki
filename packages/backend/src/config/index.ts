@@ -16,7 +16,9 @@ const ConfigSchema = z.object({
   ML_SERVICE_URL: z.string().default('http://localhost:8000'),
   ML_SERVICE_TIMEOUT: z.string().default('30000'),
   LOG_LEVEL: z.string().default('info'),
-  CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  CORS_ORIGIN: z
+    .string()
+    .default('http://localhost:1420,http://tauri.localhost,tauri://localhost'),
 });
 
 const env = ConfigSchema.parse(process.env);
@@ -36,6 +38,8 @@ export const config = {
     level: env.LOG_LEVEL,
   },
   cors: {
-    origin: env.CORS_ORIGIN,
+    origin: env.CORS_ORIGIN.split(',')
+      .map(origin => origin.trim())
+      .filter(Boolean),
   },
 } as const;
