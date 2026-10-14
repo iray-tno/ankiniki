@@ -6,12 +6,12 @@ Command-line interface for quick flashcard management with Anki.
 
 ```bash
 # From the project root
-npm install
-npm run build
+mise exec -- npm install
+mise exec -- npm run build
 
 # Link globally (optional)
 cd apps/cli
-npm link
+mise exec -- npm link
 ```
 
 ## Usage

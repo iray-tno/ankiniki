@@ -16,7 +16,7 @@ Before using the CLI you need:
 3. **Ankiniki backend server** running (for `note import` and `note generate`)
    ```bash
    # From the project root
-   npm run dev --workspace=@ankiniki/backend
+   mise exec -- npm run dev --workspace=@ankiniki/backend
    # Server starts at http://localhost:3001
    ```
 
@@ -26,11 +26,11 @@ Before using the CLI you need:
 
 ```bash
 # From the project root, build the CLI
-npm run build --workspace=@ankiniki/cli
+mise exec -- npm run build --workspace=@ankiniki/cli
 
 # Run directly (dev mode, no build needed)
 cd apps/cli
-npm run dev -- <command>
+mise exec -- npm run dev -- <command>
 
 # Or after build
 node apps/cli/dist/index.js <command>

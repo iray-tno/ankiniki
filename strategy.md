@@ -1,3 +1,5 @@
+> Historical research: the original market study and Electron roadmap are retained below. Current architecture and milestones are in [the design](docs/design/local-first-architecture.md) and [roadmap](todos.md).
+
 # **Ankiniki \- エンジニア向けAnkiコンパニオンツール開発計画レポート**
 
 ## **1\. エグゼクティブサマリー**

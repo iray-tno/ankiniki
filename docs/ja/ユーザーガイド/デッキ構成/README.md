@@ -104,7 +104,7 @@ Ankinikiの AI パワード機能を最大限に活用し、学習効果を高�
 
 ```bash
 # CLIの例
-ankiniki add "ReactのuseEffectとは何ですか？" \
+ankiniki note add "ReactのuseEffectとは何ですか？" \
   "副作用とライフサイクルイベント用のReact Hook" \
   --deck "React Hooks" \
   --tags "react,hooks,lifecycle,useEffect"
@@ -241,7 +241,7 @@ curl -X POST http://localhost:3001/api/cards/generate-and-create \
 
 ```bash
 # デッキサイズとバランスを確認
-ankiniki list --decks --stats
+ankiniki note list --decks --stats
 
 # 学習進捗を確認
 ankiniki study "JavaScript基礎" --stats
@@ -311,7 +311,7 @@ ankiniki config --set defaultDeck="Project-$PROJECT_NAME"
 
 # 現在の機能ブランチからの学習を追加
 BRANCH_NAME=$(git branch --show-current)
-ankiniki add "$BRANCH_NAMEに関する質問" "答え" --tags "$BRANCH_NAME"
+ankiniki note add "$BRANCH_NAMEに関する質問" "答え" --tags "$BRANCH_NAME"
 ```
 
 #### 自動タグ付け
@@ -319,7 +319,7 @@ ankiniki add "$BRANCH_NAMEに関する質問" "答え" --tags "$BRANCH_NAME"
 ```bash
 # 現在のGitコンテキストでタグ付け
 GIT_CONTEXT=$(git branch --show-current)-$(git rev-parse --short HEAD)
-ankiniki add "質問" "答え" --tags "$GIT_CONTEXT,$(date +%Y-%m)"
+ankiniki note add "質問" "答え" --tags "$GIT_CONTEXT,$(date +%Y-%m)"
 ```
 
 ## 📈 効果測定

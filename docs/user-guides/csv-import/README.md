@@ -36,16 +36,16 @@ Front,Back,Deck,Tags,Model,Difficulty
 
 ```bash
 # Basic import with default deck
-ankiniki import cards.csv --deck "JavaScript Fundamentals"
+ankiniki note import cards.csv --deck "JavaScript Fundamentals"
 
 # Preview before importing
-ankiniki import cards.csv --preview
+ankiniki note import cards.csv --preview
 
 # Custom delimiter and tags
-ankiniki import cards.csv --delimiter ";" --tags "imported,csv"
+ankiniki note import cards.csv --delimiter ";" --tags "imported,csv"
 
 # Custom column mapping
-ankiniki import cards.csv --mapping '{"front": "Question", "back": "Answer", "deck": "Subject"}'
+ankiniki note import cards.csv --mapping '{"front": "Question", "back": "Answer", "deck": "Subject"}'
 ```
 
 ### 2. API Import
@@ -85,7 +85,7 @@ Question,Answer,Subject,Topics,Level
 **CLI Command for Custom Columns:**
 
 ```bash
-ankiniki import react-hooks.csv \
+ankiniki note import react-hooks.csv \
   --mapping '{"front": "Question", "back": "Answer", "deck": "Subject", "tags": "Topics", "difficulty": "Level"}'
 ```
 
@@ -100,7 +100,7 @@ Front,Back
 **CLI Command:**
 
 ```bash
-ankiniki import minimal.csv --deck "DevOps" --tags "containers,devops"
+ankiniki note import minimal.csv --deck "DevOps" --tags "containers,devops"
 ```
 
 ## ⚙️ Advanced Options
@@ -175,7 +175,7 @@ Front,Back,Tags
 
 ```bash
 # Create deck in Anki first, then import
-ankiniki import cards.csv --deck "New Technology"
+ankiniki note import cards.csv --deck "New Technology"
 ```
 
 **Use consistent naming:**
@@ -192,44 +192,44 @@ Front,Back,Deck
 
 ```bash
 # Import with default settings
-ankiniki import flashcards.csv
+ankiniki note import flashcards.csv
 
 # Specify target deck
-ankiniki import flashcards.csv --deck "Programming"
+ankiniki note import flashcards.csv --deck "Programming"
 
 # Add default tags
-ankiniki import flashcards.csv --tags "imported,study-guide"
+ankiniki note import flashcards.csv --tags "imported,study-guide"
 ```
 
 ### Preview Before Import
 
 ```bash
 # Preview file structure and sample cards
-ankiniki import flashcards.csv --preview
+ankiniki note import flashcards.csv --preview
 
 # Check for errors without creating cards
-ankiniki import flashcards.csv --dry-run
+ankiniki note import flashcards.csv --dry-run
 ```
 
 ### Custom Delimiters
 
 ```bash
 # Semicolon-separated values
-ankiniki import data.csv --delimiter ";"
+ankiniki note import data.csv --delimiter ";"
 
 # Tab-separated values
-ankiniki import data.tsv --delimiter "\t"
+ankiniki note import data.tsv --delimiter "\t"
 ```
 
 ### Custom Column Mapping
 
 ```bash
 # Map non-standard column names
-ankiniki import study-guide.csv \
+ankiniki note import study-guide.csv \
   --mapping '{"front": "Term", "back": "Definition", "deck": "Chapter"}'
 
 # Complex mapping with all fields
-ankiniki import comprehensive.csv \
+ankiniki note import comprehensive.csv \
   --mapping '{
     "front": "Question",
     "back": "Explanation",
@@ -241,10 +241,10 @@ ankiniki import comprehensive.csv \
 
 ## 📋 Column Mapping Reference
 
-Use the `ankiniki import mapping` command to see examples:
+Use the `ankiniki note import mapping` command to see examples:
 
 ```bash
-ankiniki import mapping
+ankiniki note import mapping
 ```
 
 ### Standard Columns
@@ -275,7 +275,7 @@ Question,Answer,Subject,Keywords,Level
 
 ```bash
 # Solution: Create deck in Anki first or specify existing deck
-ankiniki import cards.csv --deck "Existing Deck Name"
+ankiniki note import cards.csv --deck "Existing Deck Name"
 ```
 
 **2. Special characters causing parsing errors**
@@ -296,8 +296,8 @@ split -l 1000 large-file.csv smaller-file-
 
 ```bash
 # Solution: Check JSON syntax
-ankiniki import cards.csv --mapping '{"front": "Question"}' # Valid JSON
-ankiniki import cards.csv --mapping "{front: Question}"     # Invalid JSON
+ankiniki note import cards.csv --mapping '{"front": "Question"}' # Valid JSON
+ankiniki note import cards.csv --mapping "{front: Question}"     # Invalid JSON
 ```
 
 ### Validation Errors
@@ -318,7 +318,7 @@ Row 3: Deck 'Non-existent Deck' does not exist
 **Preview before import to catch errors:**
 
 ```bash
-ankiniki import cards.csv --preview
+ankiniki note import cards.csv --preview
 ```
 
 ## 📈 Performance Tips
@@ -334,11 +334,11 @@ ankiniki import cards.csv --preview
 
 ```bash
 # Good: Small batch with preview
-ankiniki import batch-1.csv --preview
-ankiniki import batch-1.csv
+ankiniki note import batch-1.csv --preview
+ankiniki note import batch-1.csv
 
 # Better: Optimized for specific use case
-ankiniki import cards.csv --deck "Target Deck" --model "Basic"
+ankiniki note import cards.csv --deck "Target Deck" --model "Basic"
 ```
 
 ## 🎉 Success Stories
@@ -348,7 +348,7 @@ ankiniki import cards.csv --deck "Target Deck" --model "Basic"
 ```bash
 # Export from Quizlet/other system as CSV
 # Map columns to Ankiniki format
-ankiniki import quizlet-export.csv \
+ankiniki note import quizlet-export.csv \
   --mapping '{"front": "Term", "back": "Definition"}' \
   --deck "Migrated Cards" \
   --tags "migrated,quizlet"
@@ -358,7 +358,7 @@ ankiniki import quizlet-export.csv \
 
 ```bash
 # Create cards from documentation/study guides
-ankiniki import course-material.csv --deck "Computer Science 101"
+ankiniki note import course-material.csv --deck "Computer Science 101"
 # Result: 500+ cards imported in seconds
 ```
 

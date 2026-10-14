@@ -87,7 +87,7 @@ npm --version   # Should be 9.0.0+
 # Visit nodejs.org and download latest LTS
 
 # Update npm
-npm install -g npm@latest
+mise exec -- npm install -g npm@latest
 
 # Clear npm cache if issues persist
 npm cache clean --force
@@ -114,9 +114,9 @@ npm config set prefix '~/.npm-global'
 
 ```bash
 # Clean and rebuild everything
-npm run clean
-npm install
-npm run build
+mise exec -- npm run clean
+mise exec -- npm install
+mise exec -- npm run build
 
 # If specific package fails, build dependencies first
 cd packages/shared && npm run build
@@ -137,7 +137,7 @@ cd ../../apps/cli && npm run build
    ```bash
    # View Electron logs
    cd apps/desktop
-   npm run dev  # Look for error messages in terminal
+   mise exec -- npm run dev  # Look for error messages in terminal
    ```
 
 2. **Clear app data**:
@@ -148,7 +148,7 @@ cd ../../apps/cli && npm run build
 3. **Rebuild native modules**:
    ```bash
    cd apps/desktop
-   npm run rebuild
+   mise exec -- npm run rebuild
    ```
 
 #### Issue: White screen / app loads but shows nothing
@@ -163,7 +163,7 @@ cd ../../apps/cli && npm run build
    ```bash
    # Start in development mode
    cd apps/desktop
-   npm run dev
+   mise exec -- npm run dev
    ```
 
 ### UI and Functionality Issues
@@ -200,8 +200,8 @@ cd ../../apps/cli && npm run build
 ```bash
 # Ensure CLI is built and linked
 cd apps/cli
-npm run build
-npm link
+mise exec -- npm run build
+mise exec -- npm link
 
 # Check if npm global bin is in PATH
 echo $PATH | grep npm
@@ -268,7 +268,7 @@ ankiniki config --reset
 
    ```bash
    # List available decks
-   ankiniki list --decks
+   ankiniki note list --decks
 
    # Verify deck name matches exactly
    ankiniki config --set defaultDeck="Exact Deck Name"
@@ -294,7 +294,7 @@ ankiniki config --reset
 
    ```bash
    cd apps/vscode-extension
-   npm run package
+   mise exec -- npm run package
    # Install the generated .vsix file in VS Code
    ```
 
@@ -486,7 +486,7 @@ ankiniki config --set ankiConnectUrl="http://localhost:8766"
 ```bash
 # CLI Debug Mode
 ankiniki config --set debugMode=true
-ankiniki add --debug "test" "test"
+ankiniki note add --debug "test" "test"
 
 # Backend Debug Mode
 NODE_ENV=development npm run dev
