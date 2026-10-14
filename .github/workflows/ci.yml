@@ -15,32 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
+      - name: Setup mise toolchain
+        uses: jdx/mise-action@v3
 
       - name: Install dependencies
-        run: npm ci
+        run: mise exec -- npm ci
 
-      - name: Build shared package
-        run: npm run build -w packages/shared
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Format check
-        run: npm run format:check
-
-      - name: Type check (backend)
-        run: npm run build -w packages/backend
-
-      - name: Type check (CLI)
-        run: npm run build -w apps/cli
-
-      - name: Type check (VS Code extension)
-        run: npm run compile -w apps/vscode-extension
+      - name: Build, type check, lint and format
+        run: mise exec -- npm run check
 
   # ── Tests ─────────────────────────────────────────────────────────────────────
   test:
@@ -62,17 +44,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
+      - name: Setup mise toolchain
+        uses: jdx/mise-action@v3
 
       - name: Install dependencies
-        run: npm ci
+        run: mise exec -- npm ci
 
       - name: Build shared package
-        run: npm run build -w packages/shared
+        run: mise exec -- npm run build -w packages/shared
 
       - name: Run tests
-        run: npm test -w ${{ matrix.workspace }}
+        run: mise exec -- npm test -w ${{ matrix.workspace }}
