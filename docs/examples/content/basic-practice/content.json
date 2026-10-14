@@ -1,0 +1,58 @@
+{
+  "format": "ankiniki-content",
+  "formatVersion": 1,
+  "packageId": "ankiniki.example.basic-practice",
+  "revision": 1,
+  "title": "技術の一問一答と音声応答の例",
+  "visibility": "public",
+  "license": "MIT",
+  "items": [
+    {
+      "itemId": "binary-search-order",
+      "prompt": "二分探索を使うには、配列がどのような状態になっている必要がありますか？",
+      "answer": "探索に使う順序に沿って整列されている必要があります。",
+      "explanation": "比較結果によって探索範囲の片側を除外できることが前提です。",
+      "activities": [{ "activityId": "recall", "kind": "recall" }]
+    },
+    {
+      "itemId": "binary-search-complexity",
+      "prompt": "要素数nの整列済み配列を二分探索するとき、最悪比較回数のオーダーは何ですか？",
+      "answer": "O(log n)です。",
+      "explanation": "比較するたびに残りの探索範囲をおよそ半分にできます。",
+      "activities": [{ "activityId": "recall", "kind": "recall" }]
+    },
+    {
+      "itemId": "stack-order",
+      "prompt": "空のスタックにA、Bの順でpushしました。次のpopで取り出されるのはどちらですか？",
+      "answer": "Bです。",
+      "explanation": "スタックは最後に入れた要素から取り出します。",
+      "activities": [{ "activityId": "recall", "kind": "recall" }]
+    },
+    {
+      "itemId": "english-greeting",
+      "prompt": "合図のあとに、英語で朝の挨拶を声に出してください。",
+      "answer": "Good morning.",
+      "explanation": "この音声は短い合図音です。発音の模範音声ではありません。",
+      "activities": [
+        {
+          "activityId": "spoken-response",
+          "kind": "audio-response",
+          "promptAudioId": "practice-cue",
+          "responseSeconds": 3
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "assetId": "practice-cue",
+      "kind": "audio",
+      "path": "audio/cue.wav",
+      "mediaType": "audio/wav",
+      "byteLength": 16044,
+      "sha256": "8fa1e39eaac38c3a6aa94bc2953c50f4e258a373fae084d36a99740c731f4abc",
+      "visibility": "public",
+      "license": "MIT"
+    }
+  ]
+}

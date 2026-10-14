@@ -28,6 +28,7 @@ entry points are maintained alongside the current implementation.
 - [VS Code user guide](user-guides/vscode-extension/README.md)
 - [WSL and AnkiConnect](user-guides/wsl-ankiconnect/README.md)
 - [Backend API](reference/api/README.md)
+- [Lesson content format and offline validation](reference/content-package.md)
 - [Troubleshooting](troubleshooting/README.md)
 - [日本語](ja/README.md)
 

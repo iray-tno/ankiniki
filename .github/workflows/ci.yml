@@ -36,6 +36,9 @@ jobs:
       - name: CLI exchange smoke test
         run: mise exec -- npm run test:exchange
 
+      - name: Validate public lesson fixture
+        run: mise exec -- node apps/cli/dist/index.js content validate docs/examples/content/basic-practice/content.json --public --json
+
   desktop:
     name: Desktop frontend / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

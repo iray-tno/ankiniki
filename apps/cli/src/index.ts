@@ -4,6 +4,7 @@ import { createNoteCommand } from './commands/note';
 import { createDeckCommand } from './commands/deck';
 import { createExportCommand } from './commands/export';
 import { createBundleCommand } from './commands/bundle';
+import { createContentCommand } from './commands/content';
 import { createStudyCommand } from './commands/study';
 import { createConfigCommand } from './commands/config';
 import { createStatusCommand } from './commands/status';
@@ -27,6 +28,7 @@ program.addCommand(createDeckCommand());
 // Import/export
 program.addCommand(createExportCommand());
 program.addCommand(createBundleCommand());
+program.addCommand(createContentCommand());
 
 // Utility
 program.addCommand(createStudyCommand());
