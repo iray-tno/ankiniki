@@ -8,6 +8,11 @@ The next milestone is **compatible import/export**: preserve Anki note fields,
 HTML, tags and model names when exchanging JSON. Independent local collections,
 shared mobile screens and scheduling come after the exchange format is reliable.
 
+The intended learning uses also include private audio-assisted practice and
+public exercises embedded in technical articles, with Anki downloads generated
+from the same lesson source. Static browser sessions can come before independent
+collections; these learning and publishing features are planned, not implemented.
+
 ## Current components
 
 | Component  | Implementation                  | Current role                                             |
@@ -93,6 +98,7 @@ is separate: `mise exec -- npm run build:app -w apps/desktop`.
 - [Development guide](DEVELOPMENT.md)
 - [Compatibility-first architecture](docs/design/local-first-architecture.md)
 - [Anki exchange contract](docs/design/anki-exchange.md)
+- [Content, audio practice and public article widgets](docs/design/content-and-learning.md)
 - [Current roadmap](todos.md)
 
 The original [strategy](strategy.md) is historical context, not a description of
