@@ -11,7 +11,8 @@ export interface CliConfig {
   debugMode: boolean;
 }
 
-const CONFIG_FILE = join(homedir(), CLI.CONFIG_FILE);
+const CONFIG_FILE =
+  process.env.ANKINIKI_CONFIG_PATH || join(homedir(), CLI.CONFIG_FILE);
 
 const DEFAULT_CONFIG: CliConfig = {
   ankiConnectUrl: ANKI_CONNECT.DEFAULT_URL,

@@ -11,6 +11,30 @@ JSON import provides a structured way to create multiple flashcards with rich me
 - Organizing cards with detailed properties
 - Migrating from systems that export JSON format
 
+## Anki note-content round trip
+
+The JSON written by `ankiniki export <deck> <file> --format json` can be passed
+to `ankiniki note import <file>`. It contains `fields`, `modelName`, `deckName`,
+`tags` and the source `noteId`; it does not require Front/Back field names.
+
+```sh
+ankiniki export "Programming" programming.json --format json
+ankiniki note import programming.json --preview
+ankiniki note import programming.json --deck-name "Programming Copy"
+```
+
+This path preserves raw HTML, whitespace, newlines, empty fields and tags.
+It checks that the destination model has the same field names before writing.
+Preview and dry-run perform this check without creating notes or decks.
+Import creates new notes; the source ID never authorizes an update. Anki may
+reject a duplicate when importing back into the same collection.
+
+Models/templates, media files, original per-card decks and review history are
+not included. Use Anki's native export for a full backup. The offline `bundle`
+command rejects note-content records rather than dropping their fields.
+See [the exchange contract](../../design/anki-exchange.md) and
+[example note records](../../examples/json/anki-notes.json).
+
 ## 📋 JSON Format Options
 
 ### Format 1: Simple Array

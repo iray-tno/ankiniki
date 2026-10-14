@@ -5,6 +5,8 @@
 
 import { z } from 'zod';
 import { ANKI_MODELS } from './constants';
+import { AnkiNoteRecordSchema, type AnkiNoteRecord } from './anki-exchange';
+import { ValidationError } from './types';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -23,6 +25,10 @@ export interface ProcessedCard {
   success?: boolean;
   error?: string;
   noteId?: number;
+  /** Raw Anki fields use the exchange path, without authoring transforms. */
+  fields?: Record<string, string>;
+  /** Provenance only: never use this ID to update an existing note. */
+  sourceNoteId?: number;
 }
 
 // ─── CSV ──────────────────────────────────────────────────────────────────────
@@ -92,7 +98,7 @@ export function validateCards(cards: ProcessedCard[]): {
   const errors: ProcessedCard[] = [];
 
   for (const card of cards) {
-    if (!card.front) {
+    if (!card.fields && !card.front) {
       errors.push({
         ...card,
         success: false,
@@ -100,7 +106,7 @@ export function validateCards(cards: ProcessedCard[]): {
       });
       continue;
     }
-    if (!card.back) {
+    if (!card.fields && !card.back) {
       errors.push({ ...card, success: false, error: 'Back field is required' });
       continue;
     }
@@ -122,7 +128,7 @@ export const JsonImportOptionsSchema = z.object({
   defaultTags: z.array(z.string()).optional().default([]),
   dryRun: z.boolean().optional().default(false),
   validate: z.boolean().optional().default(true),
-  deckOverride: z.string().optional(),
+  deckOverride: z.string().min(1).optional(),
 });
 
 export interface JsonCard {
@@ -137,56 +143,97 @@ export interface JsonCard {
 }
 
 export interface JsonImportFormat {
-  cards?: JsonCard[];
+  cards?: Array<JsonCard | AnkiNoteRecord>;
   deck_name?: string;
   default_tags?: string[];
   default_model?: string;
 }
 
 export function processJsonCards(
-  data: JsonImportFormat | JsonCard[],
+  data: unknown,
   options: z.infer<typeof JsonImportOptionsSchema>
 ): ProcessedCard[] {
-  let cards: JsonCard[] = [];
+  let cards: unknown[] = [];
   let defaultDeck = options.defaultDeck;
   let defaultTags = [...options.defaultTags];
   let defaultModel = options.defaultModel;
 
   if (Array.isArray(data)) {
     cards = data;
-  } else if (data.cards && Array.isArray(data.cards)) {
-    cards = data.cards;
-    defaultDeck = data.deck_name || defaultDeck;
-    defaultTags = [...defaultTags, ...(data.default_tags || [])];
-    defaultModel = data.default_model || defaultModel;
+  } else if (
+    data &&
+    typeof data === 'object' &&
+    'cards' in data &&
+    Array.isArray(data.cards)
+  ) {
+    const envelope = z
+      .object({
+        cards: z.array(z.unknown()),
+        deck_name: z.string().optional(),
+        default_tags: z.array(z.string()).optional(),
+        default_model: z.string().optional(),
+      })
+      .parse(data);
+    cards = envelope.cards;
+    defaultDeck = envelope.deck_name || defaultDeck;
+    defaultTags = [...defaultTags, ...(envelope.default_tags || [])];
+    defaultModel = envelope.default_model || defaultModel;
   } else {
-    throw new Error(
+    throw new ValidationError(
       'Invalid JSON format. Expected array of cards or object with "cards" property.'
     );
   }
 
   return cards.map((card, index) => {
-    if (!card.front || !card.back) {
-      throw new Error(
+    if (!card || typeof card !== 'object') {
+      throw new ValidationError(`Invalid card at index ${index}`);
+    }
+    if ('fields' in card) {
+      const note = AnkiNoteRecordSchema.parse(card);
+      const values = Object.values(note.fields);
+      return {
+        front: values[0] ?? '',
+        back: values[1] ?? '',
+        deck: options.deckOverride ?? note.deckName,
+        model: note.modelName,
+        tags: [...note.tags, ...defaultTags],
+        fields: note.fields,
+        sourceNoteId: note.noteId,
+        rowNumber: index + 1,
+      };
+    }
+    if (!('front' in card) || !('back' in card) || !card.front || !card.back) {
+      throw new ValidationError(
         `Card at index ${index} missing required front or back field`
       );
     }
 
-    const allTags = [...defaultTags, ...(card.tags || [])];
+    const authored = z
+      .object({
+        front: z.string(),
+        back: z.string(),
+        deck: z.string().optional(),
+        deckName: z.string().optional(),
+        model: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        difficulty: z.string().optional(),
+      })
+      .parse(card);
+    const allTags = [...defaultTags, ...(authored.tags || [])];
 
     return {
-      front: card.front.trim(),
-      back: card.back.trim(),
+      front: authored.front.trim(),
+      back: authored.back.trim(),
       deck: (
         options.deckOverride ||
-        card.deckName ||
-        card.deck ||
+        authored.deckName ||
+        authored.deck ||
         defaultDeck ||
         'Default'
       ).trim(),
-      model: (card.model || defaultModel).trim(),
+      model: (authored.model || defaultModel).trim(),
       tags: allTags,
-      difficulty: card.difficulty?.trim(),
+      difficulty: authored.difficulty?.trim(),
       rowNumber: index + 1,
     };
   });

@@ -81,15 +81,14 @@ export const importCommand = new Command('import')
       } else if (format === 'markdown') {
         await importMarkdown(absolutePath, options, baseUrl);
       } else {
-        console.error(`❌ Unsupported format: ${format}`);
-        process.exit(1);
+        throw new Error(`Unsupported format: ${format}`);
       }
     } catch (error) {
       console.error(
         '❌ Import failed:',
         error instanceof Error ? error.message : 'Unknown error'
       );
-      process.exit(1);
+      process.exitCode = 1;
     } finally {
       if (cleanup) {
         cleanup();
@@ -225,6 +224,7 @@ interface ImportPreviewData {
     back: string;
     deck: string;
     tags?: string[];
+    fields?: Record<string, string>;
   }>;
   errors?: Array<{ rowNumber: number; error: string }>;
 }
@@ -257,29 +257,67 @@ async function postFormData(
 
     const result = response.data;
     if (!result.success) {
-      console.error('❌ Import failed:', result.error);
-      process.exit(1);
+      throw new Error(result.detail || result.error || 'Import failed');
     }
 
     if (isPreview || result.data.preview || result.data.dryRun) {
-      previewFn(result.data);
+      previewFn({
+        ...result.data,
+        sampleCards:
+          result.data.sampleCards ??
+          (Array.isArray(result.data.preview)
+            ? result.data.preview
+            : undefined),
+      });
+      if (result.data.invalidCards > 0) {
+        process.exitCode = 1;
+      }
     } else {
       resultFn(result.data);
+      if (result.data.failedCards > 0) {
+        process.exitCode = 1;
+      }
     }
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error(
-        '❌ API Error:',
-        error.response?.data?.error || error.message
+      throw new Error(
+        error.response?.data?.detail ||
+          error.response?.data?.error ||
+          error.message
       );
-    } else {
-      console.error('❌ Import error:', error);
     }
-    process.exit(1);
+    throw error;
   }
 }
 
 // ─── Display helpers ──────────────────────────────────────────────────────────
+
+function displaySamples(
+  cards: NonNullable<ImportPreviewData['sampleCards']>
+): void {
+  console.log('\n📝 Sample cards:');
+  cards.slice(0, 3).forEach((card, i) => {
+    if (card.fields) {
+      console.log(`\n${i + 1}. Anki note fields:`);
+      for (const [name, value] of Object.entries(card.fields)) {
+        console.log(
+          `   ${name}: ${value.substring(0, 60)}${value.length > 60 ? '...' : ''}`
+        );
+      }
+    } else {
+      console.log(
+        `\n${i + 1}. Front: ${card.front.substring(0, 60)}${card.front.length > 60 ? '...' : ''}`
+      );
+      console.log(
+        `   Back:  ${card.back.substring(0, 60)}${card.back.length > 60 ? '...' : ''}`
+      );
+    }
+    console.log(`   Deck:  ${card.deck}`);
+    if (card.tags?.length) {
+      console.log(`   Tags:  ${card.tags.join(', ')}`);
+    }
+  });
+}
 
 function displayPreview(data: ImportPreviewData): void {
   console.log('\n📋 Import Preview:');
@@ -292,19 +330,7 @@ function displayPreview(data: ImportPreviewData): void {
   }
 
   if (data.sampleCards && data.sampleCards.length > 0) {
-    console.log('\n📝 Sample cards:');
-    data.sampleCards.slice(0, 3).forEach((card, i) => {
-      console.log(
-        `\n${i + 1}. Front: ${card.front.substring(0, 60)}${card.front.length > 60 ? '...' : ''}`
-      );
-      console.log(
-        `   Back:  ${card.back.substring(0, 60)}${card.back.length > 60 ? '...' : ''}`
-      );
-      console.log(`   Deck:  ${card.deck}`);
-      if (card.tags?.length) {
-        console.log(`   Tags:  ${card.tags.join(', ')}`);
-      }
-    });
+    displaySamples(data.sampleCards);
   }
 
   if (data.errors && data.errors.length > 0) {
@@ -324,19 +350,7 @@ function displayJsonPreview(data: ImportPreviewData): void {
   console.log(`❌ Invalid cards: ${data.invalidCards}`);
 
   if (data.sampleCards && data.sampleCards.length > 0) {
-    console.log('\n📝 Sample cards:');
-    data.sampleCards.slice(0, 3).forEach((card, i) => {
-      console.log(
-        `\n${i + 1}. Front: ${card.front.substring(0, 60)}${card.front.length > 60 ? '...' : ''}`
-      );
-      console.log(
-        `   Back:  ${card.back.substring(0, 60)}${card.back.length > 60 ? '...' : ''}`
-      );
-      console.log(`   Deck:  ${card.deck}`);
-      if (card.tags?.length) {
-        console.log(`   Tags:  ${card.tags.join(', ')}`);
-      }
-    });
+    displaySamples(data.sampleCards);
   }
 
   if (data.errors && data.errors.length > 0) {

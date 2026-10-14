@@ -16,5 +16,5 @@
     }
   },
   "include": ["src/**/*", "../../packages/shared/src/**/*"],
-  "exclude": ["node_modules", ".vscode-test"]
+  "exclude": ["node_modules", ".vscode-test", "../../packages/shared/src/**/*.test.ts"]
 }

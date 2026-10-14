@@ -22,12 +22,18 @@ mise exec -- npm run type-check
 mise exec -- npm test
 mise exec -- npm run check
 mise exec -- npm run ci
+mise exec -- npm run test:exchange
 ```
 
 The root test command runs the implemented Vitest suites in shared, backend
 and CLI. The extension has no runnable test harness yet; its TypeScript
 compilation is checked by the build. Desktop frontend compilation is included,
 but native Tauri packaging is a separate operation.
+
+`test:exchange` runs the built CLI against an isolated Anki stub. It checks
+export, native-field preview/import, failure exit codes and cleanup of the
+CLI-owned backend. Build packages first when running this check separately.
+The full `ci` command includes it. No real Anki collection is used.
 
 ## Development
 
@@ -72,3 +78,8 @@ and lint staged files. Full checks should also be run before opening a PR.
 
 The root `temp/` directory is ignored by Git and formatting/lint tools. It is
 for local scratch files, test logs and working notes; stage explicit file paths.
+
+Set `ANKINIKI_CONFIG_PATH` to use a separate CLI configuration file for tests
+or an alternate environment. Without it, the CLI uses its existing home-directory
+configuration. An automatically started backend uses the CLI's configured Anki
+URL and local backend port, and runs with the same Node executable selected by mise.

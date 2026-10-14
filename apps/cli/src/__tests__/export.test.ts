@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import path from 'path';
+import { processJsonCards, JsonImportOptionsSchema } from '@ankiniki/shared';
 import { createExportCommand } from '../commands/export';
 
 // ── Fixtures ───────────────────────────────────────────────────────────────
@@ -198,6 +199,21 @@ describe('export command', () => {
   // ── json ──────────────────────────────────────────────────────────────────
 
   describe('--format json', () => {
+    it('produces JSON accepted by the shared import parser', async () => {
+      await run(['TypeScript', '/tmp/out.json', '--format', 'json']);
+      const exported = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
+      const imported = processJsonCards(
+        exported,
+        JsonImportOptionsSchema.parse({})
+      );
+      expect(imported).toHaveLength(NOTES.length);
+      expect(imported[0].fields).toEqual({
+        Front: NOTES[0].fields.Front.value,
+        Back: NOTES[0].fields.Back.value,
+      });
+      expect(imported[0].tags).toEqual(NOTES[0].tags);
+      expect(imported[0].sourceNoteId).toBe(NOTES[0].noteId);
+    });
     it('queries deck notes and writes a JSON file', async () => {
       await run(['TypeScript', '/tmp/out.json', '--format', 'json']);
 

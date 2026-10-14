@@ -3,19 +3,35 @@ import { z } from 'zod';
 import {
   JsonImportOptionsSchema,
   processJsonCards,
-  validateCards,
+  ValidationError,
   type JsonCard,
   type JsonImportFormat,
 } from '@ankiniki/shared';
 import { logger } from '../../utils/logger';
 import { ok, sendProblem, PROBLEM_TYPES } from '../../utils/response';
-import { upload, createCards } from './shared';
+import { upload, createCards, validateJsonCards } from './shared';
 import { asyncHandler } from '../../utils/asyncHandler';
 
 const router = Router();
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
+}
+
+function sendInputProblem(res: Response, error: unknown): boolean {
+  if (!(error instanceof z.ZodError) && !(error instanceof ValidationError)) {
+    return false;
+  }
+  sendProblem(
+    res,
+    400,
+    `Invalid JSON input or import options: ${error.message}`,
+    {
+      type: PROBLEM_TYPES.VALIDATION,
+      ...(error instanceof z.ZodError ? { errors: error.errors } : {}),
+    }
+  );
+  return true;
 }
 
 /**
@@ -68,7 +84,7 @@ router.post(
       logger.info(`Processed ${processedCards.length} cards from JSON`);
 
       const { valid: validCards, errors: invalidCards } =
-        validateCards(processedCards);
+        await validateJsonCards(processedCards);
       logger.info(
         `Validation complete: ${validCards.length} valid, ${invalidCards.length} invalid`
       );
@@ -112,11 +128,8 @@ router.post(
         })
       );
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return sendProblem(res, 400, 'Invalid import options', {
-          type: PROBLEM_TYPES.VALIDATION,
-          errors: error.errors,
-        });
+      if (sendInputProblem(res, error)) {
+        return;
       }
       logger.error('JSON import error:', error);
       sendProblem(
@@ -175,7 +188,7 @@ router.post(
 
       const processedCards = processJsonCards(jsonData, validatedOptions);
       const { valid: validCards, errors: invalidCards } =
-        validateCards(processedCards);
+        await validateJsonCards(processedCards);
 
       let formatType = 'unknown';
       if (Array.isArray(jsonData)) {
@@ -205,6 +218,9 @@ router.post(
         })
       );
     } catch (error) {
+      if (sendInputProblem(res, error)) {
+        return;
+      }
       logger.error('JSON preview error:', error);
       sendProblem(
         res,
@@ -244,7 +260,7 @@ router.post(
 
       const processedCards = processJsonCards(jsonData, validatedOptions);
       const { valid: validCards, errors: invalidCards } =
-        validateCards(processedCards);
+        await validateJsonCards(processedCards);
 
       logger.info('JSON body import started', { cards: processedCards.length });
 
@@ -281,11 +297,8 @@ router.post(
         })
       );
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return sendProblem(res, 400, 'Invalid import options', {
-          type: PROBLEM_TYPES.VALIDATION,
-          errors: error.errors,
-        });
+      if (sendInputProblem(res, error)) {
+        return;
       }
       logger.error('JSON body import error:', error);
       sendProblem(

@@ -2,13 +2,16 @@ import { spawn, ChildProcess } from 'child_process';
 import axios from 'axios';
 import path from 'path';
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 import ora from 'ora';
 import { SERVER } from '@ankiniki/shared';
+import { loadConfig } from './config';
 
 export class BackendManager {
   private serverUrl: string;
   private backendProcess: ChildProcess | null = null;
   private wasStartedByCli: boolean = false;
+  private startupError: Error | null = null;
 
   constructor(serverUrl: string = SERVER.DEFAULT_URL) {
     this.serverUrl = serverUrl;
@@ -46,6 +49,15 @@ export class BackendManager {
     const spinner = ora('Starting backend server...').start();
 
     try {
+      const url = new URL(this.serverUrl);
+      if (
+        url.protocol !== 'http:' ||
+        !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+      ) {
+        throw new Error(
+          'The configured backend is unavailable. Start remote or HTTPS backends separately.'
+        );
+      }
       // Find project root
       // apps/cli/src/backend-manager.ts -> apps/cli/src -> apps/cli -> apps -> root
       const rootDir = path.resolve(__dirname, '..', '..', '..');
@@ -56,28 +68,34 @@ export class BackendManager {
         throw new Error(`Backend directory not found at ${backendDir}`);
       }
 
-      // Determine the best way to start the backend
-      // In development, we use tsx. In production, we'd use the built dist/index.js
+      // Use the same mise-selected Node process. Avoid a shell/npm wrapper:
+      // Windows cannot spawn npm.cmd directly, and watchers leave child servers.
       const isDev = fs.existsSync(path.join(backendDir, 'src', 'index.ts'));
 
-      let command: string;
-      let args: string[];
+      const args = isDev
+        ? [
+            '--import',
+            pathToFileURL(require.resolve('tsx')).href,
+            path.join(backendDir, 'src', 'index.ts'),
+          ]
+        : [path.join(backendDir, 'dist', 'index.js')];
 
-      if (isDev) {
-        // Use npm run dev -w @ankiniki/backend from root
-        command = 'npm';
-        args = ['run', 'dev', '-w', '@ankiniki/backend'];
-      } else {
-        // Use node on built file
-        command = 'node';
-        args = [path.join(backendDir, 'dist', 'index.js')];
-      }
-
-      this.backendProcess = spawn(command, args, {
+      this.startupError = null;
+      this.backendProcess = spawn(process.execPath, args, {
         cwd: rootDir,
-        stdio: 'pipe', // Pipe output to monitor it
-        env: { ...process.env, PORT: String(SERVER.DEFAULT_PORT) },
+        stdio: 'pipe',
+        windowsHide: true,
+        env: {
+          ...process.env,
+          PORT: url.port || '80',
+          ANKI_CONNECT_URL: loadConfig().ankiConnectUrl,
+        },
       });
+      this.backendProcess.once('error', error => {
+        this.startupError = error;
+      });
+      this.backendProcess.stdout?.resume();
+      this.backendProcess.stderr?.resume();
 
       this.wasStartedByCli = true;
 
@@ -89,7 +107,7 @@ export class BackendManager {
       } else {
         spinner.fail('Backend server failed to start in time');
         this.stop();
-        throw new Error('Backend server startup timeout');
+        throw this.startupError ?? new Error('Backend server failed to start');
       }
     } catch (error) {
       spinner.fail(
@@ -107,6 +125,9 @@ export class BackendManager {
     const interval = 1000;
 
     while (Date.now() - startTime < timeoutMs) {
+      if (this.startupError) {
+        return false;
+      }
       if (await this.isRunning()) {
         return true;
       }
