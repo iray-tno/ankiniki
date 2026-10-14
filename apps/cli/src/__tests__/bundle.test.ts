@@ -66,6 +66,24 @@ describe('bundleFile', () => {
     );
   });
 
+  it('rejects raw Anki notes instead of dropping custom fields into a Basic bundle', async () => {
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      JSON.stringify([
+        {
+          deckName: 'Custom',
+          modelName: 'Custom Model',
+          tags: [],
+          fields: { Question: 'Q', Code: 'code', Extra: 'important' },
+        },
+      ])
+    );
+    await expect(bundleFile(mockFilePath, 'output.apkg', {})).rejects.toThrow(
+      'Use note import with Anki'
+    );
+    expect(AnkiExport).not.toHaveBeenCalled();
+    expect(fs.writeFileSync).not.toHaveBeenCalled();
+  });
+
   it('throws error if no valid cards found', async () => {
     (fs.readFileSync as any).mockReturnValue('[]'); // Empty array
 

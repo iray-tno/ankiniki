@@ -1,0 +1,34 @@
+[
+  {
+    "noteId": 1700000000001,
+    "deckName": "Programming::Basics",
+    "modelName": "Basic",
+    "tags": ["code", "日本語"],
+    "fields": {
+      "Front": "  <p>What does &lt;T&gt; mean?</p>\n",
+      "Back": "<pre>const message = 'こんにちは';\nconsole.log(message);</pre>  "
+    }
+  },
+  {
+    "noteId": 1700000000002,
+    "deckName": "Programming::Memory",
+    "modelName": "Cloze",
+    "tags": ["cloze"],
+    "fields": {
+      "Text": "Rust uses {{c1::ownership::memory management}}.\n<img src=\"diagram.png\">",
+      "Back Extra": ""
+    }
+  },
+  {
+    "noteId": 1700000000003,
+    "deckName": "Programming::Rust",
+    "modelName": "日本語ノート",
+    "tags": [],
+    "fields": {
+      "Question": "<p>Explain borrowing.</p>",
+      "Code": "<pre>let value = 1;\nlet borrowed = &amp;value;</pre>",
+      "Explanation": "",
+      "Source": "[sound:example.mp3]\nnotes/example.md"
+    }
+  }
+]

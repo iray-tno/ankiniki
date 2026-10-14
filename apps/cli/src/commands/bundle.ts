@@ -86,6 +86,12 @@ export async function bundleFile(
     throw new Error(`Unsupported file extension: ${ext}`);
   }
 
+  if (processedCards.some(card => card.fields)) {
+    throw new Error(
+      'Anki note-content JSON requires its existing models and media. Use note import with Anki; bundle accepts front/back authoring input.'
+    );
+  }
+
   const { valid: validCards, errors } = validateCards(processedCards);
 
   if (validCards.length === 0) {

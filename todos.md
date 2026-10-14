@@ -15,9 +15,9 @@ Updated 2026-10-14. This file separates existing features from planned milestone
 ## Milestone 1: compatible exchange
 
 - [x] Reproducible mise-based development setup and current documentation.
-- [ ] Import the JSON produced by CLI export without losing field names or values.
-- [ ] Specify content guarantees, unsupported data and capability checks.
-- [ ] Test custom fields, empty values, HTML, Cloze text, tags and invalid models.
+- [x] Import the JSON produced by CLI export without losing field names or values.
+- [x] Specify note-content guarantees, unsupported data and existing-model checks.
+- [x] Test custom fields, empty values, HTML, Cloze text, tags and invalid models.
 - [ ] Define a versioned archive covering models, card/deck membership and media.
 - [ ] Add previewable import plans and identity rules before update/merge modes.
 - [ ] Restore native model/media data only through verified capabilities.

@@ -95,8 +95,9 @@ describe('BackendManager', () => {
 
       // 3. Mock spawn
       const mockProcess = {
-        stdout: { on: vi.fn() },
-        stderr: { on: vi.fn() },
+        stdout: { resume: vi.fn() },
+        stderr: { resume: vi.fn() },
+        once: vi.fn(),
         on: vi.fn(),
         kill: vi.fn(),
         exitCode: null,
@@ -116,8 +117,48 @@ describe('BackendManager', () => {
 
       await startPromise;
 
-      expect(spawn).toHaveBeenCalled();
+      expect(spawn).toHaveBeenCalledWith(
+        process.execPath,
+        [
+          '--import',
+          expect.stringContaining('file:'),
+          expect.stringContaining('packages/backend/src/index.ts'),
+        ],
+        expect.objectContaining({
+          windowsHide: true,
+          env: expect.objectContaining({ PORT: '3001' }),
+        })
+      );
       expect(manager['wasStartedByCli']).toBe(true);
+    });
+
+    it('uses the configured local port and stops the owned Node process', async () => {
+      manager = new BackendManager('http://127.0.0.1:43210');
+      vi.mocked(axios.get)
+        .mockRejectedValueOnce(new Error('Down'))
+        .mockResolvedValueOnce({ status: 200 });
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      const mockProcess = { once: vi.fn(), kill: vi.fn(), exitCode: null };
+      vi.mocked(spawn).mockReturnValue(mockProcess as any);
+      await manager.start();
+      expect(spawn).toHaveBeenCalledWith(
+        process.execPath,
+        expect.anything(),
+        expect.objectContaining({
+          env: expect.objectContaining({ PORT: '43210' }),
+        })
+      );
+      manager.stop();
+      expect(mockProcess.kill).toHaveBeenCalledOnce();
+    });
+
+    it('does not start a local process for an unavailable remote backend', async () => {
+      manager = new BackendManager('https://backend.example');
+      vi.mocked(axios.get).mockRejectedValueOnce(new Error('Down'));
+      await expect(manager.start()).rejects.toThrow(
+        'Start remote or HTTPS backends separately'
+      );
+      expect(spawn).not.toHaveBeenCalled();
     });
   });
 
