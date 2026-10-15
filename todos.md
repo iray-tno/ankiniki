@@ -33,8 +33,18 @@ Updated 2026-10-15. This file separates existing features from planned milestone
 Before the full migration, deliver a small content session using the
 [content and learning design](docs/design/content-and-learning.md):
 
+The [UI and authoring stages](docs/design/practice-ui-and-authoring.md) start with
+shared plain-text cards in Storybook, then explicit Markdown authoring and MDX
+article embedding. These components and formats are planned, not implemented.
+
 - [x] Specify stable package/item/activity identities and revisioned content.
 - [x] Validate self-authored question and audio fixtures with resolved media.
+- [x] Document shared card boundaries, Storybook states and Markdown/MDX stages.
+- [ ] Upgrade Hozo dependencies together to 0.3.0 and build shared plain cards
+      in Storybook with verified theme/source compilation and HMR.
+- [ ] Define explicit Markdown authoring and a versioned rich-text contract;
+      keep v1 plain text and raw Anki exchange unchanged.
+- [ ] Produce shared card display and APKG from the same Markdown lesson.
 - [x] Generate an Anki APKG from approved lesson sources with stable identities,
       model and audio; exclude personal progress and private inputs in public mode.
 - [ ] Generate public Web data from the same approved source;
@@ -43,6 +53,7 @@ Before the full migration, deliver a small content session using the
       with Anki 26.9.3's standard importer in a dedicated collection, including
       models and media. GUI playback and mobile import remain device checks.
 - [ ] Build a short static article widget with no account or application server.
+- [ ] Embed the same lesson and matching-revision APKG link in MDX articles.
 - [ ] Add a local Tauri audio session: playback, response wait, repeat and self-rating.
 
 These sessions do not require full review-history restoration or an independent

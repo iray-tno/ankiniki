@@ -39,6 +39,7 @@ The first milestone is reliable Anki-compatible JSON import/export. Read:
 - [Architecture and milestones](docs/design/local-first-architecture.md)
 - [Exchange guarantees and limits](docs/design/anki-exchange.md)
 - [Content, audio sessions and static article practice](docs/design/content-and-learning.md)
+- [Next UI and authoring stages](docs/design/practice-ui-and-authoring.md)
 - [Implemented v1 lesson format and offline validation](docs/reference/content-package.md)
 - [Lesson APKG export and update rules](docs/reference/content-apkg.md)
 - [Native Anki verification scope](docs/developer/content-apkg-verification.md)

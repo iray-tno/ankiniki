@@ -16,6 +16,7 @@ entry points are maintained alongside the current implementation.
 - [Compatibility-first architecture](design/local-first-architecture.md)
 - [Anki exchange contract and fidelity levels](design/anki-exchange.md)
 - [Content, audio practice and public article widgets](design/content-and-learning.md)
+- [Shared practice cards, Storybook and Markdown/MDX authoring](design/practice-ui-and-authoring.md)
 
 ## Usage and reference
 
