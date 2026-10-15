@@ -25,7 +25,12 @@ function npm(args) {
 function buildPackages() {
   // Dependencies must exist before consumers compile. The extension calls its
   // build command "compile"; the desktop build includes the Vite frontend.
-  for (const workspace of ['packages/shared', 'packages/backend', 'apps/cli']) {
+  for (const workspace of [
+    'packages/shared',
+    'packages/learning-ui',
+    'packages/backend',
+    'apps/cli',
+  ]) {
     npm(['run', 'build', '-w', workspace]);
   }
   npm(['run', 'compile', '-w', 'apps/vscode-extension']);
@@ -33,12 +38,14 @@ function buildPackages() {
 
 function build() {
   buildPackages();
+  npm(['run', 'build:storybook', '-w', 'packages/learning-ui']);
   npm(['run', 'build', '-w', 'apps/desktop']);
 }
 
 function typeCheck() {
   npm(['run', 'build', '-w', 'packages/shared']);
   for (const workspace of [
+    'packages/learning-ui',
     'packages/backend',
     'apps/cli',
     'apps/vscode-extension',
@@ -62,6 +69,7 @@ switch (process.argv[2]) {
     npm(['run', 'build', '-w', 'packages/shared']);
     for (const workspace of [
       'packages/shared',
+      'packages/learning-ui',
       'packages/backend',
       'apps/cli',
     ]) {

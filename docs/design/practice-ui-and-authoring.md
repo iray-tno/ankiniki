@@ -1,6 +1,6 @@
 # 共有カード表示・Markdown教材・記事への埋め込み
 
-更新日：2026-10-15。実装前の設計。まず既存教材v1で共有カード表示とStorybookを作り、Markdown authoring、静的セッション、MDX埋め込みへ進む。本文の拡張形式やMarkdownの構文は、後続のfixtureと小さな試作で確定する。
+更新日：2026-10-15。最初の[共有plainカードとStorybook](../../packages/learning-ui/README.md)は実装済み。Markdown authoring、静的セッション、MDX埋め込みは後続。本文の拡張形式やMarkdownの構文は、後続のfixtureと小さな試作で確定する。
 
 この文書は[教材・学習体験の設計](content-and-learning.md)の次の実装を具体化する。[Anki交換](anki-exchange.md)のデータ保持の契約は変えない。
 
@@ -65,11 +65,11 @@ MDXはJSX、JavaScript式、import/exportを含む（[公式の説明](https://m
 
 ## Storybookと共有表示
 
-このrepoのHozoは現在0.2.0。最初の実装で直接依存する`@hozo/*`を0.3.0に揃え、lockfileと生成結果を更新する。[Hozo 0.3.0の変更点](https://github.com/iray-tno/hozo/blob/v0.3.0/CHANGELOG.md)に従い、compilerとruntimeの版を混在させない。
+このrepoの直接依存する`@hozo/*`は0.3.0に揃えた。[Hozo 0.3.0の変更点](https://github.com/iray-tno/hozo/blob/v0.3.0/CHANGELOG.md)に従い、今後もcompilerとruntimeの版を混在させない。
 
-WebのStorybookは`@storybook/react-vite`と[`@hozo/storybook`](https://github.com/iray-tno/hozo/blob/v0.3.0/packages/storybook/README.md)を候補とする。通常のReact/Vite連携でHozoの変換を通せるため、React Native for Webの導入は前提にしない。採用時にStorybookとVite 8の互換性、themeの読込、共有packageのsource変換、HMRを実際のconsumerで確認する。
+WebのStorybookは`@storybook/react-vite` 10.6.2と[`@hozo/storybook`](https://github.com/iray-tno/hozo/blob/v0.3.0/packages/storybook/README.md) 0.3.0を使い、Vite 8でbuild・theme・source変換・HMRを確認した。通常のReact/Vite連携でHozoの変換を通すため、React Native for Webを導入していない。
 
-Hozoの基礎部品を利用して、Ankiniki固有の表示と状態を作る。以下は実装予定のcomponent名。
+Hozoの基礎部品を利用して、Ankiniki固有の表示と状態を作る。`CardBody`と`PracticeCard`は実装済み。音声状態はhostが渡す表示例のみで、`AudioPractice`、セッション部品、本文のMarkdown表示は未実装。
 
 | 部品                                 | 責務                                      | 最初に確認する状態                                 |
 | ------------------------------------ | ----------------------------------------- | -------------------------------------------------- |
@@ -78,7 +78,7 @@ Hozoの基礎部品を利用して、Ankiniki固有の表示と状態を作る�
 | `AudioPractice`                      | 音声練習の表示と操作                      | 読込中、再生中、応答待ち、停止、答え、失敗・再試行 |
 | `SessionControls` / `SessionSummary` | 進行・自己評価・完了の表示                | 初回、途中、完了、保存できない状態                 |
 
-共有表示の配置候補は`packages/learning-ui`。Storybook設定を同じpackageに置き、実際にhostが使う公開componentをstoryから利用する。最初はpropsとcallbackで表示を確認し、session stateが増えた段階で`packages/learning`へ分離する。これらのpackageはまだ存在しない。
+共有表示とStorybook設定は`packages/learning-ui`に置き、storyから公開componentを利用する。現在はpropsとcallbackで表示を確認する段階で、session stateが増えたときに`packages/learning`へ分離する。後者はまだ存在しない。
 
 hostが教材の取得・検証、asset URIへの解決、外部リンクの開き方、個人記録の保存を担当する。表示componentはそれらを受け取り、Tauri・Anki・Expressへ直接依存しない。Storybookでは自作fixtureと差し替え可能なhostを使い、Ankiやbackendを起動せずに確認できるようにする。
 
@@ -106,7 +106,7 @@ Nativeの音声には追加のExpo engineが必要で、asset解決、background
 
 ## 実装の分け方
 
-1. **Hozo 0.3.0・Storybook・plainカード**：既存v1教材で`CardBody`と`PracticeCard`を作り、表示状態とHozoの変換・theme・HMRを確認する。音声状態のstoryも準備する。再現したHozoの不具合だけを上流Issueへ報告する。
+1. **Hozo 0.3.0・Storybook・plainカード（完了）**：既存v1教材の`CardBody`と`PracticeCard`、音声の表示例を作り、14件のChromium story検査とaxe検査を追加した。手動でthemeとスタイル変更時のHMRも確認した。再生やNativeの実機動作を確認したという意味ではない。今後も再現したHozoの不具合だけを上流Issueへ報告する。
 2. **Markdown authoringと表示・APKG**：構文、本文形式の版、診断をfixtureで確定し、一つのMarkdown教材をカード表示とAPKGへ変換する。既存v1との互換性を検査する。
 3. **静的セッションとMDX埋め込み**：短い練習と同じrevisionのAPKGリンクを、アカウント・アプリserver・Ankiなしで利用できるようにする。
 4. **音声セッションとTauri接続**：実playerと出題状態を結び、ローカル教材の読込、再生・待機・停止・繰り返し・保存失敗の回復を確認する。

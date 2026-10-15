@@ -19,6 +19,7 @@ Unix shells, and does not automatically rewrite source files.
 ```sh
 mise exec -- npm run build
 mise exec -- npm run type-check
+mise exec -- npm exec -- playwright install --no-shell chromium
 mise exec -- npm test
 mise exec -- npm run check
 mise exec -- npm run ci
@@ -27,7 +28,10 @@ mise exec -- npm run test:content
 ```
 
 The root test command runs the implemented Vitest suites in shared, backend
-and CLI. The extension has no runnable test harness yet; its TypeScript
+and CLI, plus the learning UI's Storybook tests in bundled Chromium. Install the
+browser before running root `test`, `test:ui` or `ci`; on Linux add `--with-deps`
+to the installation command. It uses Chromium's new headless mode, so no separate
+headless shell is needed. The extension has no runnable test harness yet; its TypeScript
 compilation is checked by the build. Desktop frontend compilation is included,
 but native Tauri packaging is a separate operation.
 
@@ -52,7 +56,21 @@ mise exec -- npm run dev -w packages/backend
 mise exec -- npm run dev -w apps/desktop
 ```
 
-For a browser preview of the frontend:
+For the standalone practice-card Storybook (no backend or Anki required):
+
+```sh
+mise exec -- npm run build:packages
+mise exec -- npm run storybook
+mise exec -- npm run build:storybook
+mise exec -- npm run test:ui
+```
+
+The development catalog is at http://127.0.0.1:6006; static output is in
+`packages/learning-ui/dist/storybook/`. Root `build` also builds the catalog,
+while `setup` does not download Chromium. The browser CI job installs it
+explicitly. See [component usage and limits](../../packages/learning-ui/README.md).
+
+For a browser preview of the desktop frontend:
 
 ```sh
 mise exec -- npm run dev:frontend -w apps/desktop

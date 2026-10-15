@@ -12,7 +12,8 @@ The intended learning uses also include private audio-assisted practice and
 public exercises embedded in technical articles, with Anki downloads generated
 from the same lesson source. Static browser sessions can come before independent
 collections. The v1 lesson format, offline validation and stable Anki packages
-with audio are implemented; playback, the widget and Web publishing are planned.
+with audio are implemented. Shared plain-text practice cards and a standalone
+Storybook are available; playback, the widget and Web publishing are planned.
 
 ## Current components
 
@@ -91,8 +92,11 @@ CORS for the origin being used.
 mise exec -- npm run ci
 ```
 
-This builds the TypeScript packages, extension and desktop frontend, type-checks,
-lints, checks formatting and runs shared/backend/CLI tests. Native app packaging
+Install bundled Chromium first with
+`mise exec -- npm exec -- playwright install --no-shell chromium` (add
+`--with-deps` on Linux). This builds the packages, extension, Storybook and desktop
+frontend, type-checks, lints, checks formatting and runs shared/backend/CLI and
+real-browser practice-card tests. Native app packaging
 is separate: `mise exec -- npm run build:app -w apps/desktop`.
 
 ## Direction and documentation
@@ -103,6 +107,7 @@ is separate: `mise exec -- npm run build:app -w apps/desktop`.
 - [Anki exchange contract](docs/design/anki-exchange.md)
 - [Content, audio practice and public article widgets](docs/design/content-and-learning.md)
 - [Lesson format and offline validation](docs/reference/content-package.md)
+- [Shared practice cards and Storybook](packages/learning-ui/README.md)
 - [Lesson APKG export and update rules](docs/reference/content-apkg.md)
 - [Current roadmap](todos.md)
 
