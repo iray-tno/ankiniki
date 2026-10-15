@@ -22,7 +22,10 @@ Validate the package after building the CLI:
 
 ```sh
 mise exec -- node apps/cli/dist/index.js content validate docs/examples/content/basic-practice/content.json --public --json
+mise exec -- node apps/cli/dist/index.js content export docs/examples/content/basic-practice/content.json practice.apkg --modified-at 2026-10-14T12:00:00Z --public --json
 ```
 
-This fixture demonstrates [the content contract](../../../reference/content-package.md).
-It is not an Anki backup, an APKG or an implemented playback UI.
+This fixture demonstrates [the content contract](../../../reference/content-package.md)
+and [standalone APKG generation](../../../reference/content-apkg.md). The example
+release time is fixed for this revision. It is not a personal Anki backup or an
+implemented application playback UI.

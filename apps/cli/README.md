@@ -16,12 +16,13 @@ mise exec -- npm link
 
 ## Usage
 
-Use **`note`** for card operations, **`deck`** for deck management and **`content`** for reusable lesson validation, plus standalone utility commands.
+Use **`note`** for card operations, **`deck`** for deck management and **`content`** for reusable lesson validation and Anki package generation, plus standalone utility commands.
 
 ```
 ankiniki note <subcommand>   # card/note operations
 ankiniki deck <subcommand>   # deck management
 ankiniki content validate   # validate lesson content and audio offline
+ankiniki content export     # build a stable lesson APKG with audio offline
 ankiniki export              # export to .apkg / CSV / JSON
 ankiniki bundle              # build .apkg offline (no Anki needed)
 ankiniki study               # in-terminal study session
@@ -77,6 +78,7 @@ ankiniki deck delete "Old Deck" --force
 ```bash
 ankiniki content validate docs/examples/content/basic-practice/content.json
 ankiniki content validate docs/examples/content/basic-practice/content.json --public --json
+ankiniki content export docs/examples/content/basic-practice/content.json practice.apkg --modified-at 2026-10-14T12:00:00Z --public --json
 ```
 
 Validation checks the v1 lesson schema, identities, audio references, local file
@@ -84,8 +86,16 @@ boundaries, byte lengths and SHA-256. `--public` additionally requires explicit
 public declarations for the lesson and all assets. Nothing is uploaded and Anki
 does not need to be running. Failure returns exit code 1.
 
-This is separate from note import/export and does not yet create a lesson APKG
-or play a session. See [the content contract](../../docs/reference/content-package.md).
+`content export` generates a standalone model and one card per activity, with
+verified referenced audio. Its required `--modified-at` is a fixed UTC release
+time, not the time of each build. Keep identities stable and advance both revision
+and release time for updates. Anki's import settings and modification times govern
+updates; a newer release can replace learner edits. `--force` explicitly replaces
+an existing output file. Export uses the pinned Node.js 24.19 runtime through mise.
+
+This is separate from raw note import/export and does not play a session or
+restore an arbitrary Anki collection. See [the content contract](../../docs/reference/content-package.md)
+and [package export/update rules](../../docs/reference/content-apkg.md).
 
 ### Export
 

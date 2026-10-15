@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 2026-10-14. This file separates existing features from planned milestones.
+Updated 2026-10-15. This file separates existing features from planned milestones.
 
 ## Existing implementation
 
@@ -9,6 +9,8 @@ Updated 2026-10-14. This file separates existing features from planned milestone
 - Shared parsers, validation and AnkiConnect client.
 - A v1 reusable lesson contract and offline CLI validation of declarations,
   identities, references and local audio integrity; self-authored fixtures.
+- Standalone lesson APKG export with stable identities, its own model and audio;
+  release timestamps govern Anki's standard update rules.
 - Express API and an optional Python processing/generation service.
 - VS Code extension for selection/code creation and file generation.
 - Tauri desktop with settings, menus and React screens backed by Express.
@@ -33,10 +35,13 @@ Before the full migration, deliver a small content session using the
 
 - [x] Specify stable package/item/activity identities and revisioned content.
 - [x] Validate self-authored question and audio fixtures with resolved media.
-- [ ] Generate public Web data and an Anki APKG from the same approved source;
+- [x] Generate an Anki APKG from approved lesson sources with stable identities,
+      model and audio; exclude personal progress and private inputs in public mode.
+- [ ] Generate public Web data from the same approved source;
       exclude personal progress and private inputs from public output.
-- [ ] Verify first import, repeated import and updates after user edits/reviews
-      in a dedicated Anki collection, including models and media.
+- [x] Verify first import, repeated import and updates after user edits/reviews
+      with Anki 26.9.3's standard importer in a dedicated collection, including
+      models and media. GUI playback and mobile import remain device checks.
 - [ ] Build a short static article widget with no account or application server.
 - [ ] Add a local Tauri audio session: playback, response wait, repeat and self-rating.
 

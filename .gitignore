@@ -55,6 +55,9 @@ packages/*/src/*.js
 packages/*/src/*.js.map
 
 # Temporary files
+*.apkg
+*.colpkg
+*.anki2
 /temp/
 *.tmp
 *.temp/demo/

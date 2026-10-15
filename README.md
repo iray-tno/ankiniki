@@ -11,8 +11,8 @@ shared mobile screens and scheduling come after the exchange format is reliable.
 The intended learning uses also include private audio-assisted practice and
 public exercises embedded in technical articles, with Anki downloads generated
 from the same lesson source. Static browser sessions can come before independent
-collections. The v1 lesson format and offline validation are implemented; playback,
-the widget and lesson publishing are planned.
+collections. The v1 lesson format, offline validation and stable Anki packages
+with audio are implemented; playback, the widget and Web publishing are planned.
 
 ## Current components
 
@@ -58,6 +58,7 @@ ankiniki note import cards.json --preview
 ankiniki export "Programming" programming.json --format json
 ankiniki bundle cards.json cards.apkg
 ankiniki content validate docs/examples/content/basic-practice/content.json --public
+ankiniki content export docs/examples/content/basic-practice/content.json practice.apkg --modified-at 2026-10-14T12:00:00Z --public
 ankiniki study "Programming" --due
 ankiniki sync
 ```
@@ -102,6 +103,7 @@ is separate: `mise exec -- npm run build:app -w apps/desktop`.
 - [Anki exchange contract](docs/design/anki-exchange.md)
 - [Content, audio practice and public article widgets](docs/design/content-and-learning.md)
 - [Lesson format and offline validation](docs/reference/content-package.md)
+- [Lesson APKG export and update rules](docs/reference/content-apkg.md)
 - [Current roadmap](todos.md)
 
 The original [strategy](strategy.md) is historical context, not a description of
