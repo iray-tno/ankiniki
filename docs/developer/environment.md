@@ -23,6 +23,7 @@ mise exec -- npm test
 mise exec -- npm run check
 mise exec -- npm run ci
 mise exec -- npm run test:exchange
+mise exec -- npm run test:content
 ```
 
 The root test command runs the implemented Vitest suites in shared, backend
@@ -34,6 +35,13 @@ but native Tauri packaging is a separate operation.
 export, native-field preview/import, failure exit codes and cleanup of the
 CLI-owned backend. Build packages first when running this check separately.
 The full `ci` command includes it. No real Anki collection is used.
+
+`test:content` checks the built offline lesson-to-APKG command, reproducible
+output, JSON results and rejected inputs on Ubuntu and Windows. Build packages
+first when running it separately; `ci` includes it. The CLI uses Node.js 24.19's
+built-in SQLite API. CI does not install Anki or Python for this feature. See
+[the separate native Anki verification](content-apkg-verification.md) for its
+tested scope and manual device checks.
 
 ## Development
 

@@ -1,6 +1,6 @@
 # 教材パッケージ v1
 
-`ankiniki content validate <file>`で、教材manifestとローカルの音声参照を検証する。Ankiやbackendは不要。これは教材の読み込み検証であり、Ankiのコレクション交換・復元やAPKG生成ではない。
+`ankiniki content validate <file>`で、教材manifestとローカルの音声参照を検証する。Ankiやbackendは不要。Ankiへの配布は、別コマンドの[`content export`](content-apkg.md)で行う。任意のAnkiコレクション交換・復元とは異なる。
 
 ## 試す
 
@@ -32,7 +32,7 @@ mise exec -- node apps/cli/dist/index.js content validate docs/examples/content/
 
 各項目は`itemId`、`prompt`、`answer`、一つ以上の`activities`を持つ。`explanation`とHTTP(S)の`sourceUrl`は任意。本文はプレーンテキストとして保持し、前後の空白や改行を変更しない。HTMLらしい文字列もそのままの文字であり、rendererが実行・HTML解釈する許可ではない。
 
-IDは英数字で始まる英数字・`.`・`_`・`-`の組み合わせ。`itemId`は教材内、`activityId`は項目内、`assetId`は教材内で一意にする。`contentActivityKey`は`packageId/itemId/activityId`を返す。本文・改訂番号をidentityに混ぜない。これらはAnki note/card IDやGUIDではなく、その対応はpublisherの後続実装で定義する。
+IDは英数字で始まる英数字・`.`・`_`・`-`の組み合わせ。`itemId`は教材内、`activityId`は項目内、`assetId`は教材内で一意にする。`contentActivityKey`は`packageId/itemId/activityId`を返す。本文・改訂番号をidentityに混ぜない。Anki note/card IDとは別の識別子であり、GUIDへの対応は[配布仕様](content-apkg.md)で定義する。
 
 ## 練習方法
 
@@ -55,4 +55,4 @@ v1は音源の部分区間、録音、採点、予定計算、任意の実行コ
 
 公開教材と個人用教材は別manifestにする。公開fixtureは自作資料のみとし、個人用の本文・音声は別のprivate repoやローカルに置く。manifestに個人の復習履歴・録音・profile・コレクションIDを追加すると、未知の項目として拒否される。
 
-次の実装は同じ教材からのAPKG配布と短い練習セッション。[用途・設計](../design/content-and-learning.md)に開発順序と完了条件を置く。
+同じ教材からの[APKG配布](content-apkg.md)は実装済み。次は短い練習セッション。[用途・設計](../design/content-and-learning.md)に開発順序と完了条件を置く。
