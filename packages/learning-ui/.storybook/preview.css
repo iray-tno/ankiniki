@@ -1,0 +1,26 @@
+:root {
+  --color-canvas: #f4f3ed;
+}
+
+[data-theme='dark'] {
+  --color-canvas: #141e1a;
+  --color-ink: #eef2e8;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+.practice-canvas {
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  padding: clamp(16px, 4vw, 48px);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}

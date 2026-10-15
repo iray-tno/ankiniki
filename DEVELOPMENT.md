@@ -17,6 +17,7 @@ formats if an ancestor file is needed. See the
 
 ```text
 packages/shared/         Types, parsers and AnkiConnect client
+packages/learning-ui/    Shared Hozo practice cards and Storybook
 packages/backend/        Express API and import integrations
 apps/cli/                Commander CLI; bundles into dist/index.js
 apps/desktop/            React/Hozo frontend and Tauri Rust host
@@ -85,7 +86,9 @@ build does not prove that the same screen works on React Native.
 
 ## Testing conventions
 
-Shared/backend/CLI use Vitest. Backend route tests use Supertest and mock Anki.
+Shared/backend/CLI use Vitest. Learning UI stories use Vitest with Chromium and
+axe; install the pinned browser before root `test` or `ci` (see the environment
+guide). Backend route tests use Supertest and mock Anki.
 CLI builds with esbuild, so its type check must also be run separately.
 
 Use class syntax for constructor mocks. Use module factories for ESM `fs`

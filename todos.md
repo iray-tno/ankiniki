@@ -11,6 +11,8 @@ Updated 2026-10-15. This file separates existing features from planned milestone
   identities, references and local audio integrity; self-authored fixtures.
 - Standalone lesson APKG export with stable identities, its own model and audio;
   release timestamps govern Anki's standard update rules.
+- Hozo 0.3.0 shared plain-text practice cards with a standalone Storybook and
+  Chromium interaction/axe checks. Audio stories show presentation states only.
 - Express API and an optional Python processing/generation service.
 - VS Code extension for selection/code creation and file generation.
 - Tauri desktop with settings, menus and React screens backed by Express.
@@ -34,13 +36,13 @@ Before the full migration, deliver a small content session using the
 [content and learning design](docs/design/content-and-learning.md):
 
 The [UI and authoring stages](docs/design/practice-ui-and-authoring.md) start with
-shared plain-text cards in Storybook, then explicit Markdown authoring and MDX
-article embedding. These components and formats are planned, not implemented.
+shared plain-text cards in Storybook (implemented), then explicit Markdown
+authoring and MDX article embedding (planned).
 
 - [x] Specify stable package/item/activity identities and revisioned content.
 - [x] Validate self-authored question and audio fixtures with resolved media.
 - [x] Document shared card boundaries, Storybook states and Markdown/MDX stages.
-- [ ] Upgrade Hozo dependencies together to 0.3.0 and build shared plain cards
+- [x] Upgrade Hozo dependencies together to 0.3.0 and build shared plain cards
       in Storybook with verified theme/source compilation and HMR.
 - [ ] Define explicit Markdown authoring and a versioned rich-text contract;
       keep v1 plain text and raw Anki exchange unchanged.

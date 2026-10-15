@@ -1,0 +1,48 @@
+{
+  "name": "@ankiniki/learning-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared Hozo practice cards and their Storybook",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./theme.css": "./src/theme.css"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "storybook": "storybook dev -p 6006 --no-open --disable-telemetry",
+    "build:storybook": "storybook build --output-dir dist/storybook --disable-telemetry",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ankiniki/shared": "*",
+    "@hozo/core": "0.3.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@hozo/compiler": "0.3.0",
+    "@hozo/storybook": "0.3.0",
+    "@hozo/vite": "0.3.0",
+    "@storybook/addon-a11y": "10.6.2",
+    "@storybook/addon-vitest": "10.6.2",
+    "@storybook/react-vite": "10.6.2",
+    "@types/node": "24.19.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitest/browser-playwright": "4.1.2",
+    "playwright": "1.64.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "storybook": "10.6.2",
+    "typescript": "^5.1.6",
+    "vite": "^8.3.1",
+    "vitest": "4.1.2"
+  }
+}

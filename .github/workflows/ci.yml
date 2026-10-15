@@ -42,6 +42,19 @@ jobs:
       - name: Lesson package smoke test
         run: mise exec -- npm run test:content
 
+      - name: Build learning Storybook
+        run: mise exec -- npm run build:storybook -w packages/learning-ui
+
+  learning-ui:
+    name: Practice cards / Chromium
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+      - run: mise exec -- npm ci
+      - run: mise exec -- npm exec -- playwright install --with-deps --no-shell chromium
+      - run: mise exec -- npm run test:ui
+
   desktop:
     name: Desktop frontend / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

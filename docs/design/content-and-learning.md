@@ -92,11 +92,11 @@ Rustは交換の検証・計画、ファイルとassetの処理、将来の独�
 
 まず教材契約・fixtureと小さなTypeScriptのセッション状態を共有し、Hozo画面から使う。Webでも必要な純粋な検証・予定計算をRustへ移すときは、同じ実装のWASM公開を検証する。SQLiteやNative FFIをブラウザまで強制しない。復習ルールをRustとTypeScriptで重複実装する移行にはしない。
 
-追加単位は必要になった順に作る。最初の共有表示は`packages/learning-ui`を候補にし、セッション状態が増えた段階で`packages/learning`へ分ける。教材契約の独立package化や記事向けの配布単位もconsumerの要件に合わせて決める。公開教材repoはこれらの利用者とし、アプリrepoの下に全教材を集める必要はない。これらの追加packageはまだ存在しない。
+追加単位は必要になった順に作る。共有plainカードとStorybookは[packages/learning-ui](../../packages/learning-ui/README.md)に実装した。セッション状態が増えた段階で`packages/learning`へ分ける。教材契約の独立package化や記事向けの配布単位もconsumerの要件に合わせて決める。公開教材repoはこれらの利用者とし、アプリrepoの下に全教材を集める必要はない。`packages/learning`などの後続packageはまだ存在しない。
 
 ## 次の実装と完了条件
 
-次の共有カード表示、Storybook、Markdown教材、MDX記事への埋め込みは[具体化した設計](practice-ui-and-authoring.md)に従う。まず既存v1のplainカードを表示し、本文形式とauthoringの拡張は後続のfixtureで確定する。
+共有カード表示、Storybook、Markdown教材、MDX記事への埋め込みは[具体化した設計](practice-ui-and-authoring.md)に従う。既存v1のplainカード表示は実装済みで、本文形式とauthoringの拡張は後続のfixtureで確定する。
 
 1. **教材契約を小さく確定（完了）**：自作の技術問題3問と合図音付き応答1項目で、identity、revision、asset、出題方法をCLIから検証できる。音声は自作の合図で、模範発音ではない。
 2. **限定したAnki配布・取り込みを検証（完了）**：専用モデル・音声付きAPKGの初回import、再import、教材更新、利用者が編集・復習した後の再importをAnki 26.9.3で確認した。任意モデルの交換アーカイブや全復習履歴の復元は引き続き別の課題。

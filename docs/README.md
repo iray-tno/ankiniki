@@ -31,6 +31,7 @@ entry points are maintained alongside the current implementation.
 - [Backend API](reference/api/README.md)
 - [Lesson content format and offline validation](reference/content-package.md)
 - [Lesson APKG export and update rules](reference/content-apkg.md)
+- [Practice cards and Storybook](../packages/learning-ui/README.md)
 - [Lesson package verification](developer/content-apkg-verification.md)
 - [Troubleshooting](troubleshooting/README.md)
 - [日本語](ja/README.md)

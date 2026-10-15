@@ -62,7 +62,10 @@ module.exports = {
   overrides: [
     // React specific rules for frontend components
     {
-      files: ['apps/desktop/src/renderer/**/*.{ts,tsx}'],
+      files: [
+        'apps/desktop/src/renderer/**/*.{ts,tsx}',
+        'packages/learning-ui/**/*.{ts,tsx}',
+      ],
       extends: ['plugin:react/recommended', 'plugin:react-hooks/recommended'],
       plugins: ['react', 'react-hooks'],
       settings: {
